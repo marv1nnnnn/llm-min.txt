@@ -1,0 +1,11 @@
+# Lessons
+
+## User Specified Lessons
+
+- Use `uv` for package management (e.g., `uv run ...`).
+- Include info useful for debugging in the program output.
+
+# Scratchpad
+
+[X] Generate a standard Python `.gitignore` file.
+[ ] Run tests and fix issues

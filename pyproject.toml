@@ -1,0 +1,19 @@
+[project]
+name = "llm-context-generator"
+version = "0.1.0"
+description = "Generates LLM context by scraping and summarizing documentation for Python libraries listed in a requirements.txt file."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "crawl4ai>=0.6.2",
+    "ipython>=9.2.0", # Keep for development/debugging
+    "httpx>=0.27.0", # For async HTTP requests (alternative to requests)
+    "beautifulsoup4>=4.12.3", # HTML parsing
+    "lxml>=5.2.1", # XML/HTML parsing backend
+    "google-generativeai>=0.5.4", # For LLM compaction
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0", # Testing framework
+]
