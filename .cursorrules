@@ -4,8 +4,34 @@
 
 - Use `uv` for package management (e.g., `uv run ...`).
 - Include info useful for debugging in the program output.
+- Read the file before you try to edit it.
+- Due to Cursor's limit, when you use `git` and `gh` and need to submit a multiline commit message, first write the message in a file, and then use `git commit -F <filename>` or similar command to commit. And then remove the file. Include "[Cursor] " in the commit message and PR title.
+
+## Cursor learned
+
+- For search results, ensure proper handling of different character encodings (UTF-8) for international queries
+- Add debug information to stderr while keeping the main output clean in stdout for better pipeline integration
+- When using seaborn styles in matplotlib, use 'seaborn-v0_8' instead of 'seaborn' as the style name due to recent seaborn version changes
+- Use 'gpt-4o' as the model name for OpenAI's GPT-4 with vision capabilities
 
 # Scratchpad
 
-[X] Generate a standard Python `.gitignore` file.
-[ ] Run tests and fix issues
+[X] **Task: Build LLM Minimal Documentation Generator (based on prd.md)**
+    [X] 1. Setup Project Structure
+    [X] 2. Add Dependencies
+    [X] 3. Implement `requirements.txt` Parsing
+    [X] 4. Implement Documentation Search & LLM Link Selection (*Placeholder*)
+    [X] 5. Implement Documentation Crawling
+    [X] 6. Implement LLM Content Compacting (*Placeholder*)
+    [X] 7. Implement Initial Output Generation (`main.py`)
+    [X] 8. Write Initial Main Script Logic (`main.py`)
+    [X] 9. Fix `ModuleNotFoundError` in `search.py` import
+    [ ] 10. Add Basic Tests
+    [X] 11. Add `.gitignore`
+    [X] 12. **Refactor Output Structure:** Modify `main.py` to save outputs per package (`output_dir/package_name/llm-full.txt`, `output_dir/package_name/llm-min.txt`).
+
+**Next Steps:**
+- Replace LLM placeholders in `search.py` (done for selection) and `compacter.py` with actual API calls.
+- Implement tests in `tests/`.
+- Refine error handling and add configuration options.
+- Create a `requirements.txt` for testing or use `uv pip install .`.

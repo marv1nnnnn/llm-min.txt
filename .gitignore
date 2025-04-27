@@ -130,3 +130,5 @@ cython_debug/
 # OS generated files
 .DS_Store
 Thumbs.db
+.state/
+.my_docs/
