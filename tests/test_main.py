@@ -23,9 +23,7 @@ def test_cli_doc_url(mock_process_direct_url):
     doc_url = "http://example.com/docs"
 
     # Invoke the app with --doc-url
-    result = runner.invoke(
-        app, ["--doc-url", doc_url, "--gemini-api-key", "dummy_api_key"]
-    )
+    result = runner.invoke(app, ["--doc-url", doc_url, "--gemini-api-key", "dummy_api_key"])
 
     # Assert the command ran successfully
     assert result.exit_code == 0
@@ -75,9 +73,7 @@ def test_cli_requirements_file(
     req_file = tmp_path / "requirements.txt"
     req_file.write_text("package1\npackage2")
 
-    result = runner.invoke(
-        app, ["--requirements-file", str(req_file), "--gemini-api-key", "dummy_api_key"]
-    )
+    result = runner.invoke(app, ["--requirements-file", str(req_file), "--gemini-api-key", "dummy_api_key"])
 
     assert result.exit_code == 0
     mock_process_requirements.assert_called_once()
@@ -108,9 +104,7 @@ def test_cli_input_folder(
     req_file = input_folder / "requirements.txt"
     req_file.write_text("package3\npackage4")
 
-    result = runner.invoke(
-        app, ["--input-folder", str(input_folder), "--gemini-api-key", "dummy_api_key"]
-    )
+    result = runner.invoke(app, ["--input-folder", str(input_folder), "--gemini-api-key", "dummy_api_key"])
 
     assert result.exit_code == 0
     mock_process_requirements.assert_called_once()
@@ -128,16 +122,12 @@ def test_cli_input_folder(
 @patch("llm_min.main.process_requirements")
 @patch("llm_min.search.find_documentation_url")
 @patch("llm_min.crawler.crawl_documentation")
-def test_cli_packages_string(
-    mock_crawl_documentation, mock_find_documentation_url, mock_process_requirements
-):
+def test_cli_packages_string(mock_crawl_documentation, mock_find_documentation_url, mock_process_requirements):
     """Test the CLI with --packages argument."""
     runner = CliRunner()
     package_string = "package5\npackage6==1.0"
 
-    result = runner.invoke(
-        app, ["--packages", package_string, "--gemini-api-key", "dummy_api_key"]
-    )
+    result = runner.invoke(app, ["--packages", package_string, "--gemini-api-key", "dummy_api_key"])
 
     assert result.exit_code == 0
     mock_process_requirements.assert_called_once()
@@ -155,9 +145,7 @@ def test_cli_packages_string(
 @patch("llm_min.main.process_direct_url")
 @patch("llm_min.search.find_documentation_url")
 @patch("llm_min.crawler.crawl_documentation")
-def test_cli_doc_url_direct(
-    mock_crawl_documentation, mock_find_documentation_url, mock_process_direct_url
-):
+def test_cli_doc_url_direct(mock_crawl_documentation, mock_find_documentation_url, mock_process_direct_url):
     """Test the CLI with --doc-url argument (direct processing)."""
     runner = CliRunner()
     doc_url = "http://example.com/docs/package7"
@@ -197,17 +185,13 @@ def test_cli_multiple_inputs(tmp_path):
     req_file = tmp_path / "requirements.txt"
     req_file.write_text("package1")
 
-    result = runner.invoke(
-        app, ["--requirements-file", str(req_file), "--packages", "package2"]
-    )
+    result = runner.invoke(app, ["--requirements-file", str(req_file), "--packages", "package2"])
 
     # Assert exit code is non-zero (expecting 1 from sys.exit)
     assert result.exit_code != 0
     # assert "Error: Please provide exactly one input source" in result.output # Output might be empty
 
-    result = runner.invoke(
-        app, ["--doc-url", "http://example.com", "--input-folder", str(tmp_path)]
-    )
+    result = runner.invoke(app, ["--doc-url", "http://example.com", "--input-folder", str(tmp_path)])
 
     # Assert exit code is non-zero (expecting 1 from sys.exit)
     assert result.exit_code != 0
@@ -222,9 +206,7 @@ def test_cli_default_args(mock_process_requirements, tmp_path):
     req_file = tmp_path / "requirements.txt"
     req_file.write_text("package1")
 
-    result = runner.invoke(
-        app, ["--requirements-file", str(req_file), "--gemini-api-key", "dummy_api_key"]
-    )
+    result = runner.invoke(app, ["--requirements-file", str(req_file), "--gemini-api-key", "dummy_api_key"])
 
     assert result.exit_code == 0
     mock_process_requirements.assert_called_once()
@@ -273,9 +255,7 @@ def test_write_full_text_file(mock_logger, tmp_path):
     file_path = output_dir / package_name / "llm-full.txt"
     assert file_path.is_file()
     assert file_path.read_text() == content
-    mock_logger.info.assert_called_with(
-        f"Successfully wrote full text content for {package_name} to {file_path}"
-    )
+    mock_logger.info.assert_called_with(f"Successfully wrote full text content for {package_name} to {file_path}")
 
 
 @patch("llm_min.main.logger")
@@ -290,9 +270,7 @@ def test_write_min_text_file(mock_logger, tmp_path):
     file_path = output_dir / package_name / "llm-min.txt"
     assert file_path.is_file()
     assert file_path.read_text() == content
-    mock_logger.info.assert_called_with(
-        f"Successfully wrote minimal text content for {package_name} to {file_path}"
-    )
+    mock_logger.info.assert_called_with(f"Successfully wrote minimal text content for {package_name} to {file_path}")
 
 
 # Test process_package function
@@ -335,12 +313,8 @@ async def test_process_package_success(
 
     assert result is True
     # Use async mock assertions
-    mock_find_documentation_url.assert_awaited_once_with(
-        package_name, api_key="fake_key"
-    )
-    mock_crawl_documentation.assert_awaited_once_with(
-        doc_url, max_pages=10, max_depth=2
-    )
+    mock_find_documentation_url.assert_awaited_once_with(package_name, api_key="fake_key")
+    mock_crawl_documentation.assert_awaited_once_with(doc_url, max_pages=10, max_depth=2)
     mock_write_full.assert_called_once_with(output_dir, package_name, crawled_content)
     mock_compact_content_with_llm.assert_awaited_once_with(
         aggregated_content=crawled_content,
@@ -350,9 +324,7 @@ async def test_process_package_success(
     )
     mock_write_min.assert_called_once_with(output_dir, package_name, compacted_content)
     mock_logger.info.assert_any_call(f"--- Processing package: {package_name} ---")
-    mock_logger.info.assert_any_call(
-        f"Found documentation URL for {package_name}: {doc_url}"
-    )
+    mock_logger.info.assert_any_call(f"Found documentation URL for {package_name}: {doc_url}")
     mock_logger.info.assert_any_call(
         f"Successfully crawled content for {package_name}. Total size: {len(crawled_content)} characters."
     )
@@ -395,16 +367,12 @@ async def test_process_package_no_doc_url(
     )
 
     assert result is False
-    mock_find_documentation_url.assert_awaited_once_with(
-        package_name, api_key="fake_key"
-    )
+    mock_find_documentation_url.assert_awaited_once_with(package_name, api_key="fake_key")
     mock_crawl_documentation.assert_not_awaited()  # Use async assertion
     mock_write_full.assert_not_called()
     mock_compact_content_with_llm.assert_not_awaited()  # Use async assertion
     mock_write_min.assert_not_called()
-    mock_logger.warning.assert_called_once_with(
-        f"Could not find documentation URL for {package_name}. Skipping."
-    )
+    mock_logger.warning.assert_called_once_with(f"Could not find documentation URL for {package_name}. Skipping.")
 
 
 @pytest.mark.asyncio
@@ -441,18 +409,12 @@ async def test_process_package_no_crawled_content(
     )
 
     assert result is False
-    mock_find_documentation_url.assert_awaited_once_with(
-        package_name, api_key="fake_key"
-    )
-    mock_crawl_documentation.assert_awaited_once_with(
-        doc_url, max_pages=10, max_depth=2
-    )
+    mock_find_documentation_url.assert_awaited_once_with(package_name, api_key="fake_key")
+    mock_crawl_documentation.assert_awaited_once_with(doc_url, max_pages=10, max_depth=2)
     mock_write_full.assert_not_called()
     mock_compact_content_with_llm.assert_not_awaited()
     mock_write_min.assert_not_called()
-    mock_logger.warning.assert_called_once_with(
-        f"No content crawled for {package_name}. Skipping."
-    )
+    mock_logger.warning.assert_called_once_with(f"No content crawled for {package_name}. Skipping.")
 
 
 @pytest.mark.asyncio
@@ -491,12 +453,8 @@ async def test_process_package_compaction_empty(
     )
 
     assert result is False  # Should return False if compaction is empty
-    mock_find_documentation_url.assert_awaited_once_with(
-        package_name, api_key="fake_key"
-    )
-    mock_crawl_documentation.assert_awaited_once_with(
-        doc_url, max_pages=10, max_depth=2
-    )
+    mock_find_documentation_url.assert_awaited_once_with(package_name, api_key="fake_key")
+    mock_crawl_documentation.assert_awaited_once_with(doc_url, max_pages=10, max_depth=2)
     mock_write_full.assert_called_once_with(output_dir, package_name, crawled_content)
     mock_compact_content_with_llm.assert_awaited_once_with(
         aggregated_content=crawled_content,
@@ -507,8 +465,7 @@ async def test_process_package_compaction_empty(
     mock_write_min.assert_not_called()
     # Check the warning log message carefully based on the implementation
     expected_log = (
-        f"Compaction failed or resulted in empty content for {package_name}. "
-        "Skipping writing min file. Detail: "
+        f"Compaction failed or resulted in empty content for {package_name}. Skipping writing min file. Detail: "
     )
     mock_logger.warning.assert_called_once()
     call_args, call_kwargs = mock_logger.warning.call_args
@@ -548,9 +505,7 @@ async def test_process_package_exception(
     )
 
     assert result is False
-    mock_find_documentation_url.assert_awaited_once_with(
-        package_name, api_key="fake_key"
-    )
+    mock_find_documentation_url.assert_awaited_once_with(package_name, api_key="fake_key")
     mock_crawl_documentation.assert_not_awaited()
     mock_write_full.assert_not_called()
     mock_compact_content_with_llm.assert_not_awaited()
@@ -594,9 +549,7 @@ async def test_process_direct_url_success(
     )
 
     assert result is True
-    mock_crawl_documentation.assert_awaited_once_with(
-        doc_url, max_pages=10, max_depth=2
-    )
+    mock_crawl_documentation.assert_awaited_once_with(doc_url, max_pages=10, max_depth=2)
     mock_write_full.assert_called_once_with(output_dir, package_name, crawled_content)
     mock_compact_content_with_llm.assert_awaited_once_with(
         aggregated_content=crawled_content,
@@ -605,9 +558,7 @@ async def test_process_direct_url_success(
         subject=package_name,
     )
     mock_write_min.assert_called_once_with(output_dir, package_name, compacted_content)
-    mock_logger.info.assert_any_call(
-        f"--- Processing direct URL for {package_name}: {doc_url} ---"
-    )
+    mock_logger.info.assert_any_call(f"--- Processing direct URL for {package_name}: {doc_url} ---")
     mock_logger.info.assert_any_call(
         f"Successfully crawled content from {doc_url}. Total size: {len(crawled_content)} characters."
     )
@@ -628,12 +579,8 @@ async def test_process_direct_url_exception(tmp_path):
     # Patch within the function body, using AsyncMock for async functions
     with (
         patch("llm_min.main.logger") as mock_logger,
-        patch(
-            "llm_min.main.crawl_documentation", new_callable=AsyncMock
-        ) as mock_crawl_documentation,
-        patch(
-            "llm_min.main.compact_content_with_llm", new_callable=AsyncMock
-        ) as mock_compact_content_with_llm,
+        patch("llm_min.main.crawl_documentation", new_callable=AsyncMock) as mock_crawl_documentation,
+        patch("llm_min.main.compact_content_with_llm", new_callable=AsyncMock) as mock_compact_content_with_llm,
         patch("llm_min.main.write_full_text_file") as mock_write_full,
         patch("llm_min.main.write_min_text_file") as mock_write_min,
     ):
@@ -651,9 +598,7 @@ async def test_process_direct_url_exception(tmp_path):
         )
 
         assert result is False  # Expecting False because exception should be caught
-        mock_crawl_documentation.assert_awaited_once_with(
-            doc_url, max_pages=10, max_depth=2
-        )
+        mock_crawl_documentation.assert_awaited_once_with(doc_url, max_pages=10, max_depth=2)
         mock_write_full.assert_not_called()
         mock_compact_content_with_llm.assert_not_awaited()
         mock_write_min.assert_not_called()
@@ -664,9 +609,7 @@ async def test_process_direct_url_exception(tmp_path):
 @pytest.mark.asyncio
 @patch("llm_min.main.process_package", new_callable=AsyncMock)
 @patch("llm_min.main.logger")
-async def test_process_requirements_success(
-    mock_logger, mock_process_package, tmp_path
-):
+async def test_process_requirements_success(mock_logger, mock_process_package, tmp_path):
     """Test successful processing of multiple packages."""
     packages = {"package1", "package2"}
     output_dir = tmp_path / "output"
@@ -700,9 +643,7 @@ async def test_process_requirements_success(
 @pytest.mark.asyncio
 @patch("llm_min.main.process_package", new_callable=AsyncMock)
 @patch("llm_min.main.logger")
-async def test_process_requirements_empty_list(
-    mock_logger, mock_process_package, tmp_path
-):
+async def test_process_requirements_empty_list(mock_logger, mock_process_package, tmp_path):
     """Test processing an empty list of packages."""
     packages: set[str] = set()
     output_dir = tmp_path / "output"
@@ -718,18 +659,14 @@ async def test_process_requirements_empty_list(
         )
 
     assert excinfo.value.code == 0
-    mock_logger.warning.assert_called_once_with(
-        "No packages provided for processing. Exiting."
-    )
+    mock_logger.warning.assert_called_once_with("No packages provided for processing. Exiting.")
     mock_process_package.assert_not_awaited()  # Use async assertion
 
 
 @pytest.mark.asyncio
 @patch("llm_min.main.process_package", new_callable=AsyncMock)
 @patch("llm_min.main.logger")
-async def test_process_requirements_partial_failure(
-    mock_logger, mock_process_package, tmp_path
-):
+async def test_process_requirements_partial_failure(mock_logger, mock_process_package, tmp_path):
     """Test processing multiple packages with partial failures."""
     packages = {"package1", "package2", "package3"}
     output_dir = tmp_path / "output"
@@ -815,9 +752,7 @@ def test_cli_doc_url_url_inference(mock_process_direct_url):
 
     # Test with localhost
     mock_process_direct_url.reset_mock()
-    result = runner.invoke(
-        app, ["--doc-url", "http://localhost", "--gemini-api-key", "dummy_api_key"]
-    )
+    result = runner.invoke(app, ["--doc-url", "http://localhost", "--gemini-api-key", "dummy_api_key"])
     assert result.exit_code == 0
     mock_process_direct_url.assert_called_with(
         package_name="localhost",
@@ -887,9 +822,7 @@ def test_cli_doc_url_url_inference_mocked(mock_process_direct_url):
 
     # Test with localhost (updated expectation)
     mock_process_direct_url.reset_mock()
-    runner.invoke(
-        app, ["--doc-url", "http://localhost", "--gemini-api-key", "dummy_api_key"]
-    )
+    runner.invoke(app, ["--doc-url", "http://localhost", "--gemini-api-key", "dummy_api_key"])
     args, kwargs = mock_process_direct_url.call_args
     assert kwargs["package_name"] == "localhost"
 
@@ -917,9 +850,7 @@ def test_cli_gemini_api_key_env(mock_process_requirements, tmp_path):
     req_file = tmp_path / "requirements.txt"
     req_file.write_text("package1")
 
-    result = runner.invoke(
-        app, ["--requirements-file", str(req_file), "--gemini-api-key", "dummy_api_key"]
-    )
+    result = runner.invoke(app, ["--requirements-file", str(req_file), "--gemini-api-key", "dummy_api_key"])
 
     assert result.exit_code == 0
     mock_process_requirements.assert_called_once()
@@ -936,9 +867,7 @@ def test_cli_gemini_api_key_override(mock_process_requirements, tmp_path):
     req_file = tmp_path / "requirements.txt"
     req_file.write_text("package1")
 
-    result = runner.invoke(
-        app, ["--requirements-file", str(req_file), "--gemini-api-key", "cli_fake_key"]
-    )
+    result = runner.invoke(app, ["--requirements-file", str(req_file), "--gemini-api-key", "cli_fake_key"])
 
     assert result.exit_code == 0
     mock_process_requirements.assert_called_once()
@@ -955,9 +884,7 @@ def test_cli_gemini_api_key_cli_only(mock_process_requirements, tmp_path):
     req_file = tmp_path / "requirements.txt"
     req_file.write_text("package1")
 
-    result = runner.invoke(
-        app, ["--requirements-file", str(req_file), "--gemini-api-key", "cli_fake_key"]
-    )
+    result = runner.invoke(app, ["--requirements-file", str(req_file), "--gemini-api-key", "cli_fake_key"])
 
     assert result.exit_code == 0
     mock_process_requirements.assert_called_once()
@@ -974,9 +901,7 @@ def test_cli_no_gemini_api_key(mock_process_requirements, tmp_path):
     req_file = tmp_path / "requirements.txt"
     req_file.write_text("package1")
 
-    result = runner.invoke(
-        app, ["--requirements-file", str(req_file), "--gemini-api-key", "dummy_api_key"]
-    )
+    result = runner.invoke(app, ["--requirements-file", str(req_file), "--gemini-api-key", "dummy_api_key"])
 
     assert result.exit_code == 0
     mock_process_requirements.assert_called_once()
@@ -1022,9 +947,7 @@ def test_cli_input_folder_no_requirements_file(mock_process_requirements, tmp_pa
     input_folder = tmp_path / "empty_project"
     input_folder.mkdir()
 
-    result = runner.invoke(
-        app, ["--input-folder", str(input_folder), "--gemini-api-key", "dummy_api_key"]
-    )
+    result = runner.invoke(app, ["--input-folder", str(input_folder), "--gemini-api-key", "dummy_api_key"])
 
     assert result.exit_code != 0
     # assert (
@@ -1042,9 +965,7 @@ def test_cli_requirements_file_not_exists(mock_process_requirements, tmp_path):
     req_file = tmp_path / "non_existent_reqs.txt"
     assert not req_file.exists()
 
-    result = runner.invoke(
-        app, ["--requirements-file", str(req_file), "--gemini-api-key", "dummy_api_key"]
-    )
+    result = runner.invoke(app, ["--requirements-file", str(req_file), "--gemini-api-key", "dummy_api_key"])
 
     assert result.exit_code != 0
     assert result.exit_code == 2  # Typer validation errors usually exit with 2
@@ -1061,9 +982,7 @@ def test_cli_requirements_file_is_dir(mock_process_requirements, tmp_path):
     req_dir.mkdir()
     assert req_dir.is_dir()
 
-    result = runner.invoke(
-        app, ["--requirements-file", str(req_dir), "--gemini-api-key", "dummy_api_key"]
-    )
+    result = runner.invoke(app, ["--requirements-file", str(req_dir), "--gemini-api-key", "dummy_api_key"])
 
     assert result.exit_code != 0
     assert result.exit_code == 2  # Typer validation errors usually exit with 2
@@ -1081,9 +1000,7 @@ def test_cli_input_folder_is_file(mock_process_requirements, tmp_path):
     input_file.touch()
     assert input_file.is_file()
 
-    result = runner.invoke(
-        app, ["--input-folder", str(input_file), "--gemini-api-key", "dummy_api_key"]
-    )
+    result = runner.invoke(app, ["--input-folder", str(input_file), "--gemini-api-key", "dummy_api_key"])
 
     assert result.exit_code != 0
     assert result.exit_code == 2  # Typer validation errors usually exit with 2
@@ -1110,9 +1027,7 @@ async def test_process_requirements_no_packages(mock_logger, tmp_path):
         )
 
     assert excinfo.value.code == 0
-    mock_logger.warning.assert_called_once_with(
-        "No packages provided for processing. Exiting."
-    )
+    mock_logger.warning.assert_called_once_with("No packages provided for processing. Exiting.")
 
 
 # Test process_direct_url with URL inference edge cases
@@ -1121,23 +1036,17 @@ def test_cli_doc_url_url_inference_edge_cases_mocked(mock_process_direct_url):
     """Test URL inference edge cases for --doc-url using mock."""
     runner = CliRunner()
 
-    runner.invoke(
-        app, ["--doc-url", "https://example.com/", "--gemini-api-key", "dummy_api_key"]
-    )
+    runner.invoke(app, ["--doc-url", "https://example.com/", "--gemini-api-key", "dummy_api_key"])
     args, kwargs = mock_process_direct_url.call_args
     assert kwargs["package_name"] == "example"
 
     mock_process_direct_url.reset_mock()
-    runner.invoke(
-        app, ["--doc-url", "https://example.com", "--gemini-api-key", "dummy_api_key"]
-    )
+    runner.invoke(app, ["--doc-url", "https://example.com", "--gemini-api-key", "dummy_api_key"])
     args, kwargs = mock_process_direct_url.call_args
     assert kwargs["package_name"] == "example"
 
     mock_process_direct_url.reset_mock()
-    runner.invoke(
-        app, ["--doc-url", "/path/to/docs", "--gemini-api-key", "dummy_api_key"]
-    )
+    runner.invoke(app, ["--doc-url", "/path/to/docs", "--gemini-api-key", "dummy_api_key"])
     args, kwargs = mock_process_direct_url.call_args
     assert kwargs["package_name"] == "path.to.docs"
 
@@ -1214,9 +1123,7 @@ async def test_process_package_write_full_failure(
     )
 
     assert result is False  # Expect False due to outer exception handling
-    mock_find_documentation_url.assert_called_once_with(
-        package_name, api_key="fake_key"
-    )
+    mock_find_documentation_url.assert_called_once_with(package_name, api_key="fake_key")
     mock_crawl_documentation.assert_called_once_with(doc_url, max_pages=10, max_depth=2)
     mock_write_full.assert_called_once_with(output_dir, package_name, crawled_content)
     mock_compact_content_with_llm.assert_not_called()  # Should not be called after write_full fails
