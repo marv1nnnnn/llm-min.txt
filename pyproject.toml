@@ -1,11 +1,11 @@
 [project]
-name = "llm-min-generator"
+name = "llm-min"
 version = "0.1.0"
 description = "Generates LLM context by scraping and summarizing documentation for Python libraries listed in a requirements.txt file."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 authors = [
-  { name="Your Name", email="your.email@example.com" },
+  { name="Your Name", email="your.email@example.com" }, # TODO: Replace with actual author info
 ]
 dependencies = [
     "crawl4ai>=0.6.2",
@@ -22,7 +22,22 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0", # Testing framework
+    "ruff>=0.4.0", # Linter and formatter
 ]
 
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP"]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
 [project.scripts]
-llm-min = "llm_min_generator.main:app"
+llm-min = "llm_min.main:main"

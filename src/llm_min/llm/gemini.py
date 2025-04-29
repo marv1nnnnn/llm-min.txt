@@ -1,15 +1,16 @@
 import logging
 import os
-import json
-from typing import Optional, Dict, Any, List
-from dotenv import load_dotenv
-from google import genai # Use the new library
+from typing import Any
 
-load_dotenv() # Load environment variables from .env file
+from dotenv import load_dotenv
+from google import genai  # Use the new library
+
+load_dotenv()  # Load environment variables from .env file
 
 logger = logging.getLogger(__name__)
 
-def _stream_gemini_response(client: genai.Client, model_name: str, contents: Any) -> Optional[str]:
+
+def _stream_gemini_response(client: genai.Client, model_name: str, contents: Any) -> str | None:
     """
     Helper function to handle streaming response from Gemini API.
     Collects all chunks and returns the complete text.
@@ -30,7 +31,8 @@ def _stream_gemini_response(client: genai.Client, model_name: str, contents: Any
         logger.error(f"Error during Gemini API streaming: {e}")
         return None
 
-def chunk_content(content: str, chunk_size: int) -> List[str]:
+
+def chunk_content(content: str, chunk_size: int) -> list[str]:
     """Splits content into chunks of approximately chunk_size."""
     chunks = []
     start = 0
@@ -39,20 +41,21 @@ def chunk_content(content: str, chunk_size: int) -> List[str]:
         if end > len(content):
             end = len(content)
         # Try to find a natural break point (like a newline) near the end of the chunk
-        last_newline = content.rfind('\n', start, end)
+        last_newline = content.rfind("\n", start, end)
         if last_newline > start:
-            end = last_newline + 1 # Include the newline character
+            end = last_newline + 1  # Include the newline character
         chunks.append(content[start:end])
         start = end
     return chunks
 
-def merge_json_outputs(json_outputs: List[Dict[str, Any]]) -> Dict[str, Any]:
+
+def merge_json_outputs(json_outputs: list[dict[str, Any]]) -> dict[str, Any]:
     """
     Merges a list of JSON outputs from chunk processing.
     Assumes the JSON structure is a dictionary with a key (e.g., 'components')
     containing a list of items to be merged.
     """
-    merged_output: Dict[str, Any] = {}
+    merged_output: dict[str, Any] = {}
     # Assuming the primary structure is a dictionary and we are merging lists within it
     # This needs to be adapted based on the actual expected JSON schema
     for output in json_outputs:
@@ -64,7 +67,7 @@ def merge_json_outputs(json_outputs: List[Dict[str, Any]]) -> Dict[str, Any]:
             else:
                 # Handle other types if necessary, potentially overwriting or logging a warning
                 if key not in merged_output:
-                     merged_output[key] = value
+                    merged_output[key] = value
                 # else:
                 #     logger.warning(f"Key '{key}' already exists in merged output with different value. Overwriting.")
                 #     merged_output[key] = value
@@ -72,7 +75,7 @@ def merge_json_outputs(json_outputs: List[Dict[str, Any]]) -> Dict[str, Any]:
     return merged_output
 
 
-def generate_text_response(prompt: str, api_key: Optional[str] = None) -> Optional[str]:
+def generate_text_response(prompt: str, api_key: str | None = None) -> str | None:
     """
     Generates a text response using the Google Gemini API.
 
@@ -92,8 +95,8 @@ def generate_text_response(prompt: str, api_key: Optional[str] = None) -> Option
 
     try:
         # Initialize the client
-        client = genai.Client(api_key=effective_api_key) # Use effective_api_key
-        model_name = "gemini-1.5-flash-latest" # Use a model suitable for general text generation
+        client = genai.Client(api_key=effective_api_key)  # Use effective_api_key
+        model_name = "gemini-1.5-flash-latest"  # Use a model suitable for general text generation
 
         # Use the streaming helper function
         response_text = _stream_gemini_response(client, model_name, contents=prompt)

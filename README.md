@@ -79,6 +79,11 @@ llm-min-generator [OPTIONS]
     llm-min-generator --packages "requests\npydantic>=2.0"
     ```
 
+*   `--doc-url URL` or `-u URL`:
+    Directly specify the documentation URL for a single package, bypassing the automatic search. This is useful if the search fails or if you want to target a specific version's documentation. When using this option, only provide *one* package via `--packages` or ensure your `--requirements-file`/`--input-folder` contains only one package.
+    ```bash
+    llm-min-generator --packages "requests" --doc-url "https://requests.readthedocs.io/en/latest/"
+    ```
 **Common Options:**
 
 *   `--output-dir PATH` or `-o PATH`:

@@ -1,152 +1,88 @@
 {
-  "projectName": "ll-min.txt-project",
-  "overallStatus": "In Progress",
+  "projectName": "llm-min-pypi-prep",
+  "overallStatus": "Planning",
   "highLevelPlan": [
     {
-      "phase": "Fix Crawler Import",
-      "status": "Done"
-    },
-    {
-      "phase": "Implement LLM Compacter",
-      "status": "Done"
-    },
-    {
-      "phase": "Create Compacter Tests",
-      "status": "Done"
-    },
-    {
-      "phase": "Integrate Google GenAI for Compaction",
-      "status": "Done"
-    },
-    {
-      "phase": "Refactor to google-genai",
-      "status": "Done"
-    },
-    {
-      "phase": "Refine Compaction Prompt",
-      "status": "Done"
-    },
-    {
-      "phase": "Refactor Compaction & Implement Streaming & Fix Bug",
-      "status": "Pending"
-    },
-    {
-      "phase": "Update Compaction Prompt",
-      "status": "Done"
-    },
-    {
-      "phase": "Fix Search LLM Selection",
-      "status": "Done"
-    },
-    {
-      "phase": "Refactor Search to use Gemini",
-      "status": "Implemented"
-    },
-    {
-      "phase": "Integrate LiteLLM for Multi-Vendor Support",
-      "status": "Pending"
-    },
-    {
-      "phase": "Handle Large Inputs in Gemini Compaction",
-      "status": "Implemented"
-    },
-    {
-      "phase": "Refactor to CLI Tool",
+      "phase": "Testing & CI Setup",
       "status": "Pending"
     }
   ],
   "tasks": {
-    "task-refactor-gemini-chunking": {
-      "type": "refactor",
-      "status": "Implemented",
-      "assignedTo": "code",
-      "dependsOn": [],
-      "description_summary": "Refactor src/llm/gemini.py to handle large inputs by chunking."
-    },
-    "task-update-compacter-caller": {
-      "type": "refactor",
+    "task-test-analyze-001": {
+      "type": "tech-design",
       "status": "Done",
-      "assignedTo": "code",
-      "dependsOn": [
-        "task-refactor-gemini-chunking"
-      ],
-      "description_summary": "Update the caller in compacter.py to handle the chunking Gemini function."
-    },
-    "task-refactor-main-input-handling": {
-      "taskId": "task-refactor-main-input-handling",
-      "type": "refactor",
-      "status": "Implemented",
-      "assignedTo": "code",
+      "assignedTo": null,
       "dependsOn": [],
-      "description_summary": "Refactor main.py to handle folder, file, or package name inputs."
+      "description_summary": "Analyze current test coverage for llm_min modules."
     },
-    "task-implement-folder-scan": {
-      "type": "feature",
-      "status": "Implemented",
-      "assignedTo": "code",
-      "dependsOn": ["task-refactor-main-input-handling"],
-      "description_summary": "Implement scanning folders for dependency files."
-    },
-    "task-implement-dep-file-parsing": {
-      "type": "feature",
-      "status": "Running",
-      "assignedTo": "code",
-      "dependsOn": ["task-refactor-main-input-handling"],
-      "description_summary": "Implement parsing a single dependency file."
-    },
-    "task-implement-package-name-handling": {
-      "type": "feature",
-      "status": "Pending",
-      "assignedTo": null,
-      "dependsOn": ["task-refactor-main-input-handling"],
-      "description_summary": "Implement handling a single package name input."
-    },
-    "task-integrate-generation-logic": {
-      "type": "refactor",
-      "status": "Pending",
-      "assignedTo": null,
-      "dependsOn": [
-        "task-implement-folder-scan",
-        "task-implement-dep-file-parsing",
-        "task-implement-package-name-handling"
-      ],
-      "description_summary": "Integrate doc generation logic with new input handlers."
-    },
-    "task-implement-cli": {
-      "type": "feature",
-      "status": "Pending",
-      "assignedTo": null,
-      "dependsOn": ["task-integrate-generation-logic"],
-      "description_summary": "Implement CLI interface using argparse or typer."
-    },
-    "task-setup-packaging": {
+    "task-test-enhance-compacter-001": {
       "type": "chore",
+      "status": "Done",
+      "assignedTo": "code",
+      "dependsOn": ["task-test-analyze-001"],
+      "description_summary": "Enhance unit tests for src/llm_min/compacter.py."
+    },
+    "task-test-enhance-crawler-001": {
+      "type": "chore",
+      "status": "Done",
+      "assignedTo": "code",
+      "dependsOn": ["task-test-analyze-001"],
+      "description_summary": "Enhance unit tests for src/llm_min/crawler.py."
+    },
+    "task-test-enhance-parser-001": {
+      "type": "chore",
+      "status": "Done",
+      "assignedTo": "code",
+      "dependsOn": ["task-test-analyze-001"],
+      "description_summary": "Enhance unit tests for src/llm_min/parser.py."
+    },
+    "task-test-enhance-search-001": {
+      "type": "chore",
+      "status": "Done",
+      "assignedTo": "code",
+      "dependsOn": ["task-test-analyze-001"],
+      "description_summary": "Enhance unit tests for src/llm_min/search.py."
+    },
+    "task-test-enhance-main-001": {
+      "type": "chore",
+      "status": "Done",
+      "assignedTo": "code",
+      "dependsOn": ["task-test-analyze-001"],
+      "description_summary": "Enhance unit tests for src/llm_min/main.py."
+    },
+    "task-lint-setup-001": {
+      "type": "chore",
+      "status": "Done",
+      "assignedTo": "code",
+      "dependsOn": [],
+      "description_summary": "Set up Ruff linter configuration in pyproject.toml."
+    },
+    "task-gh-actions-setup-001": {
+      "type": "chore",
+      "status": "Done",
+      "assignedTo": "code",
+      "dependsOn": [
+        "task-test-enhance-compacter-001",
+        "task-test-enhance-crawler-001",
+        "task-test-enhance-parser-001",
+        "task-test-enhance-search-001",
+        "task-test-enhance-main-001",
+        "task-lint-setup-001"
+      ],
+      "description_summary": "Set up GitHub Actions workflow for tests and linting."
+    },
+    "task-validate-ci-001": {
+      "type": "validation",
       "status": "Pending",
       "assignedTo": null,
-      "dependsOn": ["task-implement-cli"],
-      "description_summary": "Configure pyproject.toml for packaging."
-    },
-    "task-doc-init-001": {
-      "type": "documentation-init",
-      "status": "Done",
-      "assignedTo": "docu-crafter",
-      "dependsOn": [],
-      "description_summary": "Initialize project documentation structure in .docs/."
-    },
-    "task-doc-update-001": {
-      "type": "documentation-update",
-      "status": "Done",
-      "assignedTo": "docu-crafter",
-      "dependsOn": [],
-      "description_summary": "Update .docs/index.md with project structure based on code analysis."
-    },
-    "task-fix-compaction-none-await": {
-      "type": "bugfix",
-      "status": "Pending",
-      "assignedTo": null,
-      "dependsOn": [],
-      "description_summary": "Fix TypeError in main.py by checking if compaction result is None before awaiting."
+      "dependsOn": ["task-gh-actions-setup-001"],
+      "description_summary": "Validate the complete CI setup (linting & testing)."
     }
   },
-  "journal": []
+  "journal": [
+    {
+      "timestamp": "2025-04-29T00:54:16Z",
+      "entry": "Initial plan created for enhancing tests and setting up CI/CD."
+    }
+  ]
 }
