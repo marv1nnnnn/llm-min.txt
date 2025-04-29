@@ -46,3 +46,7 @@ llm-min = "llm_min.main:app"
 
 [tool.setuptools.package-data]
 "llm_min" = ["*.md"]
+
+[build-system]
+requires = ["setuptools>=42", "wheel", "build>=1.0"]
+build-backend = "setuptools.build_meta"
