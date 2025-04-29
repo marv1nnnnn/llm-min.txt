@@ -53,9 +53,13 @@ async def generate_text_response(prompt: str, api_key: str | None = None) -> str
         return "ERROR: Gemini API key is required but was not provided."
 
     try:
-        genai.configure(api_key=effective_api_key)
-        model = genai.GenerativeModel("gemini-2.5-flash")  # Match model used in tests
-        response = await model.generate_content_async(prompt)
+        # Removed genai.configure()
+        # Instantiate the client with the API key
+        client = genai.Client(api_key=effective_api_key)
+
+        # Use the client to generate content (Note: this call might be synchronous)
+        # Using model name from docs examples
+        response = client.models.generate_content(model='gemini-2.5-flash-preview-04-17', contents=prompt)
 
         # Check for response content before accessing text
         # Accessing response.text directly might raise if there's no valid candidate/content
