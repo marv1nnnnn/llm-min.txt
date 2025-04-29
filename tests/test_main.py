@@ -907,7 +907,6 @@ def test_cli_requirements_file_not_exists(mock_process_requirements, tmp_path):
     """Test --requirements-file validation when the file does not exist."""
     runner = CliRunner()
     req_file = tmp_path / "non_existent_reqs.txt"
-    req_file_name = req_file.name  # Get just the filename
     assert not req_file.exists()
 
     result = runner.invoke(app, ["--requirements-file", str(req_file)])
@@ -915,7 +914,6 @@ def test_cli_requirements_file_not_exists(mock_process_requirements, tmp_path):
     assert result.exit_code != 0
     assert result.exit_code == 2  # Typer validation errors usually exit with 2
     # assert "does not exist" in result.output # Check for Typer's message (flaky)
-    # assert req_file_name in result.output  # REMOVED: Check if the filename is mentioned in the error (brittle)
     mock_process_requirements.assert_not_called()
 
 
