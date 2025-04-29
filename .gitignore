@@ -134,3 +134,6 @@ Thumbs.db
 .my_docs/*
 .cursorrules
 .my_docs
+.docs
+.reports
+.specs
