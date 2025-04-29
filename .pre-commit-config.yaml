@@ -6,8 +6,12 @@ repos:
       - id: check-toml
       # - id: end-of-file-fixer
       # - id: trailing-whitespace
+
+  # Restore the ruff-pre-commit repo definition
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.5.0
+    # Use a specific Ruff version. Ensure this is kept aligned
+    # with your project dependencies (e.g., in pyproject.toml) if possible.
+    rev: v0.5.0 # Or update to the latest stable/desired version
     hooks:
       # Run the linter with auto-fix
       - id: ruff
@@ -17,9 +21,27 @@ repos:
 
   - repo: local
     hooks:
+      # Remove the local Ruff hooks
+      # - id: ruff-check-local
+      #   name: ruff check (local)
+      #   entry: uv run -- ruff check --fix --exit-non-zero-on-fix
+      #   language: system
+      #   types_or: [python, pyi]
+      #   pass_filenames: false
+      #   require_serial: true
+      #
+      # - id: ruff-format-local
+      #   name: ruff format (local)
+      #   entry: uv run -- ruff format
+      #   language: system
+      #   types_or: [python, pyi]
+      #   pass_filenames: false
+      #   require_serial: true
+
       - id: pytest
         name: pytest
-        entry: pytest
-        language: system
+        entry: pytest # Assuming pytest is installed in the venv
+        language: system # Still runs pytest from the user's env if installed
         types: [python]
         pass_filenames: false
+        require_serial: true # Often preferred for tests
