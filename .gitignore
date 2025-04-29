@@ -131,4 +131,4 @@ cython_debug/
 .DS_Store
 Thumbs.db
 .state/
-.my_docs/
+.my_docs/# Trigger CI
