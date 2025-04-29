@@ -22,6 +22,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0", # Testing framework
+    "pytest-asyncio", # For testing async code
     "ruff>=0.4.0", # Linter and formatter
 ]
 
@@ -40,4 +41,7 @@ skip-magic-trailing-comma = false
 line-ending = "auto"
 
 [project.scripts]
-llm-min = "llm_min.main:main"
+llm-min = "llm_min.main:app"
+
+[tool.setuptools.package-data]
+"llm_min" = ["*.md"]

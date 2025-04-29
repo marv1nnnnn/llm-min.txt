@@ -1,15 +1,16 @@
 import logging
+import re  # Import re
 
 from duckduckgo_search import DDGS
 
-from .llm.gemini import generate_text_response  # Import the Gemini function
+from .llm import generate_text_response  # Import from .llm
 
 logger = logging.getLogger(__name__)
 
 
 def search_for_documentation_urls(package_name: str, num_results: int = 10) -> list[dict]:
     """Searches DuckDuckGo for potential documentation URLs for a package."""
-    query = f"{package_name} document website"
+    query = f"{package_name} package documentation website"
     logger.info(f"Searching for '{package_name}' documentation with query: '{query}'")
     try:
         with DDGS() as ddgs:
@@ -32,8 +33,12 @@ def search_for_documentation_urls(package_name: str, num_results: int = 10) -> l
         return []
 
 
-def select_best_url_with_llm(package_name: str, search_results: list[dict], api_key: str | None = None) -> str | None:
-    """Uses an LLM to select the most likely official documentation URL from search results."""
+async def select_best_url_with_llm(
+    package_name: str, search_results: list[dict], api_key: str | None = None
+) -> str | None:
+    """Uses an LLM to select the most likely official documentation URL from search results.
+    (Async version)
+    """
     if not search_results:
         logger.warning(f"No search results provided for {package_name} to select from.")
         return None
@@ -48,8 +53,10 @@ def select_best_url_with_llm(package_name: str, search_results: list[dict], api_
     prompt = (
         f"Analyze the following search results for the Python package '{package_name}'. "
         f"Identify the single most likely URL pointing to the official or primary documentation root page. "
-        f"STRONGLY PRIORITIZE URLs from readthedocs.io and github.io as they are common and reliable documentation sources. "
-        f"AVOID URLs from cloud service providers (e.g., google.cloud, aws.amazon.com, azure.microsoft.com) unless they are the only documentation source. "
+        f"STRONGLY PRIORITIZE URLs from readthedocs.io and github.io as they are common and reliable "
+        f"documentation sources. "
+        f"AVOID URLs from cloud service providers (e.g., google.cloud, aws.amazon.com, "
+        f"azure.microsoft.com) unless they are the only documentation source. "
         f"Also consider URLs containing the package name itself in the domain/path. "
         f"Prioritize official documentation sites over tutorials, blogs, or Stack Overflow. "
         f"DO NOT select PyPI (pypi.org) pages as they are not documentation sites. "
@@ -61,11 +68,14 @@ def select_best_url_with_llm(package_name: str, search_results: list[dict], api_
     logger.info(f"Asking LLM to select the best documentation URL for {package_name}.")
     try:
         # Call the LLM using Gemini provider, passing the API key
-        llm_response = generate_text_response(prompt, api_key=api_key)  # Pass api_key
+        llm_response = await generate_text_response(prompt, api_key=api_key)  # Await the async call
         logger.debug(f"LLM Response for {package_name}: {llm_response}")
 
-        if not llm_response or llm_response.strip().lower() == "none":
-            logger.warning(f"LLM could not identify a suitable documentation URL for {package_name}")
+        # llm_response is now a string (or error string)
+        if not llm_response or llm_response.strip().lower() == "none" or "ERROR:" in llm_response:
+            logger.warning(
+                f"LLM could not identify a suitable documentation URL for {package_name}. Response: {llm_response}"
+            )
             return None
 
         selected_url = llm_response.strip()
@@ -86,20 +96,30 @@ def select_best_url_with_llm(package_name: str, search_results: list[dict], api_
         return None
 
 
-def find_documentation_url(package_name: str, api_key: str | None = None) -> str | None:
-    """Finds the most likely documentation URL for a package using search and LLM selection."""
+async def find_documentation_url(package_name: str, api_key: str | None = None) -> str | None:
+    """Finds the most likely documentation URL for a package using search and LLM selection.
+    (Async version)
+    """
     search_results = search_for_documentation_urls(package_name)
     if not search_results:
         return None
     # Pass results and api_key to LLM for selection
-    best_url_raw = select_best_url_with_llm(package_name, search_results, api_key=api_key)  # Pass api_key
+    best_url_raw = await select_best_url_with_llm(package_name, search_results, api_key=api_key)  # Await async call
     if best_url_raw:
-        # Remove trailing 'index.html' if it exists
-        best_url = (
-            best_url_raw.replace("/index.html", "").replace("/master", "").replace("/latest", "").replace("/en", "")
-        )
-        # Remove trailing '/' if it exists
-        if best_url.endswith("/"):
-            best_url = best_url[:-1]
-        return best_url
+        # Clean the URL iteratively
+        cleaned_url = best_url_raw
+        previous_url = None
+        while cleaned_url != previous_url:
+            previous_url = cleaned_url
+            # Remove common index files first
+            cleaned_url = re.sub(r"/index\.html?$", "", cleaned_url)
+            cleaned_url = re.sub(r"/index\.php$", "", cleaned_url)
+            # Remove common version/language segments (including optional trailing slash)
+            cleaned_url = re.sub(r"/(?:latest|stable|master|main|current|en)/?$", "", cleaned_url)
+            # Remove trailing slash
+            if cleaned_url.endswith("/"):
+                cleaned_url = cleaned_url[:-1]
+
+        logger.info(f"Cleaned URL for {package_name}: {cleaned_url} (from {best_url_raw})")
+        return cleaned_url
     return None  # Return None if LLM selection failed

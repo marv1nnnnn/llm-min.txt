@@ -4,10 +4,10 @@
 
 ## Overview
 
-LLM Minimal Documentation Generator is a command-line tool designed to automatically scrape and process technical documentation for Python libraries. It generates two key outputs for each library:
+LLM Minimal Documentation Generator is a tool designed to automatically scrape and process technical documentation for Python libraries. It generates two key outputs for each library:
 
 1.  `llm-full.txt`: The complete, raw text content crawled from the documentation website.
-2.  `llm-min.txt`: A compact, structured summary of the documentation, optimized for consumption by Large Language Models (LLMs), generated using Google Gemini.
+2.  `llm-min.txt`: A compact, structured summary of the documentation, optimized for consumption by Large Language Models (LLMs), generated using Google Gemini according to the PCS (Progressive Compaction Strategy) guide.
 
 This tool facilitates the creation of focused context files, enabling LLMs to provide more accurate and relevant information about specific libraries.
 
@@ -15,11 +15,12 @@ This tool facilitates the creation of focused context files, enabling LLMs to pr
 
 *   **Automatic Documentation Discovery:** Finds official documentation URLs for specified Python packages.
 *   **Web Crawling:** Efficiently scrapes documentation websites (powered by `crawl4ai`).
-*   **LLM-Powered Compaction:** Uses Google Gemini to condense crawled documentation into a structured, minimal format (SHDF).
+*   **LLM-Powered Compaction:** Uses Google Gemini to condense crawled documentation into a structured, minimal format (PCS).
 *   **Flexible Input:** Accepts package lists from:
     *   `requirements.txt` files.
     *   Folders containing a `requirements.txt` file.
     *   Direct string input.
+*   **Programmatic Usage:** Provides a Python client (`LLMMinClient`) for integration into other workflows.
 *   **Configurable Crawling:** Control maximum pages and depth for the web crawler.
 *   **Organized Output:** Saves results in a structured directory format (`output_dir/package_name/`).
 
@@ -49,9 +50,9 @@ This tool facilitates the creation of focused context files, enabling LLMs to pr
       ```dotenv
       GEMINI_API_KEY=YOUR_API_KEY_HERE
       ```
-    *   Alternatively, you can provide the key directly via the `--gemini-api-key` command-line option.
+    *   Alternatively, you can provide the key directly via the `--gemini-api-key` command-line option or when initializing `LLMMinClient`.
 
-## Usage
+## Usage (Command Line)
 
 The tool is run via the `llm-min-generator` command (if installed correctly) or `python -m llm_min_generator.main`.
 
@@ -99,40 +100,128 @@ llm-min-generator [OPTIONS]
 
 **Example:**
 
+Generate documentation for packages in `sample_requirements.txt`, saving to `output_docs`, crawling up to 100 pages:
+
 ```bash
-llm-min-generator --requirements-file sample_requirements.txt --output-dir generated_docs --max-crawl-pages 50
+llm-min-generator -f sample_requirements.txt -o output_docs -p 100
 ```
 
-This command will:
-1.  Read packages from `sample_requirements.txt`.
-2.  Crawl up to 50 pages for each package.
-3.  Use the Gemini API key from the `.env` file (or prompt if not set and not provided via `-k`).
-4.  Save the `llm-full.txt` and `llm-min.txt` files into subdirectories within `generated_docs`.
+## Programmatic Usage (Python)
+
+Beyond the command-line interface, you can use `llm-min-generator` programmatically in your Python projects via the `LLMMinClient`.
+
+### Initialization
+
+First, import the client:
+
+```python
+from llm_min.client import LLMMinClient
+```
+
+To initialize the client, you need to provide your Google Gemini API key. You can do this either by setting the `GEMINI_API_KEY` environment variable or by passing the key directly to the constructor. The client also requires the `pcs-guide.md` file to be present in the project root directory (or provide a custom path).
+
+```python
+import os
+
+# Option 1: Using environment variable (Recommended)
+# Ensure 'GEMINI_API_KEY' is set in your environment
+# export GEMINI_API_KEY='YOUR_API_KEY_HERE'
+try:
+    # Assumes pcs-guide.md is in the project root
+    client = LLMMinClient()
+except ValueError as e:
+    print(f"Error initializing client (API Key?): {e}")
+    # Handle missing API key
+except FileNotFoundError as e:
+    print(f"Error initializing client (PCS Guide?): {e}")
+    # Handle missing pcs-guide.md
+
+# Option 2: Passing API key directly
+api_key = os.environ.get("GEMINI_API_KEY", "YOUR_FALLBACK_API_KEY_HERE") # Get from env or use placeholder
+custom_guide_path = "/path/to/your/custom/pcs-guide.md" # Optional
+
+try:
+    client_direct_key = LLMMinClient(
+        api_key=api_key
+        # Optionally specify model, chunk size, or PCS guide path:
+        # model="gemini-pro",
+        # max_tokens_per_chunk=5000,
+        # pcs_guide_path=custom_guide_path
+    )
+except ValueError as e:
+    print(f"Error initializing client (API Key?): {e}")
+except FileNotFoundError as e:
+    print(f"Error initializing client (PCS Guide?): {e}")
+
+```
+
+### Compacting Content
+
+Once initialized, use the `compact` method to process your text content:
+
+```python
+# Assuming 'client' is an initialized LLMMinClient instance from Option 1 above
+long_text_content = """
+# Your extensive documentation or text content goes here...
+# For example, the raw content scraped from a website or a large text file.
+# This content will be automatically chunked based on the client's configuration
+# and then compacted using the LLM according to the PCS guide.
+# ... (potentially thousands of lines) ...
+# It will be automatically chunked and compacted.
+"""
+
+subject_of_content = "My Library Documentation" # Optional, but helpful context for the LLM
+
+if 'client' in locals(): # Check if client was initialized successfully
+    try:
+        compacted_pcs_output = client.compact(
+            content=long_text_content,
+            subject=subject_of_content
+        )
+        print("Compacted Output (PCS Format):")
+        print(compacted_pcs_output)
+
+        # You can save this output to a file, e.g., llm-min.txt
+        # output_filename = f"{subject_of_content.lower().replace(' ', '_')}-llm-min.txt"
+        # with open(output_filename, "w", encoding="utf-8") as f:
+        #     f.write(compacted_pcs_output)
+        # print(f"Saved compacted output to {output_filename}")
+
+    except Exception as e:
+        print(f"An error occurred during compaction: {e}")
+else:
+    print("LLMMinClient was not initialized successfully.")
+
+```
+
+This allows you to integrate the documentation compaction process directly into your Python workflows.
 
 ## Output Structure
 
-The generated files will be placed in the specified output directory, organized by package name:
+The tool generates the following structure in the specified output directory:
 
 ```
-<output_directory>/
-├── package_one/
+output_dir/
+├── package_name_1/
+│   ├── llm-full.txt  # Raw crawled content
+│   └── llm-min.txt   # Compacted PCS content
+├── package_name_2/
 │   ├── llm-full.txt
 │   └── llm-min.txt
-└── package_two/
-    ├── llm-full.txt
-    └── llm-min.txt
+└── ...
 ```
 
 ## Contributing
 
-Contributions are welcome! Please follow standard Git workflow:
-1.  Fork the repository.
-2.  Create a new branch (`git checkout -b feature/your-feature`).
-3.  Make your changes.
-4.  Commit your changes (`git commit -am 'Add some feature'`).
-5.  Push to the branch (`git push origin feature/your-feature`).
-6.  Create a new Pull Request.
+Contributions are welcome! Please refer to the `CONTRIBUTING.md` file (if available) for guidelines.
+
+Key areas for contribution:
+*   Improving documentation discovery logic.
+*   Enhancing the compaction prompts/strategy (PCS guide).
+*   Adding support for more LLM providers.
+*   Improving error handling and reporting.
+*   Writing tests.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details (assuming a LICENSE file exists or will be created).
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details (if available, otherwise assume MIT).

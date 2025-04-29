@@ -60,7 +60,8 @@ async def crawl_documentation(url: str, max_pages: int | None = 100, max_depth: 
             # Check if the initial fetch was successful and yielded a result
             if not initial_result_list or not initial_result_list[0].success:
                 logger.warning(
-                    f"Initial fetch failed or returned no success for URL: {url}. Proceeding with original URL for deep crawl."
+                    f"Initial fetch failed or returned no success for URL: {url}. "
+                    f"Proceeding with original URL for deep crawl."
                 )
                 # Log initial and final URLs even if fetch failed
                 logger.info(f"Initial URL: {url}")
@@ -90,7 +91,7 @@ async def crawl_documentation(url: str, max_pages: int | None = 100, max_depth: 
             prune_filter = PruningContentFilter(threshold=0.5, threshold_type="fixed", min_word_threshold=50)
             # 2. Configure the Markdown Generator with the filter (as before)
             md_generator = DefaultMarkdownGenerator(
-                content_filter=prune_filter,
+                content_filter=prune_filter,  # Re-enable filter for testing
                 options={"ignore_links": True},  # Optionally ignore links if desired
             )
 
@@ -126,25 +127,29 @@ async def crawl_documentation(url: str, max_pages: int | None = 100, max_depth: 
             [
                 page.markdown.raw_markdown
                 for page in results
+                # Revert back to the original, simpler check
                 if page.success and page.markdown and page.markdown.raw_markdown
             ]
         )
 
         if not aggregated_content:
             logger.warning(
-                f"Deep crawling resulted in empty aggregated content for URL: {final_url} (original: {url}) (possibly due to pruning filter)"
+                f"Deep crawling resulted in empty aggregated content for URL: {final_url} "
+                f"(original: {url}) (possibly due to pruning filter)"
             )
             return None
 
         logger.info(
-            f"Successfully deep crawled {len(results)} pages starting from {final_url} (original: {url}). Aggregated content length after pruning: {len(aggregated_content)}"
+            f"Successfully deep crawled {len(results)} pages starting from {final_url} "
+            f"(original: {url}). Aggregated content length after pruning: {len(aggregated_content)}"
         )
         return aggregated_content
 
     except Exception as e:
         # Log the original URL in case of error for better context
         logger.error(
-            f"Crawling failed for initial URL {url} (resolved to {final_url if 'final_url' in locals() else 'N/A'}): {e}",
+            f"Crawling failed for initial URL {url} "
+            f"(resolved to {final_url if 'final_url' in locals() else 'N/A'}): {e}",
             exc_info=True,
         )
         return None

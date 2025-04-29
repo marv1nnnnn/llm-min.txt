@@ -112,7 +112,6 @@ def parse_dependency_file(file_path: str | Path) -> list[str]:
         return []
 
 
-# The original scan_for_dependencies function is kept for potential future use or as a separate utility
 def scan_for_dependencies(directory_path: str | Path) -> set[str]:
     """
     Scans a directory recursively for common dependency files and extracts dependencies.
@@ -121,12 +120,19 @@ def scan_for_dependencies(directory_path: str | Path) -> set[str]:
     """
     all_dependencies = set()
     directory_path = Path(directory_path)
+    if not directory_path.is_dir():
+        logger.warning(f"Directory not found or is not a directory: {directory_path}")
+        return all_dependencies
+
     for file_path in directory_path.rglob("*"):
         if file_path.is_file():
-            if file_path.name == "pyproject.toml":
-                all_dependencies.update(parse_pyproject_toml(file_path))
-            elif file_path.name == "requirements.txt":
-                all_dependencies.update(parse_requirements(file_path))
-            elif file_path.name == "package.json":
-                all_dependencies.update(parse_package_json(file_path))
+            try:
+                if file_path.name == "pyproject.toml":
+                    all_dependencies.update(parse_pyproject_toml(file_path))
+                elif file_path.name == "requirements.txt":
+                    all_dependencies.update(parse_requirements(file_path))
+                elif file_path.name == "package.json":
+                    all_dependencies.update(parse_package_json(file_path))
+            except Exception as e:
+                logger.error(f"Error parsing dependency file {file_path}: {e}", exc_info=True)  # Log error and continue
     return all_dependencies

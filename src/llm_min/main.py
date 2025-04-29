@@ -16,7 +16,9 @@ from .search import find_documentation_url
 load_dotenv()
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+# logging.basicConfig(
+#     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+# ) # Will configure later based on verbose flag
 # Reduce verbosity from libraries
 logging.getLogger("duckduckgo_search").setLevel(logging.WARNING)
 logging.getLogger("crawl4ai").setLevel(logging.INFO)
@@ -73,7 +75,7 @@ async def process_package(
     logger.info(f"--- Processing package: {package_name} ---")
     try:
         # Pass the gemini_api_key to find_documentation_url
-        doc_url = find_documentation_url(package_name, api_key=gemini_api_key)
+        doc_url = await find_documentation_url(package_name, api_key=gemini_api_key)
         if not doc_url:
             logger.warning(f"Could not find documentation URL for {package_name}. Skipping.")
             return False
@@ -95,15 +97,19 @@ async def process_package(
         logger.info(f"Compacting content for {package_name}...")
         # Pass gemini_api_key to the compaction function
         # Also pass package_name as the subject
-        compacted_content = compact_content_with_llm(
+        compacted_content = await compact_content_with_llm(
             aggregated_content=crawled_content,
             chunk_size=chunk_size,
             api_key=gemini_api_key,
             subject=package_name,  # Pass package_name as subject
         )
 
-        if not compacted_content:
-            logger.warning(f"Compaction resulted in empty content for {package_name}. Skipping writing min file.")
+        if not compacted_content or "ERROR:" in compacted_content:
+            log_message = (
+                f"Compaction failed or resulted in empty content for {package_name}. "
+                f"Skipping writing min file. Detail: {compacted_content}"
+            )
+            logger.warning(log_message)
             return False
 
         logger.info(
@@ -221,12 +227,28 @@ def main(
         help="Gemini API Key. Can also be set via the GEMINI_API_KEY environment variable.",
         show_default=False,
     ),
+    verbose: bool = typer.Option(
+        False,
+        "--verbose",
+        "-v",
+        help="Enable verbose logging (DEBUG level).",
+        is_flag=True,
+    ),
 ):
     """
     Generates LLM context by scraping and summarizing documentation for Python libraries.
 
     You must provide one input source: --requirements-file, --input-folder, --packages, or --doc-url.
     """
+    # Configure logging level based on the verbose flag
+    log_level = logging.DEBUG if verbose else logging.INFO
+    logging.basicConfig(level=log_level, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    # Reduce verbosity from libraries (can be kept here or moved after basicConfig)
+    logging.getLogger("duckduckgo_search").setLevel(logging.WARNING)
+    logging.getLogger("crawl4ai").setLevel(logging.INFO)  # Keep crawl4ai at INFO unless verbose?
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+
+    logger.info(f"Verbose logging {'enabled' if verbose else 'disabled'}.")  # Log if verbose is active
     logger.info(f"Gemini API Key received in main: {gemini_api_key}")
 
     # Ensure output_dir is converted to a Path object
@@ -241,7 +263,8 @@ def main(
     input_options = [requirements_file, input_folder, package_string, doc_url]
     if sum(opt is not None for opt in input_options) != 1:
         logger.error(
-            "Error: Please provide exactly one input source: --requirements-file, --input-folder, --packages, or --doc-url."
+            "Error: Please provide exactly one input source: --requirements-file, "
+            "--input-folder, --packages, or --doc-url."
         )
         raise typer.Exit(code=1)
 
@@ -261,7 +284,7 @@ def main(
         packages_to_process = parse_requirements(req_file_in_folder)
     elif package_string:
         logger.info("Processing packages from input string.")
-        packages_to_process = set(pkg.strip() for pkg in package_string.split("\\n") if pkg.strip())
+        packages_to_process = set(pkg.strip() for pkg in package_string.splitlines() if pkg.strip())
     elif doc_url:
         logger.info(f"Processing direct documentation URL: {doc_url}")
         target_doc_url = doc_url
@@ -348,15 +371,19 @@ async def process_direct_url(
 
         # Compact the content
         logger.info(f"Compacting content for {package_name}...")
-        compacted_content = compact_content_with_llm(
+        compacted_content = await compact_content_with_llm(
             aggregated_content=crawled_content,
             chunk_size=chunk_size,
             api_key=gemini_api_key,
             subject=package_name,
         )
 
-        if not compacted_content:
-            logger.warning(f"Compaction resulted in empty content for {package_name}. Skipping writing min file.")
+        if not compacted_content or "ERROR:" in compacted_content:
+            log_message = (
+                f"Compaction failed or resulted in empty content for {package_name}. "
+                f"Skipping writing min file. Detail: {compacted_content}"
+            )
+            logger.warning(log_message)
             return False
 
         logger.info(

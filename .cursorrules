@@ -26,12 +26,17 @@
     [X] 7. Implement Initial Output Generation (`main.py`)
     [X] 8. Write Initial Main Script Logic (`main.py`)
     [X] 9. Fix `ModuleNotFoundError` in `search.py` import
-    [ ] 10. Add Basic Tests
+    [X] 10. Add Basic Tests
     [X] 11. Add `.gitignore`
     [X] 12. **Refactor Output Structure:** Modify `main.py` to save outputs per package (`output_dir/package_name/llm-full.txt`, `output_dir/package_name/llm-min.txt`).
+    [X] 13. **Fix Compaction Error (Attempt 1):** Correct path for `shdf-guide.md` loading in `compacter.py` using relative paths.
+    [X] 14. **Fix Compaction Error (Attempt 2):** Correct path for `shdf-guide.md` by finding project root via `pyproject.toml`.
+    [X] 15. **Fix pytest Error:** Corrected mock in `tests/test_crawler.py::test_crawl_documentation_no_markdown_content`.
+    [X] 16. **Fix Pytest Failures:** Refactored mocking in `tests/test_crawler.py` to handle two-stage crawl and fixed subsequent Ruff issues.
 
 **Next Steps:**
 - Replace LLM placeholders in `search.py` (done for selection) and `compacter.py` with actual API calls.
-- Implement tests in `tests/`.
+- Implement remaining tests in `tests/`.
 - Refine error handling and add configuration options.
 - Create a `requirements.txt` for testing or use `uv pip install .`.
+- Test: Run the main script (`src/llm_min/main.py`) to verify recent fixes.

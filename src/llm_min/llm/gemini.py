@@ -1,35 +1,16 @@
 import logging
 import os
-from typing import Any
 
 from dotenv import load_dotenv
-from google import genai  # Use the new library
+
+# Import genai again
+from google import genai
 
 load_dotenv()  # Load environment variables from .env file
 
 logger = logging.getLogger(__name__)
 
-
-def _stream_gemini_response(client: genai.Client, model_name: str, contents: Any) -> str | None:
-    """
-    Helper function to handle streaming response from Gemini API.
-    Collects all chunks and returns the complete text.
-    """
-    try:
-        response_stream = client.models.generate_content_stream(
-            model=model_name,
-            contents=contents,
-        )
-
-        full_response = ""
-        for chunk in response_stream:
-            if chunk.text:
-                full_response += chunk.text
-        return full_response
-
-    except Exception as e:
-        logger.error(f"Error during Gemini API streaming: {e}")
-        return None
+# Removed _stream_gemini_response
 
 
 def chunk_content(content: str, chunk_size: int) -> list[str]:
@@ -49,64 +30,51 @@ def chunk_content(content: str, chunk_size: int) -> list[str]:
     return chunks
 
 
-def merge_json_outputs(json_outputs: list[dict[str, Any]]) -> dict[str, Any]:
-    """
-    Merges a list of JSON outputs from chunk processing.
-    Assumes the JSON structure is a dictionary with a key (e.g., 'components')
-    containing a list of items to be merged.
-    """
-    merged_output: dict[str, Any] = {}
-    # Assuming the primary structure is a dictionary and we are merging lists within it
-    # This needs to be adapted based on the actual expected JSON schema
-    for output in json_outputs:
-        for key, value in output.items():
-            if isinstance(value, list):
-                if key not in merged_output:
-                    merged_output[key] = []
-                merged_output[key].extend(value)
-            else:
-                # Handle other types if necessary, potentially overwriting or logging a warning
-                if key not in merged_output:
-                    merged_output[key] = value
-                # else:
-                #     logger.warning(f"Key '{key}' already exists in merged output with different value. Overwriting.")
-                #     merged_output[key] = value
-
-    return merged_output
+# Removed merge_json_outputs
 
 
-def generate_text_response(prompt: str, api_key: str | None = None) -> str | None:
+# Add generate_text_response back
+async def generate_text_response(prompt: str, api_key: str | None = None) -> str:
     """
-    Generates a text response using the Google Gemini API.
+    Generates a text response using the Google Gemini API (Async).
 
     Args:
         prompt: The input prompt for the LLM.
         api_key: Optional Gemini API Key. If not provided, tries GEMINI_API_KEY env var.
 
     Returns:
-        The response string if successful, None otherwise.
+        The response string, or an error message string if failed.
     """
-    # Prioritize passed api_key, then environment variable
     effective_api_key = api_key or os.getenv("GEMINI_API_KEY")
 
     if not effective_api_key:
-        logger.error("Gemini API Key not provided via argument or GEMINI_API_KEY environment variable.")
-        return None
+        logger.error("Gemini API key is required but was not provided.")
+        # Return error message instead of None to match test expectations
+        return "ERROR: Gemini API key is required but was not provided."
 
     try:
-        # Initialize the client
-        client = genai.Client(api_key=effective_api_key)  # Use effective_api_key
-        model_name = "gemini-1.5-flash-latest"  # Use a model suitable for general text generation
+        genai.configure(api_key=effective_api_key)
+        model = genai.GenerativeModel("gemini-2.5-flash")  # Match model used in tests
+        response = await model.generate_content_async(prompt)
 
-        # Use the streaming helper function
-        response_text = _stream_gemini_response(client, model_name, contents=prompt)
+        # Check for response content before accessing text
+        # Accessing response.text directly might raise if there's no valid candidate/content
+        # A more robust check involves examining parts and candidates if necessary.
+        # For simplicity matching the previous test structure, we access .text
+        # but wrap in case of issues.
+        try:
+            response_text = response.text
+        except ValueError:
+            # Handle cases where response.text might be invalid (e.g., blocked content)
+            logger.warning(f"Gemini response for prompt did not contain valid text. Response: {response}")
+            # Consider checking response.prompt_feedback for block reasons
+            block_reason = getattr(response.prompt_feedback, "block_reason", None)
+            if block_reason:
+                return f"ERROR: Gemini content generation blocked. Reason: {block_reason}"
+            return "ERROR: Gemini response contained no valid text content."
 
-        if response_text:
-            return response_text
-        else:
-            logger.error("Failed to get text response from Gemini API.")
-            return None
+        return response_text.strip()
 
     except Exception as e:
-        logger.error(f"Error during Gemini API text generation: {e}")
-        return None
+        logger.error(f"Error during Gemini API text generation: {e}", exc_info=True)
+        return f"ERROR: Gemini API call failed: {e}"

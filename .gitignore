@@ -132,3 +132,4 @@ cython_debug/
 Thumbs.db
 .state/
 .my_docs/# Trigger CI
+.cursorrules

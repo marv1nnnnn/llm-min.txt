@@ -1,64 +1,251 @@
 from unittest.mock import MagicMock, patch
 
-import requests
+import pytest
+from crawl4ai import CrawlerRunConfig, CrawlResult
 
-from src.llm_min.crawler import crawl_url
+from llm_min.crawler import crawl_documentation
 
 
-# Mock the requests.get method
-@patch("src.llm_min.crawler.requests.get")
-def test_crawl_url_success(mock_get):
-    # Configure the mock to return a successful response
-    mock_response = MagicMock()
-    mock_response.status_code = 200
-    mock_response.text = "<html><body>Hello, world!</body></html>"
-    mock_response.headers = {"Content-Type": "text/html"}
-    mock_get.return_value = mock_response
+@pytest.mark.asyncio
+# Patch AsyncWebCrawler itself for more control
+@patch("llm_min.crawler.AsyncWebCrawler")
+async def test_crawl_documentation_success(MockAsyncWebCrawler):
+    """Test successful crawl."""
+    # --- Mock Setup --- Mocks the __aenter__ return value (the crawler instance)
+    mock_crawler_instance = MockAsyncWebCrawler.return_value.__aenter__.return_value
+    mock_arun = mock_crawler_instance.arun  # Get the mock arun method
+
+    initial_result = CrawlResult(
+        url="http://example.com",
+        status_code=200,
+        html="<html><body>Initial fetch</body></html>",
+        success=True,
+        error_message=None,
+    )
+
+    base_text = "Hello, world!"
+    repeat_count = 50
+    long_markdown_content = "\n\n".join([base_text] * repeat_count)
+    html_content = f"<html><body>{'<p>' + base_text + '</p>' * repeat_count}</body></html>"
+
+    deep_crawl_result = CrawlResult(
+        url="http://example.com",
+        status_code=200,
+        html=html_content,
+        success=True,
+        error_message=None,
+    )
+    mock_markdown = MagicMock()
+    mock_markdown.raw_markdown = long_markdown_content
+    deep_crawl_result.markdown = mock_markdown  # No need for __bool__ hack anymore
+
+    # Configure side effect for the two calls to arun
+    mock_arun.side_effect = [
+        [initial_result],  # Return value for first call (resolves redirect)
+        [deep_crawl_result],  # Return value for second call (deep crawl)
+    ]
+    # --- End Mock Setup ---
 
     url = "http://example.com"
-    content = crawl_url(url)
+    content = await crawl_documentation(url, max_pages=10, max_depth=1)
 
-    mock_get.assert_called_once_with(url)
-    assert content == "<html><body>Hello, world!</body></html>"
+    # Assertions
+    assert mock_arun.call_count == 2
+    # Check first call arguments
+    assert mock_arun.call_args_list[0][0][0] == url  # url
+    assert mock_arun.call_args_list[0][1].get("config") is None  # No config
+    # Check second call arguments
+    assert mock_arun.call_args_list[1][0][0] == url  # final_url (no redirect in this case)
+    assert "config" in mock_arun.call_args_list[1][1]
+    assert isinstance(mock_arun.call_args_list[1][1]["config"], CrawlerRunConfig)
+    # Assert final content
+    assert content == long_markdown_content
 
 
-@patch("src.llm_min.crawler.requests.get")
-def test_crawl_url_404(mock_get):
-    # Configure the mock to return a 404 response
-    mock_response = MagicMock()
-    mock_response.status_code = 404
-    mock_get.return_value = mock_response
+@pytest.mark.asyncio
+@patch("llm_min.crawler.AsyncWebCrawler")
+async def test_crawl_documentation_redirect(MockAsyncWebCrawler):
+    """Test crawl with redirect."""
+    # --- Mock Setup ---
+    mock_crawler_instance = MockAsyncWebCrawler.return_value.__aenter__.return_value
+    mock_arun = mock_crawler_instance.arun
 
-    url = "http://example.com/nonexistent"
-    content = crawl_url(url)
+    initial_url = "http://example.com/old"
+    final_url = "http://example.com/new/docs/"
+    initial_result = CrawlResult(
+        url=initial_url,
+        status_code=301,
+        html="Redirecting...",
+        success=True,
+        error_message=None,
+        redirected_url=final_url,  # Crucial for redirect logic
+    )
 
-    mock_get.assert_called_once_with(url)
+    base_text = "New Docs!"
+    repeat_count = 50
+    long_markdown_content = "\n\n".join([base_text] * repeat_count)
+    html_content = f"<html><body>{'<p>' + base_text + '</p>' * repeat_count}</body></html>"
+
+    deep_crawl_result = CrawlResult(
+        url=final_url,
+        status_code=200,
+        html=html_content,
+        success=True,
+        error_message=None,
+    )
+    mock_markdown = MagicMock()
+    mock_markdown.raw_markdown = long_markdown_content
+    deep_crawl_result.markdown = mock_markdown
+
+    mock_arun.side_effect = [
+        [initial_result],  # First call result triggers redirect logic
+        [deep_crawl_result],  # Second call result
+    ]
+    # --- End Mock Setup ---
+
+    content = await crawl_documentation(initial_url)
+
+    # Assertions
+    assert mock_arun.call_count == 2
+    assert mock_arun.call_args_list[0][0][0] == initial_url
+    assert mock_arun.call_args_list[1][0][0] == final_url  # Second call uses final_url
+    assert "config" in mock_arun.call_args_list[1][1]
+    assert isinstance(mock_arun.call_args_list[1][1]["config"], CrawlerRunConfig)
+    assert content == long_markdown_content
+
+
+@pytest.mark.asyncio
+@patch("llm_min.crawler.AsyncWebCrawler")
+async def test_crawl_documentation_initial_fetch_fails(MockAsyncWebCrawler):
+    """Test when initial fetch fails."""
+    # --- Mock Setup ---
+    mock_crawler_instance = MockAsyncWebCrawler.return_value.__aenter__.return_value
+    mock_arun = mock_crawler_instance.arun
+
+    url = "http://example.com/404"
+    initial_result = CrawlResult(url=url, status_code=404, html="", success=False, error_message="Not Found")
+
+    base_text = "Fallback Content"
+    repeat_count = 50
+    long_markdown_content = "\n\n".join([base_text] * repeat_count)
+    html_content = f"<html><body>{'<p>' + base_text + '</p>' * repeat_count}</body></html>"
+
+    deep_crawl_result = CrawlResult(
+        url=url,  # Second crawl still uses original url
+        status_code=200,
+        html=html_content,
+        success=True,
+        error_message=None,
+    )
+    mock_markdown = MagicMock()
+    mock_markdown.raw_markdown = long_markdown_content
+    deep_crawl_result.markdown = mock_markdown
+
+    mock_arun.side_effect = [
+        [initial_result],  # First call fails
+        [deep_crawl_result],  # Second call result
+    ]
+    # --- End Mock Setup ---
+
+    content = await crawl_documentation(url)
+
+    # Assertions
+    assert mock_arun.call_count == 2
+    assert mock_arun.call_args_list[0][0][0] == url
+    assert mock_arun.call_args_list[1][0][0] == url  # Second call uses original url
+    assert "config" in mock_arun.call_args_list[1][1]
+    assert isinstance(mock_arun.call_args_list[1][1]["config"], CrawlerRunConfig)
+    assert content == long_markdown_content
+
+
+@pytest.mark.asyncio
+@patch("llm_min.crawler.AsyncWebCrawler")
+async def test_crawl_documentation_deep_crawl_returns_none(MockAsyncWebCrawler):
+    """Test when deep crawl returns no results."""
+    # --- Mock Setup ---
+    mock_crawler_instance = MockAsyncWebCrawler.return_value.__aenter__.return_value
+    mock_arun = mock_crawler_instance.arun
+
+    initial_result = CrawlResult(
+        url="http://example.com",
+        status_code=200,
+        html="<html><body>Initial fetch</body></html>",
+        success=True,
+        error_message=None,
+    )
+
+    mock_arun.side_effect = [
+        [initial_result],
+        [],  # Empty list for deep crawl result
+    ]
+    # --- End Mock Setup ---
+
+    url = "http://example.com"
+    content = await crawl_documentation(url)
+    assert mock_arun.call_count == 2
     assert content is None
 
 
-@patch("src.llm_min.crawler.requests.get")
-def test_crawl_url_network_error(mock_get):
-    # Configure the mock to raise a requests.exceptions.RequestException
-    mock_get.side_effect = requests.exceptions.RequestException("Network error")
+@pytest.mark.asyncio
+@patch("llm_min.crawler.AsyncWebCrawler")
+async def test_crawl_documentation_deep_crawl_fails(MockAsyncWebCrawler):
+    """Test when deep crawl raises exception."""
+    # --- Mock Setup ---
+    mock_crawler_instance = MockAsyncWebCrawler.return_value.__aenter__.return_value
+    mock_arun = mock_crawler_instance.arun
+
+    initial_result = CrawlResult(
+        url="http://example.com",
+        status_code=200,
+        html="<html><body>Initial fetch</body></html>",
+        success=True,
+        error_message=None,
+    )
+
+    mock_arun.side_effect = [
+        [initial_result],
+        Exception("Deep crawl network error"),  # Exception for second call
+    ]
+    # --- End Mock Setup ---
 
     url = "http://example.com"
-    content = crawl_url(url)
-
-    mock_get.assert_called_once_with(url)
+    content = await crawl_documentation(url)
+    assert mock_arun.call_count == 2  # Should still attempt both
     assert content is None
 
 
-@patch("src.llm_min.crawler.requests.get")
-def test_crawl_url_non_html_content(mock_get):
-    # Configure the mock to return a non-HTML content type
-    mock_response = MagicMock()
-    mock_response.status_code = 200
-    mock_response.text = "some non-html content"
-    mock_response.headers = {"Content-Type": "application/json"}
-    mock_get.return_value = mock_response
+@pytest.mark.asyncio
+@patch("llm_min.crawler.AsyncWebCrawler")
+async def test_crawl_documentation_no_markdown_content(MockAsyncWebCrawler):
+    """Test when deep crawl succeeds but markdown generation yields empty string."""
+    # --- Mock Setup ---
+    mock_crawler_instance = MockAsyncWebCrawler.return_value.__aenter__.return_value
+    mock_arun = mock_crawler_instance.arun
 
-    url = "http://example.com/data.json"
-    content = crawl_url(url)
+    initial_result = CrawlResult(
+        url="http://example.com", status_code=200, html="Initial", success=True, error_message=None
+    )
 
-    mock_get.assert_called_once_with(url)
+    deep_crawl_result = CrawlResult(
+        url="http://example.com",
+        status_code=200,
+        html="<html><body><p>&nbsp;</p><div></div></body></html>",
+        success=True,
+        error_message=None,
+    )
+    mock_markdown = MagicMock()
+    mock_markdown.raw_markdown = ""  # Empty string
+    deep_crawl_result.markdown = mock_markdown
+
+    mock_arun.side_effect = [
+        [initial_result],
+        [deep_crawl_result],  # Second call returns result with empty markdown
+    ]
+    # --- End Mock Setup ---
+
+    url = "http://example.com"
+    content = await crawl_documentation(url)
+
+    assert mock_arun.call_count == 2
+    # Expect None because raw_markdown is empty, failing the check in the list comprehension
     assert content is None

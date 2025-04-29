@@ -1,6 +1,7 @@
 import subprocess
 import sys
 
+
 def test_ruff_check():
     """
     Test that ruff check passes without errors.
@@ -11,15 +12,15 @@ def test_ruff_check():
         print(f"Ruff check failed:\n{e.stdout}\n{e.stderr}")
         assert False, f"Ruff check failed with exit code {e.returncode}"
 
+
 def test_ruff_format():
     """
     Test that ruff format makes no changes to the codebase.
     """
     try:
-        result = subprocess.run([sys.executable, "-m", "ruff", "format", ".", "--check"], check=True, capture_output=True, text=True)
-        if result.stdout:
-            print(f"Ruff format would make changes:\n{result.stdout}")
-            assert False, "Ruff format would make changes"
+        subprocess.run(
+            [sys.executable, "-m", "ruff", "format", ".", "--check"], check=True, capture_output=True, text=True
+        )
     except subprocess.CalledProcessError as e:
         print(f"Ruff format check failed:\n{e.stdout}\n{e.stderr}")
-        assert False, f"Ruff format check failed with exit code {e.returncode}"
+        assert False, f"Ruff format check failed with exit code {e.returncode}, indicating changes are needed."
