@@ -29,7 +29,7 @@ jobs:
         pip install uv build twine
 
     - name: Build package
-      run: uv run build --sdist --wheel --outdir dist/ .
+      run: uv run python -m build --sdist --wheel --outdir dist/ .
 
     - name: Publish package to PyPI
       # Uses PyPI's trusted publisher feature if configured,
