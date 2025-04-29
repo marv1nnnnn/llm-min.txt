@@ -1,8 +1,6 @@
-import logging
-import os  # Import os to construct file path
-import pathlib  # Import pathlib for robust path operations
-from string import Template  # Import Template
 import importlib.resources  # Import importlib.resources
+import logging
+from string import Template  # Import Template
 
 # Import from .llm subpackage (now points to gemini via __init__.py)
 from .llm import (
@@ -30,7 +28,7 @@ logger = logging.getLogger(__name__)
 # Function to read the PCS guide content using importlib.resources
 def _load_pcs_guide() -> str:
     """Loads the PCS guide content from package data."""
-    package_name = __name__.split('.')[0] # Get the top-level package name ('llm_min')
+    package_name = __name__.split(".")[0]  # Get the top-level package name ('llm_min')
     guide_file_name = "pcs-guide.md"
     try:
         # Use files() API for Python 3.9+ compatibility if needed,
@@ -46,7 +44,10 @@ def _load_pcs_guide() -> str:
             content = content[3:-3].strip()  # Remove ``` prefix
         return content
     except FileNotFoundError as e:
-        logger.error(f"PCS guide file '{guide_file_name}' not found within package '{package_name}'. Ensure it's included in package_data.")
+        logger.error(
+            f"PCS guide file '{guide_file_name}' not found within package '{package_name}'. "
+            f"Ensure it's included in package_data."
+        )
         return f"ERROR: PCS GUIDE FILE NOT FOUND ({package_name}/{guide_file_name}). Details: {e}"
     except Exception as e:
         logger.error(f"Error reading PCS guide file from package data: {e}")
