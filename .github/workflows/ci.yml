@@ -23,11 +23,12 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install uv
-        uv pip install .[dev]
+        uv venv # Create .venv directory
+        uv pip install .[dev] # Installs into .venv
     - name: Run linters (Ruff)
       run: |
-        ruff check .
-        ruff format --check .
+        uv run -- ruff check .
+        uv run -- ruff format --check .
     - name: Run tests (pytest)
       run: |
-        pytest
+        uv run -- pytest

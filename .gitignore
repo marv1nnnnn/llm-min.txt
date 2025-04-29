@@ -131,5 +131,6 @@ cython_debug/
 .DS_Store
 Thumbs.db
 .state/
-.my_docs/# Trigger CI
+.my_docs/*
 .cursorrules
+.my_docs
