@@ -195,9 +195,7 @@ async def compact_content_with_llm(
     """
     # If using a dummy API key, bypass LLM call and return dummy content for testing
     if api_key == "dummy_api_key":
-        logger.info(
-            "Using dummy API key. Bypassing LLM call and returning dummy PCS content."
-        )
+        logger.info("Using dummy API key. Bypassing LLM call and returning dummy PCS content.")
         return f"|S: $$subject {subject}\n|A: $$path#DummyClass()[]{{}}{{}}<>\n|D: $$SDummyStruct()"
 
     global _pcs_guide_content
@@ -214,9 +212,7 @@ async def compact_content_with_llm(
     pcs_fragments: list[str] = []  # Store fragments as strings
 
     # 2. Generate PCS fragment (as string) for each chunk
-    for i, chunk_content_item in enumerate(
-        chunks
-    ):  # Renamed chunk to avoid conflict with template variable
+    for i, chunk_content_item in enumerate(chunks):  # Renamed chunk to avoid conflict with template variable
         logger.info(f"Generating PCS fragment for chunk {i + 1}/{len(chunks)}...")
 
         # Use substitute with keyword arguments - no manual escaping needed
@@ -225,13 +221,9 @@ async def compact_content_with_llm(
             chunk=chunk_content_item,  # Use the loop variable
         )
 
-        logger.debug(
-            f"--- Compaction Fragment Prompt for chunk {i + 1}/{len(chunks)} START ---"
-        )
+        logger.debug(f"--- Compaction Fragment Prompt for chunk {i + 1}/{len(chunks)} START ---")
         logger.debug(fragment_prompt)
-        logger.debug(
-            f"--- Compaction Fragment Prompt for chunk {i + 1}/{len(chunks)} END ---"
-        )
+        logger.debug(f"--- Compaction Fragment Prompt for chunk {i + 1}/{len(chunks)} END ---")
 
         # Call the LLM to generate a fragment
         fragment_str = await generate_text_response(fragment_prompt, api_key=api_key)
@@ -240,9 +232,7 @@ async def compact_content_with_llm(
             pcs_fragments.append(fragment_str.strip())
             logger.info(f"Successfully generated fragment string for chunk {i + 1}.")
         else:
-            logger.warning(
-                f"Failed to generate valid fragment string for chunk {i + 1}. Output: {fragment_str}"
-            )
+            logger.warning(f"Failed to generate valid fragment string for chunk {i + 1}. Output: {fragment_str}")
 
     if not pcs_fragments:
         logger.error("No PCS fragments were generated from the chunks.")
@@ -250,18 +240,14 @@ async def compact_content_with_llm(
 
     # If there's only one fragment, return it directly without merging
     if len(pcs_fragments) == 1:
-        logger.info(
-            "Only one fragment generated, returning it directly without merging."
-        )
+        logger.info("Only one fragment generated, returning it directly without merging.")
         return pcs_fragments[0]
 
     # 3. Merge PCS fragments using the LLM
     logger.info(f"Merging {len(pcs_fragments)} PCS fragments...")
 
     # Prepare fragments string for the merge prompt
-    fragments_input = "\n---\n".join(
-        [f" FRAGMENT {i + 1} ---\n{frag}" for i, frag in enumerate(pcs_fragments)]
-    )
+    fragments_input = "\n---\n".join([f" FRAGMENT {i + 1} ---\n{frag}" for i, frag in enumerate(pcs_fragments)])
 
     # Use substitute with keyword arguments - no manual escaping needed
     merge_prompt = MERGE_PROMPT_TEMPLATE.substitute(
@@ -280,13 +266,9 @@ async def compact_content_with_llm(
     if merged_pcs and isinstance(merged_pcs, str):
         logger.info("Successfully merged PCS fragments.")
         # Basic validation: Check if it starts with S:
-        if not merged_pcs.strip().startswith(
-            "|S:"
-        ):  # Check for |S: on its own line now
+        if not merged_pcs.strip().startswith("|S:"):  # Check for |S: on its own line now
             # Find the first line to check
-            first_line = (
-                merged_pcs.strip().splitlines()[0] if merged_pcs.strip() else ""
-            )
+            first_line = merged_pcs.strip().splitlines()[0] if merged_pcs.strip() else ""
             if first_line != "|S:":
                 logger.warning(
                     "Merged PCS output does not start with '|S:' on its own line as expected."

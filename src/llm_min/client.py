@@ -49,9 +49,7 @@ class LLMMinClient:
         """
         self.api_key = api_key or os.environ.get(self.API_KEY_ENV_VAR)
         if not self.api_key:
-            raise ValueError(
-                f"API key must be provided or set via the '{self.API_KEY_ENV_VAR}' environment variable."
-            )
+            raise ValueError(f"API key must be provided or set via the '{self.API_KEY_ENV_VAR}' environment variable.")
 
         self.model = model
         self.max_tokens_per_chunk = max_tokens_per_chunk
@@ -59,13 +57,9 @@ class LLMMinClient:
         # Use the pre-loaded guide content from compacter
         self.pcs_guide_content = _pcs_guide_content
         if "ERROR:" in self.pcs_guide_content:
-            logger.error(
-                "PCS guide content was not loaded successfully by the compacter module."
-            )
+            logger.error("PCS guide content was not loaded successfully by the compacter module.")
             # Raise a different error since the client isn't loading it directly
-            raise RuntimeError(
-                "PCS guide content could not be loaded. Check logs from llm_min.compacter."
-            )
+            raise RuntimeError("PCS guide content could not be loaded. Check logs from llm_min.compacter.")
 
         # Removed file loading logic:
         # guide_path_to_load = pcs_guide_path
@@ -79,9 +73,7 @@ class LLMMinClient:
         # except Exception as e:
         #     ...
 
-    async def compact(
-        self, content: str, chunk_size: int | None = None, subject: str | None = None
-    ) -> str:
+    async def compact(self, content: str, chunk_size: int | None = None, subject: str | None = None) -> str:
         """
         Compacts the given content into PCS format using the configured LLM.
         (Async version)
@@ -95,15 +87,11 @@ class LLMMinClient:
         Returns:
             The compacted content in PCS format.
         """
-        actual_chunk_size = (
-            chunk_size if chunk_size is not None else self.max_tokens_per_chunk
-        )
+        actual_chunk_size = chunk_size if chunk_size is not None else self.max_tokens_per_chunk
 
         # Add dummy key check here
         if self.api_key == "dummy_api_key":
-            logger.info(
-                f"Using dummy API key in client. Bypassing chunking and LLM calls for subject '{subject}'."
-            )
+            logger.info(f"Using dummy API key in client. Bypassing chunking and LLM calls for subject '{subject}'.")
             # Return the same dummy PCS structure as defined in compacter's test
             # Use the provided subject if available
             actual_subject = subject if subject else "unknown_subject"
@@ -113,9 +101,7 @@ class LLMMinClient:
             logger.warning("Attempted to compact empty content.")
             return ""
 
-        logger.info(
-            f"Starting compaction with model '{self.model}' and chunk size {actual_chunk_size}"
-        )
+        logger.info(f"Starting compaction with model '{self.model}' and chunk size {actual_chunk_size}")
 
         # 1. Chunk the content
         chunks = chunk_content(content, actual_chunk_size)
@@ -141,25 +127,17 @@ class LLMMinClient:
                     prompt=fragment_prompt,
                     api_key=self.api_key,
                 )
-                fragments.append(
-                    fragment.strip()
-                )  # Assuming generate_text_response returns str
+                fragments.append(fragment.strip())  # Assuming generate_text_response returns str
                 logger.info(f"Fragment {i + 1} generated successfully.")
             except Exception as e:
                 # Capture the actual exception from the await if needed
-                logger.error(
-                    f"Error generating fragment for chunk {i + 1}: {e}", exc_info=True
-                )
-                fragments.append(
-                    f"ERROR: FRAGMENT GENERATION FAILED FOR CHUNK {i + 1}: {e}"
-                )  # Append error marker
+                logger.error(f"Error generating fragment for chunk {i + 1}: {e}", exc_info=True)
+                fragments.append(f"ERROR: FRAGMENT GENERATION FAILED FOR CHUNK {i + 1}: {e}")  # Append error marker
 
         # Check if *any* non-error fragments were generated before attempting merge
         successful_fragments = [f for f in fragments if not f.startswith("ERROR:")]
         if not successful_fragments:
-            logger.error(
-                "Fragment generation failed for all chunks or resulted only in errors."
-            )
+            logger.error("Fragment generation failed for all chunks or resulted only in errors.")
             # Optionally, join the error messages or return a generic one
             # return "\n---\n".join(fragments) # Return concatenated errors
             return "ERROR: ALL FRAGMENT GENERATION FAILED."  # Return generic error
@@ -168,9 +146,7 @@ class LLMMinClient:
         # Only merge if there are multiple fragments AND at least one was successful
         # (The check above handles the case where all failed)
         if len(fragments) > 1:
-            logger.info(
-                f"Merging {len(fragments)} fragments ({len(successful_fragments)} successful)..."
-            )
+            logger.info(f"Merging {len(fragments)} fragments ({len(successful_fragments)} successful)...")
             # Note: We still pass ALL fragments (including error placeholders) to the merge prompt
             # The LLM is expected to handle or ignore the error strings during merge.
             merge_template = Template(MERGE_PROMPT_TEMPLATE_STR)

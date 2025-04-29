@@ -7,15 +7,13 @@ repos:
       # - id: end-of-file-fixer
       # - id: trailing-whitespace
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.7
+    rev: v0.5.0
     hooks:
-      # Run the linter.
-    - id: ruff
-      name: ruff
-      description: "Run 'ruff' for extremely fast linting"
-      entry: ruff check .
-      args: []
-      require_serial: true
+      # Run the linter with auto-fix
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      # Run the formatter
+      - id: ruff-format
 
   - repo: local
     hooks:
@@ -24,3 +22,4 @@ repos:
         entry: pytest
         language: system
         types: [python]
+        pass_filenames: false
