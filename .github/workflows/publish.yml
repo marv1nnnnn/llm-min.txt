@@ -9,6 +9,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: pypi
 
     permissions:
       # IMPORTANT: this permission is mandatory for trusted publishing
