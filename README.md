@@ -41,7 +41,14 @@ This tool facilitates the creation of focused context files, enabling LLMs to pr
     uv pip install -e . # Install the package in editable mode
     ```
 
-3.  **Configure API Key:**
+3.  **Install Playwright Browsers:**
+    The documentation crawler uses Playwright. After installing the package, you need to download the necessary browser binaries:
+    ```bash
+    playwright install
+    ```
+    *Note: Depending on your environment (e.g., containers), you might need to install system dependencies for Playwright. See the [Playwright documentation](https://playwright.dev/docs/intro#system-requirements) for details.*
+
+4.  **Configure API Key:**
     *   Copy the `.env.example` file to `.env`:
       ```bash
       cp .env.example .env

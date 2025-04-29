@@ -2,6 +2,7 @@ import logging
 import os  # Import os to construct file path
 import pathlib  # Import pathlib for robust path operations
 from string import Template  # Import Template
+import importlib.resources  # Import importlib.resources
 
 # Import from .llm subpackage (now points to gemini via __init__.py)
 from .llm import (
@@ -12,54 +13,44 @@ from .llm import (
 logger = logging.getLogger(__name__)
 
 
-# Helper function to find the project root by looking for pyproject.toml
-def _find_project_root(start_path: str, marker: str = "pyproject.toml") -> pathlib.Path | None:
-    """Searches upward from start_path for a directory containing marker."""
-    current_path = pathlib.Path(start_path).resolve()
-    while True:
-        if (current_path / marker).is_file():
-            return current_path
-        parent = current_path.parent
-        if parent == current_path:  # Reached the root directory
-            return None
-        current_path = parent
+# Helper function to find the project root by looking for pyproject.toml (REMOVED - No longer needed for guide loading)
+# def _find_project_root(...) -> ...:
+#    ...
+
+# Determine the project root and construct the guide file path (REMOVED - No longer needed for guide loading)
+# _script_dir = ...
+# _project_root_path = ...
+# if _project_root_path:
+#    ...
+# else:
+#    ...
+# _guide_file_path = ...
 
 
-# Determine the project root and construct the guide file path
-_script_dir = os.path.dirname(os.path.abspath(__file__))
-_project_root_path = _find_project_root(_script_dir)
-
-if _project_root_path:
-    _guide_file_path = str(_project_root_path / "pcs-guide.md")  # Build path from found root
-else:
-    # Fallback or error handling if project root isn't found
-    logger.error(
-        "Could not find project root (containing pyproject.toml) from "
-        f"{_script_dir}. Cannot determine pcs-guide.md path."
-    )
-    _guide_file_path = "pcs-guide.md"  # Default to relative path as a last resort
-
-
-# Function to read the PCS guide content
-def _load_pcs_guide(file_path: str = _guide_file_path) -> str:
-    """Loads the PCS guide content from the specified file."""
+# Function to read the PCS guide content using importlib.resources
+def _load_pcs_guide() -> str:
+    """Loads the PCS guide content from package data."""
+    package_name = __name__.split('.')[0] # Get the top-level package name ('llm_min')
+    guide_file_name = "pcs-guide.md"
     try:
-        with open(file_path, encoding="utf-8") as f:
-            # Read the guide and strip potential surrounding ```markdown blocks
-            content = f.read().strip()
-            # Corrected stripping logic for ```md
-            if content.startswith("```md") and content.endswith("```"):
-                content = content[5:-3].strip()  # Remove ```md prefix
-            elif content.startswith("```") and content.endswith("```"):
-                content = content[3:-3].strip()  # Remove ``` prefix
-            return content
-    except FileNotFoundError as e:  # Capture the exception as 'e'
-        logger.error(f"PCS guide file not found at {file_path}")
-        # Include the original exception message in the return string
-        return f"ERROR: PCS GUIDE FILE NOT FOUND AT {file_path}. Details: {e}"
+        # Use files() API for Python 3.9+ compatibility if needed,
+        # or read_text() for simplicity if 3.10+ is guaranteed.
+        # Assuming requires-python = ">=3.10" allows using read_text directly.
+        content = importlib.resources.files(package_name).joinpath(guide_file_name).read_text(encoding="utf-8")
+        # Strip potential surrounding ```markdown blocks
+        content = content.strip()
+        # Corrected stripping logic for ```md
+        if content.startswith("```md") and content.endswith("```"):
+            content = content[5:-3].strip()  # Remove ```md prefix
+        elif content.startswith("```") and content.endswith("```"):
+            content = content[3:-3].strip()  # Remove ``` prefix
+        return content
+    except FileNotFoundError as e:
+        logger.error(f"PCS guide file '{guide_file_name}' not found within package '{package_name}'. Ensure it's included in package_data.")
+        return f"ERROR: PCS GUIDE FILE NOT FOUND ({package_name}/{guide_file_name}). Details: {e}"
     except Exception as e:
-        logger.error(f"Error reading PCS guide file at {file_path}: {e}")
-        return f"ERROR: COULD NOT READ PCS GUIDE FILE: {e}"
+        logger.error(f"Error reading PCS guide file from package data: {e}")
+        return f"ERROR: COULD NOT READ PCS GUIDE FILE FROM PACKAGE DATA: {e}"
 
 
 # Load the guide content once when the module is imported
