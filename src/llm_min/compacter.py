@@ -198,9 +198,9 @@ MERGE_PROMPT_TEMPLATE = Template(MERGE_PROMPT_TEMPLATE_STR)
 # MERGE_PROMPT = \"...\" # Removed
 
 
-def compact_content_with_llm(
+async def compact_content_with_llm(
     aggregated_content: str,  # Changed signature - removed package_name, doc_url
-    chunk_size: int = 8000,
+    chunk_size: int = 1000000,
     api_key: str | None = None,  # Added api_key parameter
     subject: str = "the provided text",  # Added optional subject for prompts
 ) -> str | None:
@@ -244,7 +244,7 @@ def compact_content_with_llm(
         logger.debug(f"--- Compaction Fragment Prompt for chunk {i + 1}/{len(chunks)} END ---")
 
         # Call the LLM to generate a fragment
-        fragment_str = generate_text_response(fragment_prompt, api_key=api_key)
+        fragment_str = await generate_text_response(fragment_prompt, api_key=api_key)
 
         if fragment_str and isinstance(fragment_str, str):
             pcs_fragments.append(fragment_str.strip())
@@ -255,6 +255,11 @@ def compact_content_with_llm(
     if not pcs_fragments:
         logger.error("No PCS fragments were generated from the chunks.")
         return None
+
+    # If there's only one fragment, return it directly without merging
+    if len(pcs_fragments) == 1:
+        logger.info("Only one fragment generated, returning it directly without merging.")
+        return pcs_fragments[0]
 
     # 3. Merge PCS fragments using the LLM
     logger.info(f"Merging {len(pcs_fragments)} PCS fragments...")
@@ -274,7 +279,7 @@ def compact_content_with_llm(
     logger.debug("--- Compaction Merge Prompt END ---")
 
     # Call the LLM to merge the fragments
-    merged_pcs = generate_text_response(merge_prompt, api_key=api_key)
+    merged_pcs = await generate_text_response(merge_prompt, api_key=api_key)
 
     if merged_pcs and isinstance(merged_pcs, str):
         logger.info("Successfully merged PCS fragments.")

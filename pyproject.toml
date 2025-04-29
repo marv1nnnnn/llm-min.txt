@@ -24,6 +24,7 @@ dev = [
     "pytest>=8.0", # Testing framework
     "pytest-asyncio", # For testing async code
     "ruff>=0.4.0", # Linter and formatter
+    "build>=1.0", # Package building tool
 ]
 
 [tool.ruff]
