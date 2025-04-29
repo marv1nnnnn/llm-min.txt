@@ -55,7 +55,9 @@ def parse_pyproject_toml(file_path: str | Path) -> list[str]:
         with open(file_path, encoding="utf-8") as f:
             data = toml.load(f)
             # Assuming poetry dependencies for now
-            dependencies = data.get("tool", {}).get("poetry", {}).get("dependencies", {})
+            dependencies = (
+                data.get("tool", {}).get("poetry", {}).get("dependencies", {})
+            )
             for package, version in dependencies.items():
                 if package.lower() != "python":  # Exclude python itself
                     packages.append(package)
@@ -63,7 +65,9 @@ def parse_pyproject_toml(file_path: str | Path) -> list[str]:
         logger.error(f"pyproject.toml file not found: {file_path}")
         raise
     except Exception as e:
-        logger.error(f"Error reading pyproject.toml file {file_path}: {e}", exc_info=True)
+        logger.error(
+            f"Error reading pyproject.toml file {file_path}: {e}", exc_info=True
+        )
         raise
     logger.info(f"Extracted {len(packages)} packages from {file_path}")
     return packages
@@ -118,7 +122,7 @@ def scan_for_dependencies(directory_path: str | Path) -> set[str]:
 
     Supported files: pyproject.toml, requirements.txt, package.json
     """
-    all_dependencies = set()
+    all_dependencies: set[str] = set()
     directory_path = Path(directory_path)
     if not directory_path.is_dir():
         logger.warning(f"Directory not found or is not a directory: {directory_path}")
@@ -134,5 +138,7 @@ def scan_for_dependencies(directory_path: str | Path) -> set[str]:
                 elif file_path.name == "package.json":
                     all_dependencies.update(parse_package_json(file_path))
             except Exception as e:
-                logger.error(f"Error parsing dependency file {file_path}: {e}", exc_info=True)  # Log error and continue
+                logger.error(
+                    f"Error parsing dependency file {file_path}: {e}", exc_info=True
+                )  # Log error and continue
     return all_dependencies

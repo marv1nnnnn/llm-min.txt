@@ -1,3 +1,4 @@
+from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -14,80 +15,98 @@ from llm_min.compacter import (
 
 
 # Helper to mock importlib.resources.files().joinpath().read_text()
-def create_mock_files_api(content_to_return=None, exception_to_raise=None):
-    mock_file = MagicMock()
+# Updated helper to mock pathlib.Path operations
+def create_mock_path_api(content_to_return=None, exception_to_raise=None):
+    mock_path_instance = MagicMock(spec=Path)
+    mock_parent_dir = MagicMock(spec=Path)
+    mock_guide_file = MagicMock(spec=Path)
+
+    # Configure the chain Path(__file__).parent / "pcs-guide.md"
+    mock_path_constructor = MagicMock(return_value=mock_path_instance)
+    mock_path_instance.parent = mock_parent_dir
+    mock_parent_dir.__truediv__.return_value = mock_guide_file  # Mock the / operator
+
+    # Configure the read_text call on the final file path
     if exception_to_raise:
-        mock_file.read_text.side_effect = exception_to_raise
+        mock_guide_file.read_text.side_effect = exception_to_raise
     else:
-        mock_file.read_text.return_value = content_to_return or ""
+        mock_guide_file.read_text.return_value = content_to_return or ""
 
-    mock_path = MagicMock()
-    mock_path.joinpath.return_value = mock_file
-
-    mock_files_fn = MagicMock()
-    mock_files_fn.return_value = mock_path
-    return mock_files_fn
+    return mock_path_constructor
 
 
 # --- Test cases for the new _load_pcs_guide ---
 
 
-# Patch the correct target: importlib.resources.files
-@patch("importlib.resources.files", new_callable=create_mock_files_api, content_to_return="This is the guide content.")
-def test__load_pcs_guide_success(mock_files):
-    """Test successful loading using importlib.resources."""
-    # Call without path argument
+# Patch the correct target: llm_min.compacter.Path
+@patch(
+    "llm_min.compacter.Path",
+    new_callable=create_mock_path_api,
+    content_to_return="This is the guide content.",
+)
+def test__load_pcs_guide_success(mock_Path):  # Renamed mock_files to mock_Path
+    """Test successful loading using pathlib.Path."""
     guide_content = _load_pcs_guide()
-    # Check the mocked function was called (indirectly via _load_pcs_guide)
-    mock_files.assert_called_once()
-    # Check the returned content
+
+    # Check the Path constructor was called (for __file__)
+    # mock_Path.assert_called_once_with(__file__) # This assertion is unreliable when Path itself is mocked
+
+    # Check the relevant methods were called on the mocked path objects
+    mock_Path.return_value.parent.__truediv__.assert_called_once_with("pcs-guide.md")
+    mock_Path.return_value.parent.__truediv__.return_value.read_text.assert_called_once_with(
+        encoding="utf-8"
+    )
+
     assert guide_content == "This is the guide content."
-    # Optional: Check specific calls within the mock structure if needed
-    mock_files().joinpath.assert_called_once_with("pcs-guide.md")
-    mock_files().joinpath().read_text.assert_called_once_with(encoding="utf-8")
 
 
 @patch(
-    "importlib.resources.files", new_callable=create_mock_files_api, content_to_return="```\nContent inside fences\n```"
+    "llm_min.compacter.Path",
+    new_callable=create_mock_path_api,
+    content_to_return="```\nContent inside fences\n```",
 )
-def test__load_pcs_guide_strip_markdown(mock_files):
+def test__load_pcs_guide_strip_markdown(mock_Path):
     """Test stripping ``` markdown fences."""
     guide_content = _load_pcs_guide()
-    mock_files.assert_called_once()
+    mock_Path.assert_called_once()
     assert guide_content == "Content inside fences"
 
 
 @patch(
-    "importlib.resources.files",
-    new_callable=create_mock_files_api,
+    "llm_min.compacter.Path",
+    new_callable=create_mock_path_api,
     content_to_return="```md\nContent inside md fences\n```",
 )
-def test__load_pcs_guide_strip_markdown_md(mock_files):
+def test__load_pcs_guide_strip_markdown_md(mock_Path):
     """Test stripping ```md markdown fences."""
     guide_content = _load_pcs_guide()
-    mock_files.assert_called_once()
+    mock_Path.assert_called_once()
     assert guide_content == "Content inside md fences"
 
 
 @patch(
-    "importlib.resources.files",
-    new_callable=create_mock_files_api,
+    "llm_min.compacter.Path",
+    new_callable=create_mock_path_api,
     exception_to_raise=FileNotFoundError("Mock file missing"),
 )
-def test__load_pcs_guide_file_not_found(mock_files):
-    """Test handling FileNotFoundError from importlib.resources."""
+def test__load_pcs_guide_file_not_found(mock_Path):
+    """Test handling FileNotFoundError from Path.read_text."""
     guide_content = _load_pcs_guide()
-    mock_files.assert_called_once()
+    mock_Path.assert_called_once()
     assert "ERROR: PCS GUIDE FILE NOT FOUND" in guide_content
     assert "Mock file missing" in guide_content
 
 
-@patch("importlib.resources.files", new_callable=create_mock_files_api, exception_to_raise=OSError("Mock OS error"))
-def test__load_pcs_guide_other_exception(mock_files):
-    """Test handling other exceptions from importlib.resources."""
+@patch(
+    "llm_min.compacter.Path",
+    new_callable=create_mock_path_api,
+    exception_to_raise=OSError("Mock OS error"),
+)
+def test__load_pcs_guide_other_exception(mock_Path):
+    """Test handling other exceptions from Path.read_text."""
     guide_content = _load_pcs_guide()
-    mock_files.assert_called_once()
-    assert "ERROR: COULD NOT READ PCS GUIDE FILE FROM PACKAGE DATA" in guide_content
+    mock_Path.assert_called_once()
+    assert "ERROR: COULD NOT READ PCS GUIDE FILE" in guide_content
     assert "Mock OS error" in guide_content
 
 
@@ -107,7 +126,9 @@ if "ERROR:" in ACTUAL_PCS_GUIDE_CONTENT:
 @pytest.mark.asyncio
 @patch("llm_min.client.generate_text_response", new_callable=AsyncMock)
 @patch("llm_min.client.chunk_content", return_value=["single chunk content"])
-async def test_compact_content_with_llm_single_chunk_no_merge(mock_chunk_content, mock_generate_text_response):
+async def test_compact_content_with_llm_single_chunk_no_merge(
+    mock_chunk_content, mock_generate_text_response
+):
     mock_generate_text_response.return_value = "Compacted single chunk."
 
     client = LLMMinClient(api_key="dummy_key")
@@ -130,7 +151,9 @@ async def test_compact_content_with_llm_single_chunk_no_merge(mock_chunk_content
 @pytest.mark.asyncio
 @patch("llm_min.client.generate_text_response", new_callable=AsyncMock)
 @patch("llm_min.client.chunk_content", return_value=["chunk 1", "chunk 2"])
-async def test_compact_content_with_llm_multiple_chunks_merge_success(mock_chunk_content, mock_generate_text_response):
+async def test_compact_content_with_llm_multiple_chunks_merge_success(
+    mock_chunk_content, mock_generate_text_response
+):
     mock_generate_text_response.side_effect = [
         "Compacted chunk 1.",
         "Compacted chunk 2.",
@@ -152,22 +175,30 @@ async def test_compact_content_with_llm_multiple_chunks_merge_success(mock_chunk
         pcs_guide=ACTUAL_PCS_GUIDE_CONTENT,
         chunk="chunk 2",
     )
-    mock_generate_text_response.assert_any_await(prompt=expected_fragment_prompt_1, api_key=client.api_key)
-    mock_generate_text_response.assert_any_await(prompt=expected_fragment_prompt_2, api_key=client.api_key)
+    mock_generate_text_response.assert_any_await(
+        prompt=expected_fragment_prompt_1, api_key=client.api_key
+    )
+    mock_generate_text_response.assert_any_await(
+        prompt=expected_fragment_prompt_2, api_key=client.api_key
+    )
 
     expected_merge_prompt = MERGE_PROMPT_TEMPLATE.substitute(
         pcs_guide=ACTUAL_PCS_GUIDE_CONTENT,
         fragments="Compacted chunk 1.\n---\nCompacted chunk 2.",
         subject="technical documentation",
     )
-    mock_generate_text_response.assert_any_await(prompt=expected_merge_prompt, api_key=client.api_key)
+    mock_generate_text_response.assert_any_await(
+        prompt=expected_merge_prompt, api_key=client.api_key
+    )
     assert compacted_content == "Merged compacted content."
 
 
 @pytest.mark.asyncio
 @patch("llm_min.client.generate_text_response", new_callable=AsyncMock)
 @patch("llm_min.client.chunk_content", return_value=["single chunk content"])
-async def test_compact_content_with_llm_with_subject(mock_chunk_content, mock_generate_text_response):
+async def test_compact_content_with_llm_with_subject(
+    mock_chunk_content, mock_generate_text_response
+):
     mock_generate_text_response.return_value = "Compacted with subject."
     subject = "My Test Subject"
 
@@ -185,7 +216,9 @@ async def test_compact_content_with_llm_with_subject(mock_chunk_content, mock_ge
         prompt=expected_fragment_prompt,
         api_key=client.api_key,
     )
-    assert compacted_content == "Compacted with subject."  # Merge not called, result is single fragment
+    assert (
+        compacted_content == "Compacted with subject."
+    )  # Merge not called, result is single fragment
 
 
 @pytest.mark.asyncio
@@ -213,7 +246,9 @@ async def test_compact_content_with_llm_multiple_chunks_merge_with_subject(
         fragments="Compacted chunk 1 (subject).\n---\nCompacted chunk 2 (subject).",
         subject=subject,
     )
-    mock_generate_text_response.assert_any_await(prompt=expected_merge_prompt, api_key=client.api_key)
+    mock_generate_text_response.assert_any_await(
+        prompt=expected_merge_prompt, api_key=client.api_key
+    )
     assert compacted_content == "Merged compacted content (subject)."
 
 
@@ -221,7 +256,11 @@ async def test_compact_content_with_llm_multiple_chunks_merge_with_subject(
 @patch(
     "llm_min.client.generate_text_response",
     new_callable=AsyncMock,
-    side_effect=["Compacted chunk 1.", Exception("Simulated API error for chunk 2"), "Merged with error."],
+    side_effect=[
+        "Compacted chunk 1.",
+        Exception("Simulated API error for chunk 2"),
+        "Merged with error.",
+    ],
 )
 @patch("llm_min.client.chunk_content", return_value=["chunk 1", "chunk 2"])
 async def test_compact_content_with_llm_fragment_generation_fails_partial(
@@ -232,7 +271,9 @@ async def test_compact_content_with_llm_fragment_generation_fails_partial(
     compacted_content = await client.compact(content)
 
     mock_chunk_content.assert_called_once_with(content, client.max_tokens_per_chunk)
-    assert mock_generate_text_response.await_count == 3  # 2 fragment attempts, 1 merge attempt
+    assert (
+        mock_generate_text_response.await_count == 3
+    )  # 2 fragment attempts, 1 merge attempt
 
     expected_fragment_prompt_1 = FRAGMENT_GENERATION_PROMPT_TEMPLATE.substitute(
         pcs_guide=ACTUAL_PCS_GUIDE_CONTENT, chunk="chunk 1"
@@ -240,18 +281,25 @@ async def test_compact_content_with_llm_fragment_generation_fails_partial(
     expected_fragment_prompt_2 = FRAGMENT_GENERATION_PROMPT_TEMPLATE.substitute(
         pcs_guide=ACTUAL_PCS_GUIDE_CONTENT, chunk="chunk 2"
     )
-    mock_generate_text_response.assert_any_await(prompt=expected_fragment_prompt_1, api_key=client.api_key)
-    mock_generate_text_response.assert_any_await(prompt=expected_fragment_prompt_2, api_key=client.api_key)
+    mock_generate_text_response.assert_any_await(
+        prompt=expected_fragment_prompt_1, api_key=client.api_key
+    )
+    mock_generate_text_response.assert_any_await(
+        prompt=expected_fragment_prompt_2, api_key=client.api_key
+    )
 
     expected_fragments_for_merge = (
-        "Compacted chunk 1.\n---\nERROR: FRAGMENT GENERATION FAILED FOR CHUNK 2: Simulated API error for chunk 2"
+        "Compacted chunk 1.\n---\nERROR: FRAGMENT GENERATION FAILED FOR CHUNK 2: "
+        "Simulated API error for chunk 2"
     )
     expected_merge_prompt = MERGE_PROMPT_TEMPLATE.substitute(
         pcs_guide=ACTUAL_PCS_GUIDE_CONTENT,
         fragments=expected_fragments_for_merge,
         subject="technical documentation",
     )
-    mock_generate_text_response.assert_any_await(prompt=expected_merge_prompt, api_key=client.api_key)
+    mock_generate_text_response.assert_any_await(
+        prompt=expected_merge_prompt, api_key=client.api_key
+    )
     assert compacted_content == "Merged with error."
 
 
@@ -262,13 +310,17 @@ async def test_compact_content_with_llm_fragment_generation_fails_partial(
     side_effect=Exception("Simulated API error for all chunks"),
 )
 @patch("llm_min.client.chunk_content", return_value=["chunk 1", "chunk 2"])
-async def test_compact_content_with_llm_fragment_generation_fails_all(mock_chunk_content, mock_generate_text_response):
+async def test_compact_content_with_llm_fragment_generation_fails_all(
+    mock_chunk_content, mock_generate_text_response
+):
     client = LLMMinClient(api_key="dummy_key")
     content = "Content for total failure test."
     compacted_content = await client.compact(content)
 
     mock_chunk_content.assert_called_once_with(content, client.max_tokens_per_chunk)
-    assert mock_generate_text_response.await_count == 2  # Only fragment attempts fail, no merge call
+    assert (
+        mock_generate_text_response.await_count == 2
+    )  # Only fragment attempts fail, no merge call
     assert "ERROR: ALL FRAGMENT GENERATION FAILED" in compacted_content
 
 
@@ -276,10 +328,16 @@ async def test_compact_content_with_llm_fragment_generation_fails_all(mock_chunk
 @patch(
     "llm_min.client.generate_text_response",
     new_callable=AsyncMock,
-    side_effect=["Compacted chunk 1.", "Compacted chunk 2.", Exception("Simulated merge API error")],
+    side_effect=[
+        "Compacted chunk 1.",
+        "Compacted chunk 2.",
+        Exception("Simulated merge API error"),
+    ],
 )
 @patch("llm_min.client.chunk_content", return_value=["chunk 1", "chunk 2"])
-async def test_compact_content_with_llm_merge_fails(mock_chunk_content, mock_generate_text_response):
+async def test_compact_content_with_llm_merge_fails(
+    mock_chunk_content, mock_generate_text_response
+):
     client = LLMMinClient(api_key="dummy_key")
     content = "Content for merge failure test."
     compacted_content = await client.compact(content)
@@ -293,7 +351,9 @@ async def test_compact_content_with_llm_merge_fails(mock_chunk_content, mock_gen
 @pytest.mark.asyncio
 @patch("llm_min.client.generate_text_response", new_callable=AsyncMock)
 @patch("llm_min.client.chunk_content", return_value=["single chunk content"])
-async def test_compact_content_with_llm_custom_chunk_size(mock_chunk_content, mock_generate_text_response):
+async def test_compact_content_with_llm_custom_chunk_size(
+    mock_chunk_content, mock_generate_text_response
+):
     mock_generate_text_response.return_value = "Compacted content."
     mock_chunk_content.return_value = ["single chunk content"]
 
@@ -311,3 +371,29 @@ async def test_compact_content_with_llm_custom_chunk_size(mock_chunk_content, mo
         prompt=expected_fragment_prompt,
         api_key=client.api_key,
     )
+
+
+@pytest.mark.asyncio
+@patch("llm_min.client.generate_text_response", new_callable=AsyncMock)
+@patch("llm_min.client.chunk_content")
+async def test_compact_content_with_llm_dummy_api_key(
+    mock_chunk_content, mock_generate_text_response
+):
+    """Tests that using the literal 'dummy_api_key' bypasses LLM calls and returns dummy PCS."""
+    client = LLMMinClient(api_key="dummy_api_key")  # Use the specific dummy key
+    content = "Some input content that should be ignored."
+    subject = "DummySubject"
+
+    # Call the compact method
+    compacted_content = await client.compact(content, subject=subject)
+
+    # Assert that chunking and LLM calls were NOT made
+    mock_chunk_content.assert_not_called()
+    mock_generate_text_response.assert_not_awaited()
+
+    # Assert that the expected dummy PCS string is returned
+    expected_dummy_pcs = f"|S: $$subject {subject}\n|A: $$path#DummyClass()[]{{}}{{}}<>\n|D: $$SDummyStruct()"
+    assert compacted_content == expected_dummy_pcs
+
+
+# Additional test cases can be added here if needed.

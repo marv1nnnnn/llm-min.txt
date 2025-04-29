@@ -28,7 +28,9 @@ def test_search_for_documentation_urls_success(mock_ddgs):
     results = search_for_documentation_urls(package_name)
 
     mock_ddgs.assert_called_once()
-    mock_instance.text.assert_called_once_with(f"{package_name} package documentation website", max_results=10)
+    mock_instance.text.assert_called_once_with(
+        f"{package_name} package documentation website", max_results=10
+    )
     assert len(results) == 2
     assert results[0]["title"] == "Result 1"
     assert results[0]["href"] == "http://example.com/doc1"
@@ -46,7 +48,9 @@ def test_search_for_documentation_urls_no_results(mock_ddgs):
     results = search_for_documentation_urls(package_name)
 
     mock_ddgs.assert_called_once()
-    mock_instance.text.assert_called_once_with(f"{package_name} package documentation website", max_results=10)
+    mock_instance.text.assert_called_once_with(
+        f"{package_name} package documentation website", max_results=10
+    )
     assert len(results) == 0
     assert results == []
 
@@ -83,7 +87,9 @@ def test_search_for_documentation_urls_custom_num_results(mock_ddgs):
     results = search_for_documentation_urls(package_name, num_results=num_results)
 
     mock_ddgs.assert_called_once()
-    mock_instance.text.assert_called_once_with(f"{package_name} package documentation website", max_results=num_results)
+    mock_instance.text.assert_called_once_with(
+        f"{package_name} package documentation website", max_results=num_results
+    )
     assert len(results) == num_results
 
 
@@ -105,7 +111,9 @@ async def test_select_best_url_with_llm_success(mock_generate_text_response):
     ]
     api_key = "fake_api_key"
 
-    selected_url = await select_best_url_with_llm(package_name, search_results, api_key=api_key)
+    selected_url = await select_best_url_with_llm(
+        package_name, search_results, api_key=api_key
+    )
 
     mock_generate_text_response.assert_awaited_once()
     assert (
@@ -123,7 +131,9 @@ async def test_select_best_url_with_llm_returns_none(mock_generate_text_response
     mock_generate_text_response.return_value = "None"
 
     package_name = "test_package"
-    search_results = [{"title": "Result 1", "href": "http://example.com/doc1", "body": "Snippet 1"}]
+    search_results = [
+        {"title": "Result 1", "href": "http://example.com/doc1", "body": "Snippet 1"}
+    ]
 
     selected_url = await select_best_url_with_llm(package_name, search_results)
 
@@ -133,12 +143,16 @@ async def test_select_best_url_with_llm_returns_none(mock_generate_text_response
 
 @pytest.mark.asyncio
 @patch("llm_min.search.generate_text_response", new_callable=AsyncMock)
-async def test_select_best_url_with_llm_returns_empty_string(mock_generate_text_response):
+async def test_select_best_url_with_llm_returns_empty_string(
+    mock_generate_text_response,
+):
     """Tests LLM returning an empty string."""
     mock_generate_text_response.return_value = ""
 
     package_name = "test_package"
-    search_results = [{"title": "Result 1", "href": "http://example.com/doc1", "body": "Snippet 1"}]
+    search_results = [
+        {"title": "Result 1", "href": "http://example.com/doc1", "body": "Snippet 1"}
+    ]
 
     selected_url = await select_best_url_with_llm(package_name, search_results)
 
@@ -153,7 +167,9 @@ async def test_select_best_url_with_llm_invalid_url_format(mock_generate_text_re
     mock_generate_text_response.return_value = "not a url"
 
     package_name = "test_package"
-    search_results = [{"title": "Result 1", "href": "http://example.com/doc1", "body": "Snippet 1"}]
+    search_results = [
+        {"title": "Result 1", "href": "http://example.com/doc1", "body": "Snippet 1"}
+    ]
 
     selected_url = await select_best_url_with_llm(package_name, search_results)
 
@@ -163,7 +179,9 @@ async def test_select_best_url_with_llm_invalid_url_format(mock_generate_text_re
 
 @pytest.mark.asyncio
 @patch("llm_min.search.generate_text_response", new_callable=AsyncMock)
-async def test_select_best_url_with_llm_empty_search_results(mock_generate_text_response):
+async def test_select_best_url_with_llm_empty_search_results(
+    mock_generate_text_response,
+):
     """Tests select_best_url_with_llm with empty search results input."""
     package_name = "test_package"
     search_results = []
@@ -181,7 +199,9 @@ async def test_select_best_url_with_llm_exception(mock_generate_text_response):
     mock_generate_text_response.side_effect = Exception("LLM error")
 
     package_name = "test_package"
-    search_results = [{"title": "Result 1", "href": "http://example.com/doc1", "body": "Snippet 1"}]
+    search_results = [
+        {"title": "Result 1", "href": "http://example.com/doc1", "body": "Snippet 1"}
+    ]
 
     selected_url = await select_best_url_with_llm(package_name, search_results)
 
@@ -210,7 +230,9 @@ async def test_find_documentation_url_success(mock_search, mock_select_url):
     found_url = await find_documentation_url(package_name, api_key=api_key)
 
     mock_search.assert_called_once_with(package_name)
-    mock_select_url.assert_awaited_once_with(package_name, mock_search.return_value, api_key=api_key)
+    mock_select_url.assert_awaited_once_with(
+        package_name, mock_search.return_value, api_key=api_key
+    )
     assert found_url == "http://example.com/official/docs"
 
 
@@ -243,7 +265,9 @@ async def test_find_documentation_url_llm_returns_none(mock_search, mock_select_
     found_url = await find_documentation_url(package_name)
 
     mock_search.assert_called_once_with(package_name)
-    mock_select_url.assert_awaited_once_with(package_name, mock_search.return_value, api_key=None)
+    mock_select_url.assert_awaited_once_with(
+        package_name, mock_search.return_value, api_key=None
+    )
     assert found_url is None
 
 
@@ -252,7 +276,9 @@ async def test_find_documentation_url_llm_returns_none(mock_search, mock_select_
 @patch("llm_min.search.search_for_documentation_urls")
 async def test_find_documentation_url_url_cleaning(mock_search, mock_select_url):
     """Tests URL cleaning in find_documentation_url."""
-    mock_search.return_value = [{"title": "Result 1", "href": "http://example.com/doc1", "body": "Snippet 1"}]
+    mock_search.return_value = [
+        {"title": "Result 1", "href": "http://example.com/doc1", "body": "Snippet 1"}
+    ]
 
     test_cases = [
         ("http://example.com/docs/index.html", "http://example.com/docs"),
@@ -272,5 +298,27 @@ async def test_find_documentation_url_url_cleaning(mock_search, mock_select_url)
         mock_select_url.reset_mock()
         mock_select_url.return_value = raw_url
         found_url = await find_documentation_url(package_name)
-        assert found_url == cleaned_url, f"Expected {cleaned_url} for {raw_url}, got {found_url}"
+        assert (
+            found_url == cleaned_url
+        ), f"Expected {cleaned_url} for {raw_url}, got {found_url}"
         mock_select_url.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+@patch("llm_min.search.select_best_url_with_llm", new_callable=AsyncMock)
+@patch("llm_min.search.search_for_documentation_urls")
+async def test_find_documentation_url_dummy_api_key(mock_search, mock_select_url):
+    """Tests find_documentation_url correctly handles the dummy API key."""
+    package_name = "dummy_package"
+    api_key = "dummy_api_key"
+
+    # Call the function with the dummy key
+    found_url = await find_documentation_url(package_name, api_key=api_key)
+
+    # Assert that search and LLM selection were NOT called
+    mock_search.assert_not_called()
+    mock_select_url.assert_not_awaited()
+
+    # Assert that the expected dummy URL is returned
+    expected_dummy_url = f"https://dummy-docs.example.com/{package_name}/latest"
+    assert found_url == expected_dummy_url

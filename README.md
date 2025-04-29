@@ -48,7 +48,15 @@ This tool facilitates the creation of focused context files, enabling LLMs to pr
     ```
     *Note: Depending on your environment (e.g., containers), you might need to install system dependencies for Playwright. See the [Playwright documentation](https://playwright.dev/docs/intro#system-requirements) for details.*
 
-4.  **Configure API Key:**
+5.  **Install and Set up Pre-commit Hooks:**
+   Pre-commit hooks help maintain code quality by running checks before you commit.
+   ```bash
+   pip install pre-commit
+   pre-commit install
+   ```
+   After installation, the hooks will run automatically on `git commit`. You can also run them manually on all files with `pre-commit run --all-files`.
+
+6.  **Configure API Key:**
     *   Copy the `.env.example` file to `.env`:
       ```bash
       cp .env.example .env
