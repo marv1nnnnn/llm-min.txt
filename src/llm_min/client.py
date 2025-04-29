@@ -2,12 +2,11 @@ import logging
 import os
 from string import Template
 
-# Import existing constants/templates and helper functions
+# Import existing constants/templates and the PRE-LOADED guide content
 from .compacter import (
     FRAGMENT_GENERATION_PROMPT_TEMPLATE_STR,
     MERGE_PROMPT_TEMPLATE_STR,
-    _find_project_root,
-    _load_pcs_guide,  # Import the helper function
+    _pcs_guide_content,  # Import the already loaded guide content
 )
 
 # Import from .llm subpackage
@@ -23,15 +22,15 @@ class LLMMinClient:
 
     DEFAULT_MODEL = "gemini-2.5-flash"
     DEFAULT_MAX_TOKENS_PER_CHUNK = 10000
-    PCS_GUIDE_FILENAME = "pcs-guide.md"
+    # PCS_GUIDE_FILENAME = "pcs-guide.md" # No longer needed
     API_KEY_ENV_VAR = "GEMINI_API_KEY"
 
     def __init__(
         self,
         api_key: str | None = None,
         model: str = DEFAULT_MODEL,
-        max_tokens_per_chunk: int = DEFAULT_MAX_TOKENS_PER_CHUNK,  # Corrected from DEFAULT_MAX_TOKENS_PER_CHUNK
-        pcs_guide_path: str | None = None,
+        max_tokens_per_chunk: int = DEFAULT_MAX_TOKENS_PER_CHUNK,
+        # pcs_guide_path: str | None = None, # Removed parameter
     ):
         """
         Initializes the LLMMinClient.
@@ -41,13 +40,12 @@ class LLMMinClient:
                      from the environment variable (e.g., GEMINI_API_KEY).
             model: The identifier for the LLM model to use.
             max_tokens_per_chunk: Maximum tokens allowed per chunk for processing.
-            pcs_guide_path: Optional path to a custom PCS guide file. If None,
-                            attempts to locate 'pcs-guide.md' in the project root.
+            # pcs_guide_path: Removed.
 
         Raises:
             ValueError: If the API key is not provided and cannot be found in
                         the environment variables.
-            FileNotFoundError: If the specified or default pcs_guide_path cannot be found.
+            RuntimeError: If the PCS guide content could not be loaded by the compacter module.
         """
         self.api_key = api_key or os.environ.get(self.API_KEY_ENV_VAR)
         if not self.api_key:
@@ -56,33 +54,24 @@ class LLMMinClient:
         self.model = model
         self.max_tokens_per_chunk = max_tokens_per_chunk
 
-        # Load PCS Guide
-        guide_path_to_load = pcs_guide_path
-        if not guide_path_to_load:
-            # Adjust start path for _find_project_root if necessary,
-            # but os.path.dirname(__file__) is usually correct from within the module
-            project_root = _find_project_root(os.path.dirname(__file__))
-            if project_root:
-                guide_path_to_load = str(project_root / self.PCS_GUIDE_FILENAME)
-            else:
-                # Fallback: Check current dir or raise error?
-                # Raising FileNotFoundError seems more explicit if the guide isn't found
-                logger.warning(
-                    f"Could not find project root. Attempting to load {self.PCS_GUIDE_FILENAME} from current directory."
-                )
-                guide_path_to_load = self.PCS_GUIDE_FILENAME  # Try current directory as fallback
+        # Use the pre-loaded guide content from compacter
+        self.pcs_guide_content = _pcs_guide_content
+        if "ERROR:" in self.pcs_guide_content:
+            logger.error("PCS guide content was not loaded successfully by the compacter module.")
+            # Raise a different error since the client isn't loading it directly
+            raise RuntimeError("PCS guide content could not be loaded. Check logs from llm_min.compacter.")
 
-        try:
-            self.pcs_guide_content = _load_pcs_guide(guide_path_to_load)
-            if "ERROR" in self.pcs_guide_content:  # Check for error indicators from _load_pcs_guide
-                raise FileNotFoundError(f"Failed to load PCS guide from {guide_path_to_load}")
-            self.pcs_guide_path = guide_path_to_load  # Store the successfully loaded path
-        except FileNotFoundError:
-            logger.error(f"PCS guide file not found at {guide_path_to_load}")
-            raise FileNotFoundError(f"PCS guide file not found at {guide_path_to_load}")
-        except Exception as e:
-            logger.error(f"Error loading PCS guide from {guide_path_to_load}: {e}")
-            raise RuntimeError(f"Error loading PCS guide from {guide_path_to_load}: {e}")
+        # Removed file loading logic:
+        # guide_path_to_load = pcs_guide_path
+        # if not guide_path_to_load:
+        #     ...
+        # try:
+        #     self.pcs_guide_content = _load_pcs_guide(guide_path_to_load)
+        #     ...
+        # except FileNotFoundError:
+        #     ...
+        # except Exception as e:
+        #     ...
 
     async def compact(self, content: str, chunk_size: int | None = None, subject: str | None = None) -> str:
         """
@@ -137,13 +126,21 @@ class LLMMinClient:
                 logger.error(f"Error generating fragment for chunk {i + 1}: {e}", exc_info=True)
                 fragments.append(f"ERROR: FRAGMENT GENERATION FAILED FOR CHUNK {i + 1}: {e}")  # Append error marker
 
-        if not fragments:
-            logger.error("Fragment generation failed for all chunks.")
-            return "ERROR: ALL FRAGMENT GENERATION FAILED."
+        # Check if *any* non-error fragments were generated before attempting merge
+        successful_fragments = [f for f in fragments if not f.startswith("ERROR:")]
+        if not successful_fragments:
+            logger.error("Fragment generation failed for all chunks or resulted only in errors.")
+            # Optionally, join the error messages or return a generic one
+            # return "\n---\n".join(fragments) # Return concatenated errors
+            return "ERROR: ALL FRAGMENT GENERATION FAILED."  # Return generic error
 
         # 3. Merge fragments if necessary (now async)
+        # Only merge if there are multiple fragments AND at least one was successful
+        # (The check above handles the case where all failed)
         if len(fragments) > 1:
-            logger.info("Merging fragments...")
+            logger.info(f"Merging {len(fragments)} fragments ({len(successful_fragments)} successful)...")
+            # Note: We still pass ALL fragments (including error placeholders) to the merge prompt
+            # The LLM is expected to handle or ignore the error strings during merge.
             merge_template = Template(MERGE_PROMPT_TEMPLATE_STR)
             try:
                 # Join fragments with a separator
