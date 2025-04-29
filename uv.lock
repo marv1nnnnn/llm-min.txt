@@ -995,7 +995,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/4d/89/bacf75633dd43d6c5
 [[package]]
 name = "llm-min"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "beautifulsoup4" },
     { name = "crawl4ai" },
