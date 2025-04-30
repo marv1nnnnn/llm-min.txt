@@ -5,7 +5,7 @@ description = "Generates LLM context by scraping and summarizing documentation f
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
-  { name="Your Name", email="your.email@example.com" }, # TODO: Replace with actual author info
+  { name="marv1nnnnn", email="marvin1996325@gmail.com" },
 ]
 dependencies = [
     "crawl4ai>=0.6.2",
