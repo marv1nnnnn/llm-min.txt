@@ -77,7 +77,7 @@ async def generate_text_response(
         response: GenerateContentResponse = client.models.generate_content(
             model="gemini-2.5-flash-preview-0417",  # Use the specific model you intend
             contents=prompt,
-            generation_config=generation_config,  # Pass the config
+            config=generation_config,  # Pass the config
         )
 
         # 1. Check for blocking first (often indicated in prompt_feedback)
