@@ -30,13 +30,12 @@ pip install llm-min
 
 ```bash
 # Clone (if you haven't already)
-# git clone <repository_url>
 # cd llm-min-generator
 
 # Install dependencies (using uv)
 python -m venv .venv
 source .venv/bin/activate # or .venv\Scripts\activate on Windows
-uv pip install -r requirements.txt
+uv sync # Installs dependencies from pyproject.toml
 uv pip install -e .
 
 # Install browser binaries for crawling
@@ -109,11 +108,11 @@ output_dir/
 
 PCS is a highly condensed, machine-centric format designed for representing code structure and essential metadata with maximum information density. It uses single-character codes, minimal delimiters, and positional context to create a compact, single-string representation optimized for LLM context windows.
 
-Think of it as a "minified" version of code documentation, focusing purely on the structural elements and relationships an LLM needs to understand an API or library, discarding natural language explanations. The full specification can be found in `docs/pcs-guide.md`.
+Think of it as a "minified" version of code documentation, focusing purely on the structural elements and relationships an LLM needs to understand an API or library, discarding natural language explanations. The full specification can be found in `assets/llm_min_guideline.md`.
 
 ## Contributing
 
-Contributions are welcome! See `CONTRIBUTING.md` (if available) or focus on improving discovery, compaction, LLM support, or tests.
+Contributions are welcome! Feel free to open issues or submit pull requests focusing on improving discovery, compaction, LLM support, or tests.
 
 ## License
 

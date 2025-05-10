@@ -11,7 +11,6 @@ load_dotenv()  # Load environment variables from .env file
 
 logger = logging.getLogger(__name__)
 
-# Removed _stream_gemini_response
 
 
 def chunk_content(content: str, chunk_size: int) -> list[str]:
@@ -31,11 +30,11 @@ def chunk_content(content: str, chunk_size: int) -> list[str]:
     return chunks
 
 
-# Removed merge_json_outputs
 
 
 async def generate_text_response(
     prompt: str,
+    model_name: str,
     api_key: str | None = None,
     max_output_tokens: int | None = None,  # Optional: Add parameter to control max tokens
 ) -> str:
@@ -44,10 +43,11 @@ async def generate_text_response(
     Checks for completion status (finish_reason).
 
     Args:
-        prompt: The input prompt for the LLM.
-        api_key: Optional Gemini API Key. If not provided, tries GEMINI_API_KEY env var.
-        max_output_tokens: Optional maximum number of tokens for the response.
-
+        Args:
+            prompt: The input prompt for the LLM.
+            model_name: The name of the Gemini model to use.
+            api_key: Optional Gemini API Key. If not provided, tries GEMINI_API_KEY env var.
+            max_output_tokens: Optional maximum number of tokens for the response.
     Returns:
         The response string, or an error message string if failed or incomplete in certain ways.
         Logs warnings if truncated due to MAX_TOKENS.
@@ -75,7 +75,7 @@ async def generate_text_response(
 
         # Use the client to generate content
         response: GenerateContentResponse = client.models.generate_content(
-            model="gemini-2.5-flash-preview-04-17",  # Use the specific model you intend
+            model=model_name,  # Use the specific model you intend
             contents=prompt
         )
 

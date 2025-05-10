@@ -1,5 +1,5 @@
 import logging
-from urllib.parse import urlparse  # Import urlparse and urljoin
+from urllib.parse import urlparse  # Import urlparse
 
 from crawl4ai import AsyncWebCrawler, CrawlerRunConfig
 from crawl4ai.content_filter_strategy import (

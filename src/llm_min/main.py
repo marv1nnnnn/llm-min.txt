@@ -7,7 +7,6 @@ from pathlib import Path
 import typer  # Import typer
 from dotenv import load_dotenv  # Added dotenv import
 
-from .client import LLMMinClient  # Import LLMMinClient
 from .crawler import crawl_documentation
 from .parser import parse_requirements
 from .search import find_documentation_url
@@ -52,6 +51,13 @@ def write_min_text_file(output_base_dir: str | Path, package_name: str, content:
         package_dir = Path(output_base_dir) / package_name
         package_dir.mkdir(parents=True, exist_ok=True)
 
+        with open("assets/llm_min_guideline.md","r", encoding="utf-8") as f:
+            llm_min_guideline = f.read()
+
+        if not os.path.exists(os.path.join(package_dir, "llm-min_guideline.md")):
+            with open(os.path.join(package_dir, "llm-min-guideline.md"), "w", encoding="utf-8") as f:
+                f.write(llm_min_guideline)
+
         # Define the output file path
         file_path = package_dir / "llm-min.txt"
 
@@ -70,12 +76,13 @@ async def process_package(
     max_crawl_depth: int,
     chunk_size: int,
     gemini_api_key: str | None,  # Add gemini_api_key parameter
+    model_name: str, # Add model_name parameter
 ):
     """Processes a single package: finds docs, crawls, compacts, and writes files."""
     logger.info(f"--- Processing package: {package_name} ---")
     try:
-        # Pass the gemini_api_key to find_documentation_url
-        doc_url = await find_documentation_url(package_name, api_key=gemini_api_key)
+        # Pass the gemini_api_key and model_name to find_documentation_url
+        doc_url = await find_documentation_url(package_name, api_key=gemini_api_key, model_name=model_name)
         if not doc_url:
             logger.warning(f"Could not find documentation URL for {package_name}. Skipping.")
             return False
@@ -101,13 +108,14 @@ async def process_package(
 
         # Compact the content
         logger.info(f"Compacting content for {package_name}...")
-        # Pass gemini_api_key to the compaction function
+        # Pass gemini_api_key and model_name to the compaction function
         # Also pass package_name as the subject
         compacted_content = await compact_content_to_knowledge_base(
             aggregated_content=crawled_content,
             chunk_size=chunk_size,
             api_key=gemini_api_key,
             subject=package_name,  # Pass package_name as subject
+            model_name=model_name, # Pass model_name
         )
 
         if not compacted_content or "ERROR:" in compacted_content:
@@ -141,6 +149,7 @@ async def process_requirements(
     max_crawl_depth: int,
     chunk_size: int,
     gemini_api_key: str | None,  # Add gemini_api_key parameter
+    model_name: str, # Add model_name parameter
 ):
     """Processes a list of packages."""
     if not packages:
@@ -157,6 +166,7 @@ async def process_requirements(
             max_crawl_depth,
             chunk_size,
             gemini_api_key,  # Pass key down
+            model_name, # Pass model_name down
         )
         for package_name in packages
     ]
@@ -195,7 +205,7 @@ def main(
         help="A string containing package names, one per line (e.g., 'requests\\npydantic==2.1').",
     ),
     output_dir: str = typer.Option(
-        "my_docs",
+        "llm_min_docs",
         "--output-dir",
         "-o",
         help="Directory to save the generated documentation.",
@@ -239,6 +249,11 @@ def main(
         help="Enable verbose logging (DEBUG level).",
         is_flag=True,
     ),
+    gemini_model: str = typer.Option(
+        "gemini-2.0-flash",
+        "--gemini-model",
+        help="The Gemini model to use for compaction and search.",
+    ),
 ):
     """
     Generates LLM context by scraping and summarizing documentation for Python libraries.
@@ -255,6 +270,7 @@ def main(
 
     logger.info(f"Verbose logging {'enabled' if verbose else 'disabled'}.")  # Log if verbose is active
     logger.debug(f"Gemini API Key received in main: {gemini_api_key}")
+    logger.debug(f"Gemini Model received in main: {gemini_model}")
 
     # Ensure output_dir is converted to a Path object
     logger.info(f"Type of output_dir: {type(output_dir)}")
@@ -263,14 +279,6 @@ def main(
     output_dir_path = Path(str(output_dir))  # Explicitly convert to string before Path
     logger.info(f"After Path conversion - Type of output_dir_path: {type(output_dir_path)}, Value: {output_dir_path}")
     output_dir_path.mkdir(parents=True, exist_ok=True)
-
-    # Instantiate the client
-    # The client handles the API key validation and guide loading internally
-    try:
-        client = LLMMinClient(api_key=gemini_api_key)
-    except (ValueError, RuntimeError) as e:
-        logger.error(f"Client initialization error: {e}")
-        raise typer.Exit(code=1)
 
 
     # Validate input options: Exactly one must be provided
@@ -310,7 +318,7 @@ def main(
         # Example: https://requests.readthedocs.io/en/latest/ -> requests
         try:
             from urllib.parse import urlparse
-    
+
             parsed_url = urlparse(doc_url)
             path_parts = [part for part in parsed_url.path.split("/") if part]
             if path_parts:
@@ -324,11 +332,11 @@ def main(
                 package_name_from_url = domain_parts[0] if domain_parts else "crawled_doc"
                 packages_to_process.add(package_name_from_url)
                 logger.info(f"Inferred package name from domain: {package_name_from_url}")
-    
+
         except Exception as e:
             logger.warning(f"Could not infer package name from URL {doc_url}: {e}. Using 'crawled_doc'.")
             packages_to_process.add("crawled_doc")
-    
+
     # If a direct URL is provided, process only that URL
     if target_doc_url:
         # Assuming only one package name is inferred or set for a direct URL
@@ -342,9 +350,10 @@ def main(
                 max_crawl_depth=max_crawl_depth,
                 chunk_size=chunk_size,
                 gemini_api_key=gemini_api_key,
+                model_name=gemini_model, # Pass model_name
             )
         )
-    
+
     # If no direct URL is provided, process packages from other sources
     elif packages_to_process:
         # Run the processing asynchronously
@@ -356,10 +365,11 @@ def main(
                 max_crawl_depth=max_crawl_depth,
                 chunk_size=chunk_size,
                 gemini_api_key=gemini_api_key,
+                model_name=gemini_model, # Pass model_name
             )
         )
-    
-    
+
+
 async def process_direct_url(
     package_name: str,
     doc_url: str,
@@ -368,6 +378,7 @@ async def process_direct_url(
     max_crawl_depth: int,
     chunk_size: int,
     gemini_api_key: str | None,
+    model_name: str, # Add model_name parameter
 ):
     """Processes a single direct documentation URL."""
     logger.info(f"--- Processing direct URL for {package_name}: {doc_url} ---")
@@ -390,6 +401,7 @@ async def process_direct_url(
             chunk_size=chunk_size,
             api_key=gemini_api_key,
             subject=package_name,
+            model_name=model_name, # Pass model_name
         )
 
         if not compacted_content or "ERROR:" in compacted_content:
@@ -415,10 +427,6 @@ async def process_direct_url(
             exc_info=True,
         )
         return False
-
-
-if __name__ == "__main__":
-    app()
 
 
 if __name__ == "__main__":
