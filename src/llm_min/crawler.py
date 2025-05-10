@@ -2,9 +2,7 @@ import logging
 from urllib.parse import urlparse  # Import urlparse
 
 from crawl4ai import AsyncWebCrawler, CrawlerRunConfig
-from crawl4ai.content_filter_strategy import (
-    PruningContentFilter,
-)  # Import PruningContentFilter
+# Import PruningContentFilter
 from crawl4ai.content_scraping_strategy import LXMLWebScrapingStrategy
 from crawl4ai.deep_crawling import (
     BestFirstCrawlingStrategy,
@@ -63,10 +61,10 @@ async def crawl_documentation(url: str, max_pages: int | None = 200, max_depth: 
             # --- End Path Restriction Logic ---
 
             # 1. Configure the Content Filter (as before)
-            prune_filter = PruningContentFilter(min_word_threshold=50)
+            # prune_filter = PruningContentFilter(min_word_threshold=50)
             # 2. Configure the Markdown Generator with the filter (as before)
             md_generator = DefaultMarkdownGenerator(
-                content_filter=prune_filter,  # Re-enable filter for testing
+                # content_filter=prune_filter,  # Re-enable filter for testing
                 options={"ignore_links": True, "ignore_images": True},  # Optionally ignore links and images if desired
             )
 
