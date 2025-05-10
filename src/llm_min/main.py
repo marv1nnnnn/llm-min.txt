@@ -8,11 +8,10 @@ import typer  # Import typer
 from dotenv import load_dotenv  # Added dotenv import
 
 from .client import LLMMinClient  # Import LLMMinClient
-from .compacter import compact_content_with_llm
 from .crawler import crawl_documentation
 from .parser import parse_requirements
 from .search import find_documentation_url
-
+from .compacter import compact_content_to_knowledge_base
 # Load environment variables from .env file
 load_dotenv()
 
@@ -97,13 +96,14 @@ async def process_package(
         logger.info(f"Successfully crawled content for {package_name}. Total size: {len(crawled_content)} characters.")
 
         # Write the full crawled content to a file
+        # Write the full crawled content to chunked files
         write_full_text_file(output_dir, package_name, crawled_content)
 
         # Compact the content
         logger.info(f"Compacting content for {package_name}...")
         # Pass gemini_api_key to the compaction function
         # Also pass package_name as the subject
-        compacted_content = await compact_content_with_llm(
+        compacted_content = await compact_content_to_knowledge_base(
             aggregated_content=crawled_content,
             chunk_size=chunk_size,
             api_key=gemini_api_key,
@@ -133,7 +133,6 @@ async def process_package(
             exc_info=True,
         )
         return False
-
 
 async def process_requirements(
     packages: set[str],  # Accept parsed packages directly
@@ -209,7 +208,7 @@ def main(
         callback=lambda v: None if v == 0 else v,
     ),
     max_crawl_depth: int = typer.Option(
-        2,
+        3,
         "--max-crawl-depth",
         "-D",
         help="Maximum depth to crawl from the starting URL. Default: 2.",
@@ -273,23 +272,6 @@ def main(
         logger.error(f"Client initialization error: {e}")
         raise typer.Exit(code=1)
 
-    # Get the PCS guide content and write it to the output directory root
-    try:
-        pcs_guide_content = client.get_pcs_guide()
-        if "ERROR:" in pcs_guide_content:
-            logger.error(f"Failed to retrieve PCS guide content: {pcs_guide_content}")
-            # Decide if this should be a hard error or just a warning
-            # For now, let's make it a warning and continue with package processing
-            logger.warning("Proceeding without writing PCS guide due to retrieval error.")
-        else:
-            guide_file_path = output_dir_path / "pcs-guide.md"
-            with open(guide_file_path, "w", encoding="utf-8") as f:
-                f.write(pcs_guide_content)
-            logger.info(f"Successfully wrote PCS guide to {guide_file_path}")
-    except Exception as e:
-        logger.error(f"An error occurred while writing the PCS guide: {e}", exc_info=True)
-        # Decide if this should be a hard error or just a warning
-        logger.warning("Proceeding without writing PCS guide due to file writing error.")
 
     # Validate input options: Exactly one must be provided
     input_options = [requirements_file, input_folder, package_string, doc_url]
@@ -328,7 +310,7 @@ def main(
         # Example: https://requests.readthedocs.io/en/latest/ -> requests
         try:
             from urllib.parse import urlparse
-
+    
             parsed_url = urlparse(doc_url)
             path_parts = [part for part in parsed_url.path.split("/") if part]
             if path_parts:
@@ -342,11 +324,11 @@ def main(
                 package_name_from_url = domain_parts[0] if domain_parts else "crawled_doc"
                 packages_to_process.add(package_name_from_url)
                 logger.info(f"Inferred package name from domain: {package_name_from_url}")
-
+    
         except Exception as e:
             logger.warning(f"Could not infer package name from URL {doc_url}: {e}. Using 'crawled_doc'.")
             packages_to_process.add("crawled_doc")
-
+    
     # If a direct URL is provided, process only that URL
     if target_doc_url:
         # Assuming only one package name is inferred or set for a direct URL
@@ -362,7 +344,7 @@ def main(
                 gemini_api_key=gemini_api_key,
             )
         )
-
+    
     # If no direct URL is provided, process packages from other sources
     elif packages_to_process:
         # Run the processing asynchronously
@@ -376,8 +358,8 @@ def main(
                 gemini_api_key=gemini_api_key,
             )
         )
-
-
+    
+    
 async def process_direct_url(
     package_name: str,
     doc_url: str,
@@ -403,7 +385,7 @@ async def process_direct_url(
 
         # Compact the content
         logger.info(f"Compacting content for {package_name}...")
-        compacted_content = await compact_content_with_llm(
+        compacted_content = await compact_content_to_knowledge_base(
             aggregated_content=crawled_content,
             chunk_size=chunk_size,
             api_key=gemini_api_key,
@@ -433,6 +415,10 @@ async def process_direct_url(
             exc_info=True,
         )
         return False
+
+
+if __name__ == "__main__":
+    app()
 
 
 if __name__ == "__main__":
