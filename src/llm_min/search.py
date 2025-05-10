@@ -68,7 +68,9 @@ async def select_best_url_with_llm(
     logger.info(f"Asking LLM to select the best documentation URL for {package_name}.")
     try:
         # Call the LLM using Gemini provider, passing the API key
-        llm_response = await generate_text_response(prompt, api_key=api_key, model_name=model_name)  # Await the async call
+        llm_response = await generate_text_response(
+            prompt, api_key=api_key, model_name=model_name
+        )  # Await the async call
         logger.debug(f"LLM Response for {package_name}: {llm_response}")
 
         # llm_response is now a string (or error string)
@@ -96,7 +98,9 @@ async def select_best_url_with_llm(
         return None
 
 
-async def find_documentation_url(package_name: str, api_key: str | None = None, model_name: str | None = None) -> str | None:
+async def find_documentation_url(
+    package_name: str, api_key: str | None = None, model_name: str | None = None
+) -> str | None:
     """Finds the most likely documentation URL for a package using search and LLM selection.
     (Async version)
     """
@@ -104,7 +108,9 @@ async def find_documentation_url(package_name: str, api_key: str | None = None, 
     if not search_results:
         return None
     # Pass results and api_key and model_name to LLM for selection
-    best_url_raw = await select_best_url_with_llm(package_name, search_results, api_key=api_key, model_name=model_name)  # Await async call
+    best_url_raw = await select_best_url_with_llm(
+        package_name, search_results, api_key=api_key, model_name=model_name
+    )  # Await async call
     if best_url_raw:
         # Clean the URL iteratively
         cleaned_url = best_url_raw

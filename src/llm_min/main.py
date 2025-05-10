@@ -11,6 +11,7 @@ from .crawler import crawl_documentation
 from .parser import parse_requirements
 from .search import find_documentation_url
 from .compacter import compact_content_to_knowledge_base
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -51,7 +52,7 @@ def write_min_text_file(output_base_dir: str | Path, package_name: str, content:
         package_dir = Path(output_base_dir) / package_name
         package_dir.mkdir(parents=True, exist_ok=True)
 
-        with open("assets/llm_min_guideline.md","r", encoding="utf-8") as f:
+        with open("assets/llm_min_guideline.md", "r", encoding="utf-8") as f:
             llm_min_guideline = f.read()
 
         if not os.path.exists(os.path.join(package_dir, "llm-min_guideline.md")):
@@ -76,7 +77,7 @@ async def process_package(
     max_crawl_depth: int,
     chunk_size: int,
     gemini_api_key: str | None,  # Add gemini_api_key parameter
-    model_name: str, # Add model_name parameter
+    model_name: str,  # Add model_name parameter
 ):
     """Processes a single package: finds docs, crawls, compacts, and writes files."""
     logger.info(f"--- Processing package: {package_name} ---")
@@ -115,7 +116,7 @@ async def process_package(
             chunk_size=chunk_size,
             api_key=gemini_api_key,
             subject=package_name,  # Pass package_name as subject
-            model_name=model_name, # Pass model_name
+            model_name=model_name,  # Pass model_name
         )
 
         if not compacted_content or "ERROR:" in compacted_content:
@@ -142,6 +143,7 @@ async def process_package(
         )
         return False
 
+
 async def process_requirements(
     packages: set[str],  # Accept parsed packages directly
     output_dir: Path,
@@ -149,7 +151,7 @@ async def process_requirements(
     max_crawl_depth: int,
     chunk_size: int,
     gemini_api_key: str | None,  # Add gemini_api_key parameter
-    model_name: str, # Add model_name parameter
+    model_name: str,  # Add model_name parameter
 ):
     """Processes a list of packages."""
     if not packages:
@@ -166,7 +168,7 @@ async def process_requirements(
             max_crawl_depth,
             chunk_size,
             gemini_api_key,  # Pass key down
-            model_name, # Pass model_name down
+            model_name,  # Pass model_name down
         )
         for package_name in packages
     ]
@@ -280,7 +282,6 @@ def main(
     logger.info(f"After Path conversion - Type of output_dir_path: {type(output_dir_path)}, Value: {output_dir_path}")
     output_dir_path.mkdir(parents=True, exist_ok=True)
 
-
     # Validate input options: Exactly one must be provided
     input_options = [requirements_file, input_folder, package_string, doc_url]
     if sum(opt is not None for opt in input_options) != 1:
@@ -350,7 +351,7 @@ def main(
                 max_crawl_depth=max_crawl_depth,
                 chunk_size=chunk_size,
                 gemini_api_key=gemini_api_key,
-                model_name=gemini_model, # Pass model_name
+                model_name=gemini_model,  # Pass model_name
             )
         )
 
@@ -365,7 +366,7 @@ def main(
                 max_crawl_depth=max_crawl_depth,
                 chunk_size=chunk_size,
                 gemini_api_key=gemini_api_key,
-                model_name=gemini_model, # Pass model_name
+                model_name=gemini_model,  # Pass model_name
             )
         )
 
@@ -378,7 +379,7 @@ async def process_direct_url(
     max_crawl_depth: int,
     chunk_size: int,
     gemini_api_key: str | None,
-    model_name: str, # Add model_name parameter
+    model_name: str,  # Add model_name parameter
 ):
     """Processes a single direct documentation URL."""
     logger.info(f"--- Processing direct URL for {package_name}: {doc_url} ---")
@@ -401,7 +402,7 @@ async def process_direct_url(
             chunk_size=chunk_size,
             api_key=gemini_api_key,
             subject=package_name,
-            model_name=model_name, # Pass model_name
+            model_name=model_name,  # Pass model_name
         )
 
         if not compacted_content or "ERROR:" in compacted_content:

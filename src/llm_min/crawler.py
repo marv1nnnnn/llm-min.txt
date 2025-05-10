@@ -63,11 +63,11 @@ async def crawl_documentation(url: str, max_pages: int | None = 200, max_depth: 
             # --- End Path Restriction Logic ---
 
             # 1. Configure the Content Filter (as before)
-            prune_filter = PruningContentFilter( min_word_threshold=50)
+            prune_filter = PruningContentFilter(min_word_threshold=50)
             # 2. Configure the Markdown Generator with the filter (as before)
             md_generator = DefaultMarkdownGenerator(
                 content_filter=prune_filter,  # Re-enable filter for testing
-                options={"ignore_links": True,"ignore_images": True},  # Optionally ignore links and images if desired
+                options={"ignore_links": True, "ignore_images": True},  # Optionally ignore links and images if desired
             )
 
             # Determine the effective max_pages for the crawler (as before)
@@ -122,8 +122,7 @@ async def crawl_documentation(url: str, max_pages: int | None = 200, max_depth: 
     except Exception as e:
         # Log the original URL in case of error for better context
         logger.error(
-            f"Crawling failed for initial URL {url} "
-            f"(resolved to {url if 'url' in locals() else 'N/A'}): {e}",
+            f"Crawling failed for initial URL {url} (resolved to {url if 'url' in locals() else 'N/A'}): {e}",
             exc_info=True,
         )
         return None

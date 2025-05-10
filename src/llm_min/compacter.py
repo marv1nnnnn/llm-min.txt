@@ -190,10 +190,9 @@ async def compact_content_to_knowledge_base(
         else:
             logger.warning(f"Failed to generate valid AIU string for chunk {i + 1}. Output: {aiu_str}")
 
-
     if not aiu_strings:
         logger.error("No AIU strings were generated from the chunks.")
-        return "" # Return empty string if no AIUs were generated
+        return ""  # Return empty string if no AIUs were generated
 
     logger.info(f"Successfully extracted {len(aiu_strings)} AIU strings. Proceeding to merge.")
 
@@ -203,20 +202,17 @@ async def compact_content_to_knowledge_base(
             guideline_content = f.read()
     except FileNotFoundError:
         logger.error("Guideline file not found at assets/guideline.md")
-        return "" # Or raise an exception
+        return ""  # Or raise an exception
     except Exception as e:
         logger.error(f"Error reading guideline file: {e}")
-        return "" # Or raise an exception
-
+        return ""  # Or raise an exception
 
     # Join the individual AIU strings for the prompt input
     input_aiu_strings_for_prompt = "\n".join(aiu_strings)
 
-
     # Use the MERGE_PROMPT_TEMPLATE to construct the final merge prompt
     merge_prompt = MERGE_PROMPT_TEMPLATE.substitute(
-        guideline=guideline_content,
-        aiu_strings=input_aiu_strings_for_prompt
+        guideline=guideline_content, aiu_strings=input_aiu_strings_for_prompt
     )
 
     logger.debug(f"--- AIU Merge Prompt START ---")
@@ -234,4 +230,4 @@ async def compact_content_to_knowledge_base(
         return merged_kb_content.strip()
     else:
         logger.error(f"Failed to merge AIU strings. Output: {merged_kb_content}")
-        return "" # Return empty string or raise an error
+        return ""  # Return empty string or raise an error

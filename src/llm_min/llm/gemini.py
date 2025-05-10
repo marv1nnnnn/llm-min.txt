@@ -12,7 +12,6 @@ load_dotenv()  # Load environment variables from .env file
 logger = logging.getLogger(__name__)
 
 
-
 def chunk_content(content: str, chunk_size: int) -> list[str]:
     """Splits content into chunks of approximately chunk_size."""
     chunks = []
@@ -28,8 +27,6 @@ def chunk_content(content: str, chunk_size: int) -> list[str]:
         chunks.append(content[start:end])
         start = end
     return chunks
-
-
 
 
 async def generate_text_response(
@@ -76,7 +73,7 @@ async def generate_text_response(
         # Use the client to generate content
         response: GenerateContentResponse = client.models.generate_content(
             model=model_name,  # Use the specific model you intend
-            contents=prompt
+            contents=prompt,
         )
 
         # 1. Check for blocking first (often indicated in prompt_feedback)
