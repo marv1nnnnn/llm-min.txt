@@ -1,6 +1,5 @@
 import logging
 import os
-
 from dotenv import load_dotenv
 
 # Import genai again
@@ -11,31 +10,87 @@ load_dotenv()  # Load environment variables from .env file
 
 logger = logging.getLogger(__name__)
 
-# Removed _stream_gemini_response
-
-
 def chunk_content(content: str, chunk_size: int) -> list[str]:
-    """Splits content into chunks of approximately chunk_size."""
+    """
+    Splits concatenated Markdown content into chunks of approximately chunk_size.
+    Tries to respect paragraph and line breaks for more natural splitting.
+    A small, fixed overlap is added between chunks.
+    """
+    if not content.strip():
+        return []
+
     chunks = []
-    start = 0
-    while start < len(content):
-        end = start + chunk_size
-        if end > len(content):
-            end = len(content)
-        # Try to find a natural break point (like a newline) near the end of the chunk
-        last_newline = content.rfind("\n", start, end)
-        if last_newline > start:
-            end = last_newline + 1  # Include the newline character
-        chunks.append(content[start:end])
-        start = end
-    return chunks
+    current_pos = 0
+    # Define a small overlap, e.g., 10% of chunk_size or a fixed number of characters
+    # For simplicity with the current signature, we'll make it a small fixed value or derived.
+    # Let's make it a small portion of chunk_size for now.
+    # If we could add chunk_overlap to the signature, that would be more flexible.
+    chunk_overlap = max(10, chunk_size // 20) # e.g., 5% of chunk_size, but at least 10 chars
+
+    while current_pos < len(content):
+        # Determine the ideal end position for this chunk
+        ideal_end_pos = current_pos + chunk_size
+
+        # If ideal end is beyond content length, just take the rest
+        if ideal_end_pos >= len(content):
+            chunks.append(content[current_pos:])
+            break
+
+        # Look for preferred break points within a reasonable window around ideal_end_pos
+        # Window: from a bit before ideal_end_pos to ideal_end_pos
+        search_start = max(current_pos, ideal_end_pos - chunk_size // 2) # Don't search too far back
+        actual_end_pos = ideal_end_pos
+
+        # 1. Try to find a double newline (paragraph break)
+        # We search backwards from ideal_end_pos
+        paragraph_break = content.rfind("\n\n", search_start, ideal_end_pos + 2) # +2 to catch it if it's right at the end
+        if paragraph_break != -1 and paragraph_break > current_pos:
+            actual_end_pos = paragraph_break + 2 # Include the double newline
+        else:
+            # 2. Try to find a single newline (line break)
+            line_break = content.rfind("\n", search_start, ideal_end_pos + 1)
+            if line_break != -1 and line_break > current_pos:
+                actual_end_pos = line_break + 1 # Include the newline
+            # else:
+            # 3. If no good break found, just take chunk_size (or what's left)
+            #    This is covered by ideal_end_pos, but we ensure it doesn't exceed content length.
+            #    actual_end_pos remains ideal_end_pos, capped at len(content)
+
+        # Ensure we don't go past the end of the content
+        actual_end_pos = min(actual_end_pos, len(content))
+        
+        # If after finding a break, the chunk is extremely small (e.g., < 10% of chunk_size),
+        # it might be better to take the hard cut at chunk_size to avoid tiny chunks.
+        # This can happen if a good break point is very close to current_pos.
+        if actual_end_pos - current_pos < chunk_size // 10 and ideal_end_pos < len(content):
+            actual_end_pos = min(ideal_end_pos, len(content))
 
 
-# Removed merge_json_outputs
+        chunk_text = content[current_pos:actual_end_pos]
+        if chunk_text.strip(): # Only add non-empty chunks
+            chunks.append(chunk_text)
 
+        # Move current_pos for the next chunk, considering overlap
+        # The next chunk should start `chunk_overlap` characters before `actual_end_pos`
+        # but not before the beginning of the current chunk if it was very short.
+        if actual_end_pos >= len(content): # Reached the end
+            break
+            
+        current_pos = max(current_pos + 1, actual_end_pos - chunk_overlap) # Ensure progress
+
+        # Safety break to prevent infinite loops if logic is flawed
+        if not chunk_text and current_pos < len(content):
+            # This shouldn't happen if logic is correct, but as a safeguard
+            # print("Warning: Empty chunk detected, forcing progress.")
+            current_pos += 1
+
+
+    # A final pass to filter out any accidental empty strings if they slipped through
+    return [c for c in chunks if c.strip()]
 
 async def generate_text_response(
     prompt: str,
+    model_name: str,
     api_key: str | None = None,
     max_output_tokens: int | None = None,  # Optional: Add parameter to control max tokens
 ) -> str:
@@ -44,10 +99,11 @@ async def generate_text_response(
     Checks for completion status (finish_reason).
 
     Args:
-        prompt: The input prompt for the LLM.
-        api_key: Optional Gemini API Key. If not provided, tries GEMINI_API_KEY env var.
-        max_output_tokens: Optional maximum number of tokens for the response.
-
+        Args:
+            prompt: The input prompt for the LLM.
+            model_name: The name of the Gemini model to use.
+            api_key: Optional Gemini API Key. If not provided, tries GEMINI_API_KEY env var.
+            max_output_tokens: Optional maximum number of tokens for the response.
     Returns:
         The response string, or an error message string if failed or incomplete in certain ways.
         Logs warnings if truncated due to MAX_TOKENS.
@@ -75,9 +131,8 @@ async def generate_text_response(
 
         # Use the client to generate content
         response: GenerateContentResponse = client.models.generate_content(
-            model="gemini-2.5-flash-preview-0417",  # Use the specific model you intend
+            model=model_name,  # Use the specific model you intend
             contents=prompt,
-            generation_config=generation_config,  # Pass the config
         )
 
         # 1. Check for blocking first (often indicated in prompt_feedback)

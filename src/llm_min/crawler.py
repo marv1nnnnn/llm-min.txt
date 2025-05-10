@@ -1,10 +1,9 @@
 import logging
-from urllib.parse import urlparse  # Import urlparse and urljoin
+from urllib.parse import urlparse  # Import urlparse
 
 from crawl4ai import AsyncWebCrawler, CrawlerRunConfig
-from crawl4ai.content_filter_strategy import (
-    PruningContentFilter,
-)  # Import PruningContentFilter
+# Import PruningContentFilter
+from crawl4ai.content_scraping_strategy import LXMLWebScrapingStrategy
 from crawl4ai.deep_crawling import (
     BestFirstCrawlingStrategy,
 )  # Import BestFirstCrawlingStrategy for deep crawling
@@ -36,7 +35,7 @@ def _get_base_path(url: str) -> str:
     return base_url
 
 
-async def crawl_documentation(url: str, max_pages: int | None = 100, max_depth: int = 3) -> str | None:
+async def crawl_documentation(url: str, max_pages: int | None = 200, max_depth: int = 3) -> str | None:
     """Crawls a documentation URL using crawl4ai's deep crawling with content pruning,
     restricted to the same directory path as the final resolved URL after redirects.
 
@@ -52,47 +51,21 @@ async def crawl_documentation(url: str, max_pages: int | None = 100, max_depth: 
     try:
         logger.debug(f"Attempting crawl process for initial URL: {url}")
         async with AsyncWebCrawler() as crawler:
-            # 1. Run initial fetch to resolve redirects without specific config
-            logger.info(f"Performing initial fetch for URL: {url} to resolve redirects.")
-            initial_result_list = await crawler.arun(url)  # Use default config for simple fetch
-
-            final_url = url  # Default to original URL
-            # Check if the initial fetch was successful and yielded a result
-            if not initial_result_list or not initial_result_list[0].success:
-                logger.warning(
-                    f"Initial fetch failed or returned no success for URL: {url}. "
-                    f"Proceeding with original URL for deep crawl."
-                )
-                # Log initial and final URLs even if fetch failed
-                logger.info(f"Initial URL: {url}")
-                logger.info(f"Final URL (using original due to fetch issue): {final_url}")
-            else:
-                initial_result = initial_result_list[0]  # Get the first page result
-                # Determine the final URL to use for the deep crawl based on redirect
-                if initial_result.redirected_url and initial_result.redirected_url != url:
-                    final_url = initial_result.redirected_url
-                    logger.info(f"Initial URL: {url}")
-                    logger.info(f"Redirected to Final URL: {final_url}")
-                else:
-                    # No redirect or same URL, final_url remains the original url
-                    logger.info(f"Initial URL: {url}")
-                    logger.info(f"Final URL (no redirect): {final_url}")
-
-            # --- Path Restriction Logic (Based on final_url) ---
-            base_path_url = _get_base_path(final_url)  # Calculate base path from the final URL
+            # --- Path Restriction Logic (Based on initial url) ---
+            base_path_url = _get_base_path(url)  # Calculate base path from the initial URL
             # The pattern ensures we stay within the directory structure of the final URL.
-            pattern = f"^{base_path_url}.*"  # Match base path prefix + anything after
+            pattern = f"{base_path_url}*"  # Match base path prefix + anything after
             logger.info(f"Restricting deep crawl to pattern based on final URL: {pattern}")
             path_filter = URLPatternFilter(patterns=[pattern])
             filter_chain = FilterChain(filters=[path_filter])
             # --- End Path Restriction Logic ---
 
             # 1. Configure the Content Filter (as before)
-            prune_filter = PruningContentFilter(threshold=0.5, threshold_type="fixed", min_word_threshold=50)
+            # prune_filter = PruningContentFilter(min_word_threshold=50)
             # 2. Configure the Markdown Generator with the filter (as before)
             md_generator = DefaultMarkdownGenerator(
-                content_filter=prune_filter,  # Re-enable filter for testing
-                options={"ignore_links": True},  # Optionally ignore links if desired
+                # content_filter=prune_filter,  # Re-enable filter for testing
+                options={"ignore_links": True, "ignore_images": True},  # Optionally ignore links and images if desired
             )
 
             # Determine the effective max_pages for the crawler (as before)
@@ -109,18 +82,17 @@ async def crawl_documentation(url: str, max_pages: int | None = 100, max_depth: 
                     # Optional: Add scorer
                 ),
                 markdown_generator=md_generator,
-                word_count_threshold=40,  # Content filter is primary, but keep this low
+                scraping_strategy=LXMLWebScrapingStrategy(),
                 verbose=True,
             )
 
             # 4. Run the deep crawl using the final URL and the configured run_config
-            logger.info(f"Starting deep crawl for resolved URL: {final_url} with config: {run_config}")
             # arun now uses the configured markdown generator and deep crawl strategy on the final URL
-            results = await crawler.arun(final_url, config=run_config)  # Use final_url here
+            results = await crawler.arun(url, config=run_config)  # Use initial url here
 
         # --- Aggregate Results (as before) ---
         if not results:
-            logger.warning(f"Deep crawling returned no results starting from URL: {final_url} (original: {url})")
+            logger.warning(f"Deep crawling returned no results starting from URL: {url} (original: {url})")
             return None
 
         aggregated_content = "\n\n---\n\n".join(
@@ -134,13 +106,13 @@ async def crawl_documentation(url: str, max_pages: int | None = 100, max_depth: 
 
         if not aggregated_content:
             logger.warning(
-                f"Deep crawling resulted in empty aggregated content for URL: {final_url} "
+                f"Deep crawling resulted in empty aggregated content for URL: {url} "
                 f"(original: {url}) (possibly due to pruning filter)"
             )
             return None
 
         logger.info(
-            f"Successfully deep crawled {len(results)} pages starting from {final_url} "
+            f"Successfully deep crawled {len(results)} pages starting from {url} "
             f"(original: {url}). Aggregated content length after pruning: {len(aggregated_content)}"
         )
         return aggregated_content
@@ -148,8 +120,7 @@ async def crawl_documentation(url: str, max_pages: int | None = 100, max_depth: 
     except Exception as e:
         # Log the original URL in case of error for better context
         logger.error(
-            f"Crawling failed for initial URL {url} "
-            f"(resolved to {final_url if 'final_url' in locals() else 'N/A'}): {e}",
+            f"Crawling failed for initial URL {url} (resolved to {url if 'url' in locals() else 'N/A'}): {e}",
             exc_info=True,
         )
         return None

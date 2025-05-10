@@ -133,8 +133,7 @@ Thumbs.db
 .state/
 .my_docs/*
 .cursorrules
-.my_docs
-.docs
-.reports
-.specs
-project_overview.json
+docs
+my_docs
+.rooroo
+.ruff_cache
