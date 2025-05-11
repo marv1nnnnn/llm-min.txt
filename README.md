@@ -131,6 +131,45 @@ Process the `typer` package and the FastAPI documentation URL, limiting crawl to
 llm-min -pkg "typer" -u "https://fastapi.tiangolo.com/" -o my_docs -p 50 --gemini-api-key YOUR_API_KEY
 ```
 
+**4. Generate Docs (Module Usage):**
+
+You can also import and use the `LLMMinGenerator` class directly in your Python code for programmatic control.
+
+```python
+from llm_min import LLMMinGenerator
+import os
+
+# Configure LLM (optional, uses defaults if None)
+llm_config = {
+    "api_key": os.environ.get("GEMINI_API_KEY"), # Or provide directly
+    "model_name": "gemini-2.5-flash-preview-04-17",
+    "chunk_size": 1000000,
+    "max_crawl_pages": 200,
+    "max_crawl_depth": 3,
+}
+
+# Instantiate the generator
+# Output will be saved to ./my_output_docs/package_name/ or ./my_output_docs/url_identifier/
+generator = LLMMinGenerator(output_dir="./my_output_docs", llm_config=llm_config)
+
+# Generate documentation for a package
+try:
+    generator.generate_from_package("requests")
+    print("Documentation generated for 'requests'")
+except Exception as e:
+    print(f"Error generating documentation for 'requests': {e}")
+
+# Generate documentation from a URL
+try:
+    generator.generate_from_url("https://docs.python.org/3/")
+    print("Documentation generated for 'https://docs.python.org/3/'")
+except Exception as e:
+    print(f"Error generating documentation for 'https://docs.python.org/3/': {e}")
+
+```
+
+This example demonstrates how to create an instance of `LLMMinGenerator`, configure it, and then call either `generate_from_package` or `generate_from_url` to generate the documentation.
+
 For a full list of options and their descriptions, run:
 ```bash
 llm-min --help
@@ -150,6 +189,8 @@ Using the default model (`gemini-2.5-flash-preview-04-17`) provides a good balan
 
 The core logic of `llm-min` processes inputs as follows. All I/O-bound operations (like web requests and LLM calls) for each input item are handled asynchronously for efficiency.
 
+The core logic of `llm-min` is now encapsulated within the `LLMMinGenerator` class. The CLI entry point (`src/llm_min/main.py`) parses arguments and delegates the generation process to an instance of this class. All I/O-bound operations (like web requests and LLM calls) for each input item are handled asynchronously for efficiency.
+
 ```text
 [ User Runs CLI: llm-min ... ]
            |
@@ -159,64 +200,40 @@ The core logic of `llm-min` processes inputs as follows. All I/O-bound operation
 +--------------------------+
            |
            v
-    +--------------+
-    | Input Type?  |
-    +--------------+
-    /              \
-   /                \
-  v                  v
---packages      --doc-urls
-  |                  |
-  |                  |
-  v                  v
-[For each pkg name:] [For each direct URL:]
-[Find Docs URL     ] [Use URL as is       ]
-[(search.py)       ]
-  \                  /
-   \                /
-    +----------------+
-    | Combine URLs   |
-    +----------------+
++--------------------------+
+| Instantiate & Use        |
+| LLMMinGenerator          |
+| (src/llm_min/generator.py)|
++--------------------------+
            |
            v
-+---------------------------------+
-| For each found/provided URL:    |
-| Crawl Documentation (crawler.py)|
-+---------------------------------+
-                 |
-                 v
-+---------------------------------+
-| For each crawled content:       |
-| Compact Content using LLM       |
-| (compacter.py & llm/gemini.py)  |
-| (Uses assets/guideline.md)      |
-+---------------------------------+
-                 |
-                 v
-+---------------------------------+
-| Save Outputs (main.py):         |
-| - llm-full.txt (raw content)    |
-| - llm-min.txt (compacted KB)    |
-| - llm-min-guideline.md          |
-+---------------------------------+
-
-(All operations from URL processing to saving outputs
- occur in an async loop for each item)
++--------------------------+
+| LLMMinGenerator          |
+| Orchestrates:            |
+| - Search (search.py)     |
+| - Crawling (crawler.py)  |
+| - Compaction (compacter.py)|
+| - Writing Outputs        |
++--------------------------+
+           |
+           v
+[ Outputs Saved to output_dir ]
 ```
 
 **Brief Explanation:**
 
 1.  **CLI Input (`main.py`):** The tool starts by parsing command-line arguments.
-2.  **URL Discovery/Reception (`main.py`, `search.py`):**
-    *   If package names are given (`--packages`), their documentation URLs are found using `search.py` (which employs an LLM and web search).
-    *   If direct URLs are given (`--doc-urls`), they are used directly.
-3.  **Crawling (`crawler.py`):** Each documentation URL is crawled to fetch its textual content.
-4.  **Compaction (`compacter.py`, `llm/gemini.py`):** The crawled text is processed by a Gemini LLM, guided by `assets/guideline.md`, to produce a structured `KNOWLEDGE_BASE`.
-5.  **Output (`main.py`):** The raw content (`llm-full.txt`), compacted `KNOWLEDGE_BASE` (`llm-min.txt`), and the guideline (`llm-min-guideline.md`) are saved.
+2.  **Generator Instantiation (`main.py`):** An instance of `LLMMinGenerator` is created with the specified configuration.
+3.  **Generation Delegation (`main.py` -> `generator.py`):** The `main` function calls the appropriate method (`generate_from_package` or `generate_from_url`) on the `LLMMinGenerator` instance.
+4.  **Orchestration (`generator.py`):** The `LLMMinGenerator` class orchestrates the underlying logic:
+    *   If a package name is given, it uses the search logic (`search.py`) to find the documentation URL.
+    *   It then uses the crawling logic (`crawler.py`) to fetch content from the URL.
+    *   The crawled content is compacted using the LLM logic (`compacter.py` and `llm/gemini.py`), guided by `assets/llm_min_guideline.md`.
+    *   Finally, it writes the output files (`llm-full.txt`, `llm-min.txt`, and `llm-min-guideline.md`).
 
-All steps from URL discovery/reception through to output generation are performed for each package/URL, with I/O operations handled asynchronously.
+All steps from URL discovery/reception through to output generation are performed for each package/URL, with I/O operations handled asynchronously within the generator.
 
-
+## FAQ
 ## FAQ
 
 **Q: What if the documentation for a package can't be found automatically when using `--packages`?**
