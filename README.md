@@ -35,7 +35,9 @@ Several great ideas have tried to solve this problem:
 
 These are helpful, but they have some challenges:
 - `llms.txt` files can get very, very long. Some are over **800,000** "tokens" (think of tokens as pieces of words). That's a lot for an AI to read!
+  
     <img src="assets/token.png" alt="Token comparison for llms.txt" width="500"/>
+    
     Many smaller `llms.txt` files are just links to the official websites, which the AI still needs to go and read. Even the full text versions (usually as `llms-full.txt`)can be too big for some AIs to handle all at once. It's also not always clear if these files are the absolute latest version.
 
 - `Context7` is a bit like a "black box" – you can use it, but it's not always clear exactly how it's picking and choosing information for the AI. It also mainly works with code on GitHub or existing `llms.txt` files, not just any software package.
