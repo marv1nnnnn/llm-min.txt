@@ -994,7 +994,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/4d/89/bacf75633dd43d6c5
 
 [[package]]
 name = "llm-min"
-version = "0.1.3"
+version = "0.1.5"
 source = { editable = "." }
 dependencies = [
     { name = "beautifulsoup4" },
@@ -1004,6 +1004,7 @@ dependencies = [
     { name = "httpx" },
     { name = "lxml" },
     { name = "pydantic" },
+    { name = "tiktoken" },
     { name = "toml" },
     { name = "typer" },
 ]
@@ -1029,6 +1030,7 @@ requires-dist = [
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.4.0" },
+    { name = "tiktoken", specifier = ">=0.9.0" },
     { name = "toml", specifier = ">=0.10.2" },
     { name = "typer", specifier = ">=0.12.3" },
 ]

@@ -51,7 +51,7 @@ async def select_best_url_with_llm(
         ]
     )
     prompt = (
-        f"Analyze the following search results for the Python package '{package_name}'. "
+        f"Analyze the following search results for the package '{package_name}'. "
         f"Identify the single most likely URL pointing to the official or primary documentation root page. "
         f"STRONGLY PRIORITIZE URLs from readthedocs.io and github.io as they are common and reliable "
         f"documentation sources. "

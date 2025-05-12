@@ -1,7 +1,11 @@
 import logging
+# Deduplicate pages with identical or extremely similar raw_markdown
+from difflib import SequenceMatcher
+
 from urllib.parse import urlparse  # Import urlparse
 
 from crawl4ai import AsyncWebCrawler, CrawlerRunConfig
+
 # Import PruningContentFilter
 from crawl4ai.content_scraping_strategy import LXMLWebScrapingStrategy
 from crawl4ai.deep_crawling import (
@@ -95,14 +99,24 @@ async def crawl_documentation(url: str, max_pages: int | None = 200, max_depth: 
             logger.warning(f"Deep crawling returned no results starting from URL: {url} (original: {url})")
             return None
 
-        aggregated_content = "\n\n---\n\n".join(
-            [
-                page.markdown.raw_markdown
-                for page in results
-                # Revert back to the original, simpler check
-                if page.success and page.markdown and page.markdown.raw_markdown
-            ]
-        )
+        def is_similar(a, b, threshold=0.97):
+            # Use a high threshold for "extremely similar"
+            return SequenceMatcher(None, a, b).ratio() >= threshold
+
+        seen = []
+        deduped_markdowns = []
+        for page in results:
+            if not (page.success and page.markdown and page.markdown.raw_markdown):
+                continue
+            raw_md = page.markdown.raw_markdown
+            # Only deduplicate if the page is longer than 10,000 characters
+            if len(raw_md) > 10_000:
+                if any(raw_md == s or is_similar(raw_md, s) for s in seen):
+                    continue
+                seen.append(raw_md)
+            deduped_markdowns.append(raw_md)
+
+        aggregated_content = "\n\n---\n\n".join(deduped_markdowns)
 
         if not aggregated_content:
             logger.warning(

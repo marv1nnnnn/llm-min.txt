@@ -1,5 +1,7 @@
 import logging
+import datetime # Added for timestamp
 from string import Template
+import json # Only needed for the final build structure potentially, not validation.
 
 # Import from .llm subpackage (now points to gemini via __init__.py)
 from .llm import (
@@ -7,237 +9,279 @@ from .llm import (
     generate_text_response,
 )
 
-# Import the new AIU processing function
-
 logger = logging.getLogger(__name__)
 
+# --- Prompts remain the same - instructing LLM to *attempt* JSON array format ---
 
-# Function to read the PCS guide content directly from file
-# Define the template for generating AIUs from chunks using string.Template syntax
+# Optimized for extreme token efficiency (positional array output)
 FRAGMENT_GENERATION_PROMPT_TEMPLATE_STR = """
-Role: Expert curator extracting Atomic Information Units (AIUs).
-Goal: Create structured text for another LLM to understand library usage for practical tasks. Focus on what the library *does* and *how to use it*, not exhaustive API details. Output AIUs strictly in the format below.
+Role: AIU Extractor.
+Goal: Extract concise AIUs for LLM library usage guide. Focus: What lib *does* & *how*, not full API spec.
+Input: Doc chunk.
+Output: Plain text lines ONLY, where each line *attempts* to be a valid JSON array following the specified structure. One conceptual AIU per line. Empty line if no AIUs found. Min whitespace. Use `T`/`F` for bools. Use JSON `null` for absent optional values. Use `""` for empty strings.
 
-Input: Technical documentation chunk.
+AIU JSON Array Structure (Positional - Aim for exactly 9 elements):
+Index | Meaning    | Value Type        | Notes (Attempt this structure precisely)
+------|------------|-------------------|----------------------------------------------
+0     | id         | String            | Generate a Unique ID (e.g., 'feat1'). MUST BE UNIQUE within this output batch.
+1     | typ        | String            | Feat, CfgObj, Func, etc. (See Key Abbreviations)
+2     | name       | String            | Canonical name
+3     | purp       | String            | Concise purpose
+4     | in         | String(JSON Array)| String representation `[[p, t, d, def, ex], ...]`. Use '[]' if none. Attempt valid JSON structure.
+5     | out        | String(JSON Array)| String representation `[[f, t, d], ...]`. Use '[]' if none. Attempt valid JSON structure.
+6     | use        | String            | Minimal code/config example. Use {id} placeholders.
+7     | rel        | String(JSON Array)| String representation `[[id, typ], ...]`. Use '[]' if none. Attempt valid JSON structure. Ensure related IDs exist *within this output batch*.
+8     | src        | String            | Source chunk ID (MUST BE "$chunk_id")
 
-Output: ONLY AIU blocks (`#AIU#...#END_AIU`). No other text, explanations, or markdown. If no AIUs, output nothing.
+Key Abbreviations: (Same as previous)
 
-AIU Format:
-- Delimiters: `#AIU#...#END_AIU`.
-- Fields: Separated by `;`, format `abbrev:value`.
-   - id: Unique AIU identifier.
-   - typ: AIU Type (Feat:Feature, CfgObj:ConfigObject, APIEnd:API_Endpoint, Func:Function, ClsMth:ClassMethod, DataObj:DataObject, ParamSet:ParameterSet, Patt:Pattern, HowTo, Scen:Scenario, BestPr:BestPractice, Tool).
-   - name: Canonical name.
-   - purp: Concise purpose (string, may contain spaces).
-   - in: Input params/configs list. Format: `[{p:name;t:type;d:desc;def:val;ex:ex_val}]`.
-       - p: Param name.
-       - t: Param type (e.g., int, str, list_str, dict, AIU_id, `T`/`F` for bool).
-       - d: Brief description.
-       - def: Default value (if any; `T`/`F` for bool).
-       - ex: Concise example value/structure (`T`/`F` for bool).
-   - out: Output/return fields list. Format: `[{f:name;t:type;d:desc}]`.
-       - f: Field/output name.
-       - t: Output type (e.g., AIU_id, `T`/`F` for bool).
-       - d: Brief description.
-   - use: Minimal code/config pattern for core usage. Use `{obj_id}` for related ID placeholders.
-   - rel: Relationships list. Format: `[{id:related_id;typ:rel_type}]`.
-       - id: Related AIU ID.
-       - typ: Rel Type (U:USES, C:CONFIGURES, R:RETURNS, A:ACCEPTS_AS_INPUT, P:IS_PART_OF, I:INSTANCE_OF, HM:HAS_METHOD, HP:HAS_PATTERN, HwC:HELPS_WITH_COMPATIBILITY, HwP:HELPS_WITH_PERFORMANCE).
-   - src: Source chunk identifier.
+Constraints & Focus (Apply to Extraction Logic):
+1.  **Format Adherence (Best Effort):** Output ONLY plain text lines attempting the 9-element JSON array structure. Assign "$chunk_id" to index 8 (`src`). Ensure generated IDs (index 0) are unique in this output. Ensure nested lists (indices 4, 5, 7) *look like* valid JSON arrays or '[]'.
+2.  **Focus:** High-level types (`Feat`/`HowTo`/`Patt`/`Scen`). Needs clear, runnable `use` (index 6).
+3.  **Selectivity:** Essential details only.
+4.  **Links (index 7 `rel`):** Selective, relevant. Referenced IDs must exist in this output batch.
+5.  **Extraction Only:** Info explicitly from chunk.
+6.  **Concise:** Keep text values brief.
+7.  **Source:** Use "$chunk_id" exactly for index 8.
+8.  **Impact:** Fewer, impactful AIUs > exhaustive detail.
 
-Example Output:
-#AIU#id:example_id;typ:Feat;name:ExampleFeature;purp:"This is an example feature.";in:[{p:param1;t:str;d:A parameter.;def:default;ex:example_val}];out:[{f:result;t:T;d:The result.}];use:"example_function({obj_id})";rel:[{id:related_id;typ:U}];src:"chunk_source_1"#END_AIU
-
-Constraints:
-1.  Strict Format: Adhere precisely to AIU Format. Output ONLY AIU blocks.
-2.  Prioritize Practical, High-Level AIUs: Focus on `Feat`, `HowTo`, `Patt`, `Scen`. Their `use` field needs clear, runnable code snippets, self-contained or `rel` to essentials.
-3.  Selective API Detail: Extract only details essential for an LLM to decide *what to do* or *how to do it practically*. LLM_MIN.TXT is a usage guide, not a full API spec.
-    - For `ClsMth`/`Func`: `purp` must be user-goal focused. `in` lists only common user-changed params (summarize/omit others). `out` focuses on common workflow outputs.
-    - For `CfgObj`: `in` lists only common/impactful params, with practical `ex`.
-    - Avoid AIUs for internal/rarely-used APIs unless key for user-facing `Feat`/`Patt`/`HowTo`.
-4.  Strategic `rel` Linking: Be selective. Prioritize `rel` links showing:
-    - `Patt`/`HowTo`/`Scen` *using* a core `Feat`/`CfgObj`.
-    - Essential configurations for a feature.
-    - Components in a common, user-facing workflow.
-    - Avoid `rel` to low-level internals not directly used/configured by users.
-5.  Extraction Only: Only info explicitly from the chunk. No inference.
-6.  Conciseness & Clarity: Keep `purp`, descriptions (`d`), and examples (`ex`) concise. `name` must be canonical.
-7.  Source Reference (`src`): Always include the original chunk ID.
-8.  Curated Selectivity: Fewer, impactful AIUs over exhaustive minor details. Summarize many small, related items under one abstract `Feat` or `Patt`.
-9.  Composite Patterns (`Patt`, `HowTo`, `Scen`, `BestPr`):
-    - If chunk describes a multi-step pattern, advanced scenario, or best practice, extract as a `Patt`, `HowTo`, `Scen`, or `BestPr` AIU.
-    - AIU needs: unique `id`, concise `name`, clear `purp` (overall goal), `use` (complete, cohesive code/config or summary).
-    - `rel` must link to key constituent AIUs, explaining composition.
-10. Minimize Whitespace: Use minimal whitespace within `[]` and `{}` (e.g., `[{p:val}]`), and around `;`. For booleans, use `T` or `F`.
-
-Execute on DOCUMENTATION CHUNK. Strictly follow all constraints.
-
-DOCUMENTATION CHUNK:
+Process CHUNK:
 ---
 $chunk
 ---
 """
-
-MERGE_PROMPT_TEMPLATE_STR = """
-Objective: Process a list of raw AIU strings to produce a refined, cohesive, and less redundant set of AIUs. Then, assemble these refined AIUs into a single structured text string adhering strictly to the specified Structured Text Structure.
-
-Input:
-- A list of individual AIU strings (variable: raw_aiu_strings). Each is a complete, compressed #AIU#...#END_AIU# block.
-- The LLM_MIN.TXT Structure for Assembly (provided below).
-
-Output:
-A single, raw structured text string. ABSOLUTELY NO other text, explanations, or markdown. Output starts with `#LIB...`.
-
-Core Tasks for AIU Refinement (Before Final Assembly):
-
-1.  **Identify and Handle Duplicates/Near-Duplicates:**
-    *   **Definition of Duplicate:** AIUs with identical `id` fields are direct duplicates. AIUs with highly similar `name`, `typ`, and `purp` fields, and very similar `use` field content, should be considered semantic duplicates, even if their `id` or `src` differ.
-    *   **Action for Exact ID Duplicates:** If multiple AIUs have the exact same `id`, select the one that appears to be most complete or best described (e.g., longer `purp`, more detailed `use`). Discard the others.
-    *   **Action for Semantic Duplicates:**
-        *   If one is clearly a subset or less detailed version of another, discard the less detailed one. Keep the more comprehensive one.
-        *   If they offer slightly different but complementary details in `purp` or `use`, attempt to MERGE them into a single, more comprehensive AIU.
-            *   **Merging Strategy:** Choose one AIU as the base (preferably the one with a more canonical `name` or appearing earlier in the input).
-            *   Retain its `id`, `name`, and `typ`.
-            *   Synthesize a combined `purp` that incorporates key information from both.
-            *   Synthesize a combined `use` field that is the most comprehensive or best example.
-            *   Merge their `in`, `out`, and `rel` lists, avoiding duplicate entries within these lists. For `rel` lists, if both AIUs pointed to the same related ID, ensure it only appears once in the merged list.
-            *   The `src` field for a merged AIU can list both source IDs if different (e.g., `src:"chunk_A,chunk_B"`), or pick the primary one.
-        *   **Update Relationships:** If an AIU is discarded or merged, any other AIUs that had `rel` entries pointing to the discarded/merged AIU's original `id` MUST be updated to point to the `id` of the AIU that was kept or became the merged result. This is CRITICAL.
-
-2.  **Identify and Enhance Complementary AIUs (Potential Hierarchical Linking):**
-    *   **Definition:** Look for groups of AIUs where some represent granular components (e.g., several `Func` or `ClsMth` AIUs) that logically support or are used by a higher-level AIU (e.g., a `Patt`, `HowTo`, or `Feat`).
-    *   **Action:**
-        *   If a clear higher-level AIU already exists that describes the overarching concept, ensure its `rel` field correctly links to these supporting granular AIUs (e.g., using `typ:U` (USES) or `typ:P` (IS_PART_OF)). Add these relationships if missing.
-        *   If no such higher-level AIU exists but a clear pattern of usage among several granular AIUs is evident (e.g., "function A is often called, then function B, to achieve X"), consider if a NEW `Patt` or `HowTo` AIU should be synthesized to describe this combined usage.
-            *   The new AIU's `id` must be unique.
-            *   Its `name` and `purp` should describe the combined pattern/goal.
-            *   Its `use` field should demonstrate the sequence or combination.
-            *   Its `rel` field must link to the constituent granular AIUs.
-            *   Its `src` can be a composite of the sources of its constituents.
-        *   This step should be applied conservatively to avoid creating spurious AIUs. Focus on clear, common combinations.
-
-3.  **Review and Consolidate Relationships (`rel` field):**
-    *   After deduplication and potential merging/linking, review the `rel` fields of all retained/new AIUs.
-    *   Ensure `rel` entries point to valid, existing AIU `id`s within the refined set.
-    *   Ensure relationship types (`rel.typ`) are logical (e.g., a `Patt` might USE (`U`) a `Func`).
-
-Assembly Instructions (After AIU Refinement):
-1.  **Adherence:** Strictly follow the "Structured Text Structure for Assembly" below using the REFINED set of AIUs.
-2.  **Header:** Generate the header line using `llm-min`, `1.0`, and the current UTC timestamp (format: `YYYY-MM-DDTHH:mm:ssZ`).
-3.  **Schema:** Copy the "Schema Definition Block" LITERALLY as provided.
-4.  **AIU Concatenation:** Insert ALL REFINED AIUs, in a logical order (e.g., grouping related AIUs if possible, or maintaining original relative order where sensible), between the `#AIU_LIST_BEGIN` and `#AIU_LIST_END` markers. Ensure each AIU is correctly formatted.
-5.  **Raw Output Only:** The final output must be only the assembled LLM_MIN.TXT string.
-
---- Structured Text Structure for Assembly Start ---
-The final output string must be constructed as follows:
-
-PART 1: Header Line
-`#LIB:llm-min#VER:1.0#DATE:YYYY-MM-DDTHH:mm:ssZ`
-(Replace `YYYY-MM-DDTHH:mm:ssZ` with the current UTC timestamp)
-
-PART 2: Schema Definition Block (COPY THIS LITERALLY)
-#SCHEMA_DEF_BEGIN
-AIU_FIELDS:id;typ;name;purp;in;out;use;rel;src
-IN_FIELDS:p;t;d;def;ex
-OUT_FIELDS:f;t;d
-REL_FIELDS:id;typ
-#SCHEMA_DEF_END
-
-PART 3: AIU List Block
-#AIU_LIST_BEGIN
-(Insert all REFINED AIU strings here, one after another. Each AIU must be a complete #AIU#...#END_AIU# block.)
-#AIU_LIST_END
---- Structured Text Structure for Assembly End ---
-
-Input Raw AIU Strings (variable: raw_aiu_strings):
-$raw_aiu_strings
-"""
-# Create Template objects
 FRAGMENT_GENERATION_PROMPT_TEMPLATE = Template(FRAGMENT_GENERATION_PROMPT_TEMPLATE_STR)
-MERGE_PROMPT_TEMPLATE = Template(MERGE_PROMPT_TEMPLATE_STR)
+
+
+# --- Merge Prompt (instructing LLM to *attempt* JSON array format) ---
+AIU_MERGE_PROMPT_TEMPLATE_STR = AIU_MERGE_PROMPT_TEMPLATE_STR = """
+Role: AIU Merger and Refiner.
+Goal: Integrate information from a new document chunk into an existing set of AIU lines, producing a refined, consolidated set of AIU lines. **Focus on essential updates and additions, maximizing conciseness to save tokens.**
+Input:
+1.  `EXISTING_AIUS`: A list of plain text lines (one per line), each *attempting* to be an AIU JSON array from previous chunks.
+2.  `NEXT_CHUNK`: The raw text content of the next document chunk.
+
+Output: A NEW list of plain text lines ONLY, one line per AIU, attempting the same JSON array structure. Represents the *merged and refined* information from BOTH inputs. **Be extremely brief.** Use `T`/`F` for bools, `null` for absent optionals. Empty line if no AIUs should remain.
+
+AIU JSON Array Structure (Positional - Aim for exactly 9 elements):
+Index | Meaning    | Value Type        | Notes (Attempt this structure precisely)
+------|------------|-------------------|----------------------------------------------
+0     | id         | String            | Unique ID. **Crucially: Reuse IDs from EXISTING_AIUS if the AIU is fundamentally the same, even if updated. Generate NEW unique IDs (unique across the *entire new output list*) ONLY for genuinely new concepts introduced by NEXT_CHUNK.**
+1     | typ        | String            | Feat, CfgObj, Func, etc.
+2     | name       | String            | **Concise** canonical name
+3     | purp       | String            | **Extremely Concise** purpose (potentially updated/merged)
+4     | in         | String(JSON Array)| Updated/merged inputs `[[p, t, d, def, ex], ...]`. Use '[]' if none. Attempt valid JSON structure. Keep descriptions `d` **very brief**.
+5     | out        | String(JSON Array)| Updated/merged outputs `[[f, t, d], ...]`. Use '[]' if none. Attempt valid JSON structure. Keep descriptions `d` **very brief**.
+6     | use        | String            | Updated/merged **minimal** usage example. Use {id} placeholders.
+7     | rel        | String(JSON Array)| Updated/merged relationships `[[id, typ], ...]`. Use '[]' if none. Attempt valid JSON structure. Ensure related IDs exist *in the final output list*. Only include **essential** relationships.
+8     | src        | String            | Source chunk ID. **If AIU is NEW or significantly modified by NEXT_CHUNK, use "$chunk_id". If AIU is primarily from EXISTING_AIUS and largely unchanged, RETAIN its original 'src' value (found near index 8 of the input line).**
+
+Merge & Refine Logic:
+1.  Review BOTH inputs. Identify IDs (index 0) and sources (index 8) in existing lines.
+2.  Identify Overlap: Find concepts in `NEXT_CHUNK` corresponding to existing AIU lines.
+3.  **Update/Merge (Significant Changes Only):** If `NEXT_CHUNK` provides **substantial new information, corrects an error, or significantly clarifies** an existing AIU, update that line, *reusing its original ID* (index 0). Merge info logically. Update `src` (index 8) to "$chunk_id" if significantly modified, else keep original `src`. Ensure resulting line *attempts* the 9-element JSON array format. **Ignore minor rephrasing or trivial additions.**
+4.  **Add New:** If `NEXT_CHUNK` introduces entirely new concepts, create *new* lines. Generate *new, unique IDs* (index 0) not clashing with reused or other new IDs. Set `src` (index 8) to "$chunk_id". Ensure line *attempts* the 9-element JSON array format.
+5.  **Consolidate/Remove (Cautiously):** If `NEXT_CHUNK` reveals *obvious and direct* redundancy between two existing lines, merge them into one (choose one ID to keep, consolidate essential info). Omit lines only if they are *clearly* irrelevant based on `NEXT_CHUNK`. **Prioritize updates/additions over complex merges.**
+6.  Relationships (`rel`): Update index 7. Ensure referenced IDs exist in the *final output list*. Only add/update relationships if they represent **key workflows or configurations.**
+7.  Source (`src`): Assign index 8 based on the logic in points 3 & 4.
+8.  Format (Best Effort): Output ONLY the final list of plain text lines, one per line, attempting the 9-element JSON array structure. Ensure all IDs (index 0) in the output are unique. No explanations.
+9.  **Extreme Conciseness:** Keep ALL text fields (name, purp, descriptions in 'in'/'out', 'use' examples) as brief as possible while retaining core meaning. **Avoid elaboration.** Use abbreviations if standard and clear. Aim for minimal token usage per line.
+
+EXISTING_AIUS:
+---
+$existing_aius
+---
+
+NEXT_CHUNK:
+---
+$next_chunk
+---
+"""
+AIU_MERGE_PROMPT_TEMPLATE = Template(AIU_MERGE_PROMPT_TEMPLATE_STR)
+
+
+def _build_llm_min_text(
+    raw_aiu_lines: str, # Changed name to reflect it's raw lines
+    library_name: str = "unknown_lib",
+    library_version: str = "1.0"
+) -> str:
+    """
+    Builds the final LLM_MIN.TXT structured text string according to the new guideline,
+    using the raw lines provided by the last LLM step.
+
+    Args:
+        raw_aiu_lines: A string containing all the AIU lines from the last step,
+                       separated by newlines. Assumed to be already cleaned.
+        library_name: The name of the library (subject).
+        library_version: The version of the library.
+
+    Returns:
+        The fully formatted LLM_MIN.TXT string.
+    """
+    # Sanitize library name for the header line if necessary
+    safe_library_name = library_name.replace(" ", "_").replace("#", "")
+
+    # Part 1: Meta Line
+    current_utc_time = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+    meta_line = f"#META#L:{safe_library_name}#V:{library_version}#D:{current_utc_time}#"
+
+    # Part 2: Schema Line - Define the standard mappings
+    aiu_map = "A:id;B:typ;C:name;D:purp;E:in;F:out;G:use;H:rel;I:src"
+    in_map = "IN:a:p;b:t;c:d;d:def;e:ex"
+    out_map = "OUT:f:f;g:t;h:d"
+    rel_map = "REL:i:id;j:typ"
+    schema_line = f"#SCHEMA#{aiu_map}#{in_map}#{out_map}#{rel_map}#"
+
+    # Part 3: AIU List (use the raw lines directly)
+    # The input `raw_aiu_lines` is assumed to be already stripped and newline-separated.
+    aiu_list_content = raw_aiu_lines # No further stripping needed here if processed correctly before
+
+    # Combine parts
+    return f"{meta_line}\n{schema_line}\n{aiu_list_content}"
+
+
+# --- Simplified Line Processing (No JSON Validation) ---
+def _process_llm_output_lines(
+    raw_llm_output: str | None,
+    chunk_id: str
+) -> str:
+    """
+    Processes raw LLM output: cleans up whitespace and joins non-empty lines.
+    No validation or ID extraction is performed.
+
+    Args:
+        raw_llm_output: The string output from the LLM.
+        chunk_id: The ID of the current chunk being processed (for logging).
+
+    Returns:
+        A string containing the processed AIU lines, separated by newlines,
+        or an empty string if the input was None/empty or contained only whitespace.
+    """
+    if not raw_llm_output or not isinstance(raw_llm_output, str):
+        logger.warning(f"[{chunk_id}] LLM output was empty or invalid type.")
+        return ""
+
+    processed_lines = []
+    # Split lines first, then strip each one
+    raw_lines = raw_llm_output.splitlines()
+    logger.debug(f"[{chunk_id}] Processing {len(raw_lines)} raw lines from LLM output.")
+
+    for line in raw_lines:
+        cleaned_line = line.strip()
+        if cleaned_line:
+            processed_lines.append(cleaned_line)
+        # Skip empty lines silently
+
+    final_aiu_string = "\n".join(processed_lines)
+    if processed_lines:
+        logger.info(f"[{chunk_id}] Processed {len(processed_lines)} non-empty lines.")
+    else:
+        logger.info(f"[{chunk_id}] LLM output contained no non-empty lines after processing.")
+    return final_aiu_string
 
 
 async def compact_content_to_structured_text(
     aggregated_content: str,
-    chunk_size: int = 1000000,
+    chunk_size: int = 1000000, # Adjust based on LLM context window limits
     api_key: str | None = None,
-    subject: str = "the provided text",
+    subject: str = "the provided text", # Library name used for #META# line
     model_name: str | None = None,
 ) -> str:
     """
-    Orchestrates the compaction pipeline to generate structured text from input content.
-
-    This function performs the following stages:
-    Stage 0/1: Chunking and AIU Extraction using an LLM.
-    Stage 2: Merging AIU strings using an LLM.
+    Orchestrates compaction using sequential merge, treating LLM output as raw strings,
+    and generating the final llm_min.txt format with #META# and #SCHEMA# lines.
+    Relies entirely on LLM for format and ID management based on prompts.
 
     Args:
         aggregated_content: The text content to process.
-        chunk_size: The size of chunks for initial content splitting.
-        api_key: Optional API key for the LLM used in Stage 1.
-        subject: The subject or name of the content (e.g., package name) used in logging and prompts.
+        chunk_size: The size of chunks for splitting.
+        api_key: Optional API key for the LLM.
+        subject: The subject or name of the content (library name).
         model_name: Optional model name for the LLM.
 
     Returns:
-        A string containing the serialized structured text content.
+        A string containing the serialized llm_min.txt content, or an empty string on failure.
     """
-    logger.info(f"Starting LLM-based AIU extraction with chunking for {subject}...")
+    logger.info(f"Starting sequential LLM-based AIU extraction/merge for {subject} (Output: llm_min.txt format v2, Raw Lines)...")
 
     # 1. Chunk the input content
     chunks = chunk_content(aggregated_content, chunk_size)
-    logger.info(f"Split content into {len(chunks)} chunks.")
+    if not chunks:
+        logger.warning(f"[{subject}] Input content resulted in zero chunks.")
+        return ""
+    logger.info(f"[{subject}] Split content into {len(chunks)} chunks.")
 
-    aiu_strings: list[str] = []  # Store AIU strings
+    # Stores the raw string output from the previous LLM step (after basic cleaning)
+    accumulated_aiu_lines_str = ""
 
-    # 2. Generate AIU string for each chunk
-    for i, chunk_content_item in enumerate(chunks):
-        logger.info(f"Generating AIU for chunk {i + 1}/{len(chunks)}...")
+    # 2. Process chunks sequentially
+    for i, chunk_item_content in enumerate(chunks):
+        chunk_id = f"chunk_{i}" # Use 0-based index for chunk ID
+        logger.info(f"Processing chunk {i + 1}/{len(chunks)} (ID: {chunk_id})...")
 
-        # Use substitute with keyword arguments - no manual escaping needed
-        fragment_prompt = FRAGMENT_GENERATION_PROMPT_TEMPLATE.substitute(
-            chunk=chunk_content_item,
+        prompt: str
+        is_merge_step = i > 0
+
+        if not is_merge_step:
+            # --- First Chunk: Extraction ---
+            logger.info(f"[{chunk_id}] Stage: Initial Extraction.")
+            prompt = FRAGMENT_GENERATION_PROMPT_TEMPLATE.substitute(
+                chunk=chunk_item_content,
+                chunk_id=chunk_id
+            )
+            prompt_type = "Extraction"
+        else:
+            # --- Subsequent Chunks: Merge ---
+            logger.info(f"[{chunk_id}] Stage: Merging with previous AIU lines.")
+            # Pass the raw accumulated lines string from the previous step
+            prompt = AIU_MERGE_PROMPT_TEMPLATE.substitute(
+                existing_aius=accumulated_aiu_lines_str, # Pass even if empty string
+                next_chunk=chunk_item_content,
+                chunk_id=chunk_id
+            )
+            prompt_type = "Merge"
+
+        # Log the prompt (optional, can be verbose)
+        # logger.debug(f"--- {prompt_type} Prompt for chunk {i + 1}/{len(chunks)} START ---")
+        # logger.debug(prompt)
+        # logger.debug(f"--- {prompt_type} Prompt for chunk {i + 1}/{len(chunks)} END ---")
+
+        # Call the LLM
+        raw_llm_output = await generate_text_response(
+            prompt, api_key=api_key, model_name=model_name
         )
 
-        logger.debug(f"--- AIU Extraction Prompt for chunk {i + 1}/{len(chunks)} START ---")
-        logger.debug(fragment_prompt)
-        logger.debug(f"--- AIU Extraction Prompt for chunk {i + 1}/{len(chunks)} END ---")
+        # Process lines (just clean whitespace, split lines)
+        processed_aiu_str_for_step = _process_llm_output_lines(
+            raw_llm_output,
+            chunk_id
+        )
 
-        # Call the LLM to generate an AIU string
-        aiu_str = await generate_text_response(fragment_prompt, api_key=api_key, model_name=model_name)
+        # Update the accumulated state for the next iteration
+        # The result of this step becomes the input for the next
+        accumulated_aiu_lines_str = processed_aiu_str_for_step
+        logger.info(f"[{chunk_id}] Step complete. Current accumulated lines count: {len(accumulated_aiu_lines_str.splitlines()) if accumulated_aiu_lines_str else 0}.")
 
-        if aiu_str and isinstance(aiu_str, str):
-            aiu_strings.append(aiu_str.strip())
-            logger.info(f"Successfully generated AIU string for chunk {i + 1}.")
-        else:
-            logger.warning(f"Failed to generate valid AIU string for chunk {i + 1}. Output: {aiu_str}")
+        # Check for fatal error only on the first chunk if it yields nothing
+        if i == 0 and not accumulated_aiu_lines_str:
+            logger.error(f"[{chunk_id}] Failed to generate any output lines from the first chunk. Aborting.")
+            # Return empty string, or perhaps the headers-only structure?
+            # Let's return headers only for consistency with the final step.
+            return _build_llm_min_text("", library_name=subject).strip()
 
-    if not aiu_strings:
-        logger.error("No AIU strings were generated from the chunks.")
-        return ""  # Return empty string if no AIUs were generated
 
-    logger.info(f"Successfully extracted {len(aiu_strings)} AIU strings. Proceeding to merge.")
+    # 3. Final Assembly
+    # If accumulated_aiu_lines_str is empty after all chunks, build the structure
+    # with an empty AIU list content.
+    if not accumulated_aiu_lines_str:
+        logger.warning(f"[{subject}] No AIU lines remained after processing all chunks. Final file will contain only headers.")
 
-    # Join the individual AIU strings for the prompt input
-    input_aiu_strings_for_prompt = "\n".join(aiu_strings)
+    logger.info(f"[{subject}] Finished processing all {len(chunks)} chunks. Assembling final structured text.")
+    # Pass the final accumulated raw lines to the build function
+    final_structured_text = _build_llm_min_text(
+        accumulated_aiu_lines_str,
+        library_name=subject
+        )
 
-    # Use the MERGE_PROMPT_TEMPLATE to construct the final merge prompt
-    merge_prompt = MERGE_PROMPT_TEMPLATE.substitute(
-       raw_aiu_strings=input_aiu_strings_for_prompt
-    )
-
-    logger.debug(f"--- AIU Merge Prompt START ---")
-    logger.debug(merge_prompt)
-    logger.debug(f"--- AIU Merge Prompt END ---")
-
-    # 4. Call the LLM to merge the AIU strings
-    # Note: The LLM is now only responsible for combining the pre-formatted AIUs
-    # and adding the header/schema/list delimiters.
-    merged_kb_content = await generate_text_response(merge_prompt, api_key=api_key, model_name=model_name)
-
-    if merged_kb_content and isinstance(merged_kb_content, str):
-        logger.info("Successfully merged AIU strings into a single structured text string.")
-        # 5. Return the merged content
-        return merged_kb_content.strip()
-    else:
-        logger.error(f"Failed to merge AIU strings. Output: {merged_kb_content}")
-        return ""  # Return empty string or raise an error
+    logger.info(f"[{subject}] LLM-MIN text generation complete.")
+    return final_structured_text.strip()
