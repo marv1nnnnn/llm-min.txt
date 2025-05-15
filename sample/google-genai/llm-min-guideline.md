@@ -77,15 +77,3 @@ You are an expert AI Software Engineer. You will be provided with a highly compr
 11. **Error Handling in Generated Code:** If `RAISES_ERROR(Gxxx_ErrorTypeName)` is specified, generate appropriate error handling for `ErrorTypeName` (which is the `EntityName` of `Gxxx_ErrorTypeName`) in the target language.
 
 You will now be given the SKF Knowledge Manifest content (which will NOT contain a GLOSSARY section) and the User Task for a specific TARGET LANGUAGE. Proceed.
----
-
-**Key Changes in this Guideline:**
-
-*   **Explicit Warning:** Added a prominent note at the beginning about the absence of the Glossary (G) section.
-*   **`DEFINITIONS` as Primary Source:** Emphasized that the D section is now where `EntityName` and `[TYP]` (via `[DEF_TYP]`) are found/inferred.
-*   **`Gxxx_EntityName` Convention:** Standardized references to entities as `Gxxx_EntityName` in the format descriptions (D, I, U sections) to reflect how the AI will "see" them. The `_EntityName` part is crucial for the AI to know what to call the thing in code, while `Gxxx` is the linking ID.
-*   **Guideline Section 3 (Entity Identification):** Added a new point specifically explaining how to identify entities and their names/types without a G section.
-*   **Type References:** Clarified that when a `Gxxx` ID is used as a type, the AI should use the `EntityName` associated with that `Gxxx` (found in its D-line) as the type name in the generated code.
-*   **Missing Information:** Updated to reflect that a missing D-line for a G-ID is now the primary way an entity would be "undefined."
-
-This revised guideline should now accurately instruct an AI on how to interpret your new manifest format where the G section is omitted from the final file. It puts more burden on the D section to be complete regarding entity names and definitional types.
