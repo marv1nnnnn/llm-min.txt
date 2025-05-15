@@ -1,18 +1,4 @@
-You are absolutely right! My apologies. I was focused on refining the detail of each section and overlooked that key change in your pipeline: **the Glossary (G) section is no longer part of the final file.**
 
-This means the guideline for the AI consuming the manifest needs to be updated to reflect that it will *not* find a `SECTION: GLOSSARY (Prefix: G)`. Instead, all necessary `Gxxx` entity information (like `EntityName` and `[TYP]`) must be inferred or directly available from the `DEFINITIONS` (D) section or other sections.
-
-This significantly changes how the AI understands entities. Let's revise the guideline.
-
-**Major Implication of No G Section in Final File:**
-
-*   **Entity Discovery:** The AI can no longer look up `Gxxx` in a dedicated `GLOSSARY` section to get its `EntityName` and `[TYP]`.
-*   **`DEFINITIONS` Section Becomes Primary Source for Entity Basics:** The `Dxxx:Gxxx_EntityName` part of the primary definition line is now the *only* place the AI will find the `EntityName` associated with a `Gxxx` ID. The `[TYP]` might be part of `[DEF_TYP]` (e.g., `[CompDef]` implies `[Component]`) or might need to be inferred if `[DEF_TYP]` is generic or absent.
-*   **Consistency is Key:** The `_EntityName` part in `Dxxx:Gxxx_EntityName` must be the canonical `EntityName`.
-
-Let's rewrite the guideline to account for this.
-
----
 
 **Revised SKF Manifest Decode Guideline (Version 1.4 LA - Language Agnostic - NO G SECTION IN INPUT FILE)**
 
