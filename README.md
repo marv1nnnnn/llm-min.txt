@@ -416,9 +416,9 @@ A: Processing costs vary based on documentation size and complexity, but for a m
 
 For current pricing details, refer to the [Google Cloud AI pricing page](https://cloud.google.com/vertex-ai/pricing#gemini).
 
-**Q: Was this project developed using an AI pair programming approach?** 🤖
+**Q: Did you vibe code this project** 🤖
 
-A: Yes, this project was developed using [Roocode](https://roocode.com/) with a custom configuration called [Rooroo](https://github.com/marv1nnnnn/rooroo), demonstrating the potential of human-AI collaboration in creating tools that enhance AI capabilities.
+A: Yes, definitely. This project was developed using [Roocode](https://roocode.com/) with a custom configuration called [Rooroo](https://github.com/marv1nnnnn/rooroo).
 
 ---
 
