@@ -206,7 +206,7 @@ Choose one of the following input sources:
 | `--output-dir`      | `-o`  | `DIRECTORY` | Where to save the generated files (default is a folder named `llm_min_docs`).|
 | `--output-name`     | `-n`  | `TEXT`    | Give a custom name for the subfolder inside `output-dir`.                    |
 | `--max-crawl-pages` | `-p`  | `INTEGER` | Max web pages to read (default: 200; 0 means no limit).                      |
-| `--max-crawl-depth` | `-D`  | `INTEGER` | How many links deep to follow on a website (default: 2).                     |
+| `--max-crawl-depth` | `-D`  | `INTEGER` | How many links deep to follow on a website (default: 3).                     |
 | `--chunk-size`      | `-c`  | `INTEGER` | How much text to give the AI at once (default: 600,000 characters).          |
 | `--gemini-api-key`  | `-k`  | `TEXT`    | Your Gemini API Key (if not set as an environment variable).                 |
 | `--gemini-model`    | `-m`  | `TEXT`    | Which Gemini model to use (default: `gemini-2.5-flash-preview-04-17`).       |
