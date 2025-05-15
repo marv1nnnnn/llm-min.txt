@@ -1,54 +1,314 @@
-#META#L:crawl4ai#V:1.0#D:2025-05-12T13:00:13Z#
-#SCHEMA#A:id;B:typ;C:name;D:purp;E:in;F:out;G:use;H:rel;I:src#IN:a:p;b:t;c:d;d:def;e:ex#OUT:f:f;g:t;h:d#REL:i:id;j:typ#
-["feat1","Feat","AsyncWebCrawler","Core asynchronous web crawler class.","[[\"config\",\"BrowserConfig\",\"Browser configuration.\",\"null\",\"feat4\"],[\"crawler_strategy\",\"AsyncCrawlerStrategy\",\"(Advanced) Custom crawler strategy.\",\"null\",\"null\"]]","[]","async with feat1() as crawler:","[[\"feat4\",\"CfgObj\"],[\"feat5\",\"CfgObj\"],[\"feat6\",\"CfgObj\"],[\"feat7\",\"OutObj\"],[\"func2\",\"Func\"],[\"func3\",\"Func\"]]","chunk_0"]
-["func2","Func","arun","Crawl a single URL.","[[\"url\",\"String\",\"URL to crawl.\",\"null\",\"\\\"https://example.com\\\"\"],[\"config\",\"CrawlerRunConfig\",\"Crawl run configuration.\",\"null\",\"feat5\"]]","[[\"result\",\"CrawlResult\",\"Result of the crawl.\"]]","result = await crawler.func2(\"https://example.com\", config=my_config)","[[\"feat1\",\"Feat\"],[\"feat5\",\"CfgObj\"],[\"feat7\",\"OutObj\"]]","chunk_0"]
-["func3","Func","arun_many","Crawl multiple URLs concurrently.","[[\"urls\",\"String[]\",\"List of URLs to crawl.\",\"null\",\"[\\\"url1\\\", \\\"url2\\\"]\"],[\"config\",\"CrawlerRunConfig\",\"Crawl run configuration.\",\"null\",\"feat5\"],[\"dispatcher\",\"BaseDispatcher\",\"Concurrency controller.\",\"null\",\"cfgobj2\"]]","[[\"results\",\"CrawlResult[]|AsyncGenerator\",\"List or stream of crawl results.\"]]","async for result in await crawler.func3(urls, config=my_config)","[[\"feat1\",\"Feat\"],[\"feat5\",\"CfgObj\"],[\"feat7\",\"OutObj\"],[\"feat21\",\"Feat\"],[\"cfgobj2\",\"CfgObj\"]]","chunk_0"]
-["feat4","CfgObj","BrowserConfig","Configure browser launch and behavior.","[[\"browser_type\",\"String\",\"Browser engine.\",\"\\\"chromium\\\"\",\"\\\"firefox\\\"\"],[\"headless\",\"Boolean\",\"Run headless or visible.\",\"T\",\"F\"],[\"proxy_config\",\"Dict\",\"Proxy settings.\",\"null\",\"{\\\"server\\\":\\\"...\\\"}\"],[\"user_data_dir\",\"String\",\"Persistent profile directory.\",\"null\",\"\\\"/path/to/profile\\\"\"],[\"accept_downloads\",\"Boolean\",\"Enable file downloads.\",\"F\",\"T\"]]","[]","browser_cfg = feat4(headless=T)","[[\"feat1\",\"Feat\"],[\"feat16\",\"Feat\"],[\"feat15\",\"Feat\"],[\"feat18\",\"Feat\"],[\"cfgobj6\",\"CfgObj\"],[\"patt14\",\"Patt\"],[\"patt18\",\"Patt\"]]","chunk_0"]
-["feat5","CfgObj","CrawlerRunConfig","Configure settings for a single crawl operation.","[[\"cache_mode\",\"CacheMode\",\"Caching behavior.\",\"ENABLED\",\"cfgobj8\"],[\"extraction_strategy\",\"ExtractionStrategy\",\"Data extraction method.\",\"null\",\"cfgobj3\"],[\"js_code\",\"String|String[]\",\"JavaScript to execute.\",\"null\",\"\\\"window.scroll...\\\"\"],[\"wait_for\",\"String\",\"Wait condition (css/js).\",\"null\",\"\\\"css:.element\\\"\"],[\"session_id\",\"String\",\"ID for session reuse.\",\"null\",\"\\\"my_session\\\"\"],[\"screenshot\",\"Boolean\",\"Capture screenshot.\",\"F\",\"T\"],[\"pdf\",\"Boolean\",\"Capture PDF.\",\"F\",\"T\"],[\"mhtml\",\"Boolean\",\"Capture MHTML.\",\"F\",\"T\"],[\"capture_network_requests\",\"Boolean\",\"Capture network.\",\"F\",\"T\"],[\"capture_console_messages\",\"Boolean\",\"Capture console logs.\",\"F\",\"T\"],[\"check_robots_txt\",\"Boolean\",\"Respect robots.txt.\",\"F\",\"T\"],[\"locale\",\"String\",\"Browser locale.\",\"null\",\"\\\"fr-FR\\\"\"],[\"timezone_id\",\"String\",\"Browser timezone.\",\"null\",\"\\\"Europe/Paris\\\"\"],[\"geolocation\",\"GeolocationConfig\",\"GPS coordinates.\",\"null\",\"GeolocationConfig(...)\"],[\"deep_crawl_strategy\",\"DeepCrawlStrategy\",\"Deep crawl strategy.\",\"null\",\"cfgobj10\"],[\"css_selector\",\"String\",\"CSS selector for main content.\",\"null\",\"\\\"main.content\\\"\"],[\"target_elements\",\"String[]\",\"CSS selectors for content focus.\",\"null\",\"[\\\"article\\\", \\\"aside\\\"]\"],[\"excluded_tags\",\"String[]\",\"Tags to remove.\",\"null\",\"[\\\"script\\\"]\"],[\"exclude_external_links\",\"Boolean\",\"Exclude external links.\",\"F\",\"T\"],[\"exclude_domains\",\"String[]\",\"Custom domains to exclude.\",\"[]\",\"[\\\"ads.com\\\"]\"],[\"exclude_external_images\",\"Boolean\",\"Exclude external images.\",\"F\",\"T\"],[\"process_iframes\",\"Boolean\",\"Inline iframes.\",\"F\",\"T\"],[\"remove_overlay_elements\",\"Boolean\",\"Remove popups.\",\"F\",\"T\"],[\"word_count_threshold\",\"Int\",\"Min words per text block.\",\"200\",\"10\"],[\"stream\",\"Boolean\",\"Enable streaming (arun_many).\",\"F\",\"T\"],[\"scraping_strategy\",\"ContentScrapingStrategy\",\"HTML parsing strategy.\",\"WebScrapingStrategy\",\"cfgobj16\"]]","[]","run_cfg = feat5(cache_mode=cfgobj8.BYPASS)","[[\"feat1\",\"Feat\"],[\"func2\",\"Func\"],[\"func3\",\"Func\"],[\"feat7\",\"OutObj\"],[\"feat9\",\"Feat\"],[\"feat10\",\"Feat\"],[\"feat11\",\"Feat\"],[\"feat12\",\"Feat\"],[\"feat13\",\"Feat\"],[\"feat14\",\"Feat\"],[\"feat15\",\"Feat\"],[\"feat17\",\"Feat\"],[\"feat19\",\"Feat\"],[\"feat20\",\"Feat\"],[\"feat28\",\"Feat\"],[\"cfgobj8\",\"CfgObj\"],[\"cfgobj1\",\"CfgObj\"],[\"cfgobj21\",\"CfgObj\"],[\"cfgobj3\",\"CfgObj\"],[\"cfgobj10\",\"CfgObj\"],[\"patt11\",\"Patt\"],[\"patt12\",\"Patt\"],[\"patt13\",\"Patt\"],[\"patt14\",\"Patt\"],[\"patt17\",\"Patt\"],[\"patt19\",\"Patt\"],[\"cfgobj16\",\"CfgObj\"]]","chunk_0"]
-["feat6","CfgObj","LLMConfig","Configure LLM provider and API settings.","[[\"provider\",\"String\",\"LLM provider identifier.\",\"\\\"openai/gpt-4o-mini\\\"\",\"\\\"ollama/llama3\\\"\"],[\"api_token\",\"String\",\"API token (optional).\",\"null\",\"\\\"env:OPENAI_API_KEY\\\"\"],[\"base_url\",\"String\",\"Custom API endpoint.\",\"null\",\"null\"]]","[]","llm_cfg = feat6(provider=\"openai/gpt-4o\", api_token=os.getenv(\"KEY\"))","[[\"feat11\",\"Feat\"],[\"cfgobj3\",\"CfgObj\"],[\"cfgobj22\",\"CfgObj\"],[\"cfgobj1\",\"CfgObj\"],[\"cfgobj21\",\"CfgObj\"]]","chunk_0"]
-["feat7","OutObj","CrawlResult","Result object returned after a crawl operation.","[]","[[\"url\",\"String\",\"Final URL.\"],[\"success\",\"Boolean\",\"Indicates success.\"],[\"error_message\",\"String\",\"Error details if failed.\"],[\"status_code\",\"Int\",\"HTTP status code.\",\"null\"],[\"html\",\"String\",\"Original HTML.\"],[\"cleaned_html\",\"String\",\"Sanitized HTML.\",\"null\"],[\"markdown\",\"MarkdownGenerationResult\",\"Markdown output.\",\"null\"],[\"extracted_content\",\"String\",\"Structured extraction (JSON).\",\"null\"],[\"media\",\"Dict\",\"Media info (images, tables, etc.).\",\"{}\"],[\"links\",\"Dict\",\"Link info (internal/external).\",\"{}\"],[\"downloaded_files\",\"String[]\",\"Paths to downloaded files.\",\"null\"],[\"screenshot\",\"String\",\"Screenshot (base64).\",\"null\"],[\"pdf\",\"Bytes\",\"PDF data.\",\"null\"],[\"mhtml\",\"String\",\"MHTML snapshot.\",\"null\"],[\"network_requests\",\"List\",\"Captured network events.\",\"null\"],[\"console_messages\",\"List\",\"Captured console logs.\",\"null\"],[\"ssl_certificate\",\"SSLCertificate\",\"SSL certificate info.\",\"null\"],[\"dispatch_result\",\"DispatchResult\",\"Concurrency stats.\",\"null\"]]","if result.success: print(result.url)","[[\"func2\",\"Func\"],[\"func3\",\"Func\"],[\"feat9\",\"Feat\"],[\"feat10\",\"Feat\"],[\"feat11\",\"Feat\"],[\"feat17\",\"Feat\"],[\"feat18\",\"Feat\"],[\"feat19\",\"Feat\"],[\"outobj2\",\"OutObj\"],[\"outobj3\",\"OutObj\"]]","chunk_0"]
-["cfgobj8","CfgObj","CacheMode","Enum controlling crawl caching behavior.","[]","[]","cache_mode=cfgobj8.BYPASS","[[\"feat5\",\"CfgObj\"],[\"feat20\",\"Feat\"]]","chunk_0"]
-["feat9","Feat","MarkdownGeneration","Convert HTML to structured markdown.","[[\"markdown_generator\",\"DefaultMarkdownGenerator\",\"Generator configuration.\",\"null\",\"cfgobj9\"]]","[[\"result.markdown\",\"MarkdownGenerationResult\",\"Markdown results.\",\"null\"]]","config = feat5(markdown_generator=cfgobj9())","[[\"feat5\",\"CfgObj\"],[\"feat7\",\"OutObj\"],[\"cfgobj9\",\"CfgObj\"],[\"feat28\",\"Feat\"]]","chunk_0"]
-["feat10","Feat","StructuredExtraction (No LLM)","Extract structured JSON from HTML using CSS or XPath schemas without LLM.","[[\"extraction_strategy\",\"JsonCssExtractionStrategy|JsonXPathExtractionStrategy\",\"Extraction strategy configuration.\",\"null\",\"cfgobj1\"]]","[[\"result.extracted_content\",\"String\",\"JSON string of extracted data.\",\"null\"]]","config = feat5(extraction_strategy=cfgobj1(schema=my_schema))","[[\"feat5\",\"CfgObj\"],[\"feat7\",\"OutObj\"],[\"cfgobj1\",\"CfgObj\"],[\"cfgobj21\",\"CfgObj\"]]","chunk_0"]
-["feat11","Feat","LLMExtraction","Extract structured JSON from HTML using an LLM.","[[\"extraction_strategy\",\"LLMExtractionStrategy\",\"LLM extraction strategy configuration.\",\"null\",\"cfgobj3\"]]","[[\"result.extracted_content\",\"String\",\"JSON string of extracted data.\",\"null\"]]","config = feat5(extraction_strategy=cfgobj3(...))","[[\"feat5\",\"CfgObj\"],[\"feat7\",\"OutObj\"],[\"cfgobj3\",\"CfgObj\"],[\"feat6\",\"CfgObj\"]]","chunk_0"]
-["feat12","Feat","DeepCrawling","Crawl multiple linked pages on a website.","[[\"deep_crawl_strategy\",\"DeepCrawlStrategy\",\"Deep crawl strategy (BFS, DFS, BestFirst).\",\"BFSDeepCrawlStrategy\",\"cfgobj10\"]]","[[\"results\",\"CrawlResult[]|AsyncGenerator\",\"Results for multiple crawled pages.\"]]","config = feat5(deep_crawl_strategy=cfgobj10(max_depth=2))","[[\"feat5\",\"CfgObj\"],[\"func3\",\"Func\"],[\"cfgobj10\",\"CfgObj\"],[\"cfgobj11\",\"CfgObj\"],[\"cfgobj12\",\"CfgObj\"],[\"cfgobj13\",\"CfgObj\"],[\"cfgobj14\",\"CfgObj\"]]","chunk_0"]
-["feat13","Feat","PageInteraction","Interact with dynamic page elements using JavaScript or wait conditions.","[[\"js_code\",\"String|String[]\",\"JavaScript to execute.\",\"null\",\"\\\"window.scrollTo()\\\"\"],[\"wait_for\",\"String\",\"Wait condition (css/js).\",\"null\",\"\\\"css:.loaded\\\"\"],[\"session_id\",\"String\",\"ID for session reuse.\",\"null\",\"\\\"my_session\\\"\"],[\"remove_overlay_elements\",\"Boolean\",\"Remove popups automatically.\",\"F\",\"T\"]]","[]","config = feat5(js_code=\"document.querySelector('.btn').click()\", wait_for=\"css:.new-content\")","[[\"feat5\",\"CfgObj\"],[\"patt12\",\"Patt\"],[\"patt13\",\"Patt\"],[\"patt14\",\"Patt\"]]","chunk_0"]
-["feat14","Feat","SessionManagement","Reuse browser pages or contexts across multiple crawls.","[[\"session_id\",\"String\",\"ID for session reuse.\",\"null\",\"\\\"my_session\\\"\"],[\"storage_state\",\"String|Dict\",\"Load session state (cookies/storage).\",\"null\",\"\\\"my_state.json\\\"\"],[\"use_persistent_context\",\"Boolean\",\"Use persistent browser context (same as use_managed_browser).\"],[\"user_data_dir\",\"String\",\"Directory to store user data.\",\"null\",null],[\"use_managed_browser\",\"Boolean\",\"Enable persistent browser strategy.\",\"F\",\"T\"]]","[]","config = feat5(session_id=\"my_session\") OR browser_config = feat4(storage_state=\"state.json\")","[[\"feat5\",\"CfgObj\"],[\"feat4\",\"CfgObj\"],[\"patt14\",\"Patt\"],[\"patt15\",\"Patt\"]]","chunk_0"]
-["feat15","Feat","IdentityBasedBrowsing","Simulate authentic user identities with persistent profiles, locale, timezone, and geolocation.","[[\"use_managed_browser\",\"Boolean\",\"Enable persistent browser.\",\"F\",\"T\"],[\"user_data_dir\",\"String\",\"Profile storage directory.\",\"null\",\"\\\"/path/to/profile\\\"\"],[\"locale\",\"String\",\"Browser locale.\",\"null\",\"\\\"fr-FR\\\"\"],[\"timezone_id\",\"String\",\"Browser timezone.\",\"null\",\"\\\"Europe/Paris\\\"\"],[\"geolocation\",\"GeolocationConfig\",\"GPS coordinates.\",\"null\",\"GeolocationConfig(...)\"],[\"magic\",\"Boolean\",\"Enable magic mode (anti-bot simulation).\",\"F\",\"T\"]]","[]","browser_cfg = feat4(use_managed_browser=T, user_data_dir=\"/profile\") OR run_cfg = feat5(locale=\"es-MX\", timezone_id=\"America/Mexico_City\")","[[\"feat4\",\"CfgObj\"],[\"feat5\",\"CfgObj\"],[\"cfgobj6\",\"CfgObj\"],[\"patt15\",\"Patt\"],[\"patt19\",\"Patt\"]]","chunk_0"]
-["feat16","Feat","ProxyUsage","Route crawl traffic through a proxy server.","[[\"proxy\",\"String\",\"Single proxy URL.\",\"null\",\"\\\"http://user:pass@proxy:8080\\\"\"],[\"proxy_config\",\"Dict\",\"Proxy settings.\",\"null\",\"{\\\"server\\\":\\\"...\\\"}\"]]","[]","browser_cfg = feat4(proxy_config=my_proxy_dict)","[[\"feat4\",\"CfgObj\"],[\"patt16\",\"Patt\"]]","chunk_0"]
-["feat17","Feat","NetworkAndConsoleCapture","Capture network requests and console messages for debugging.","[[\"capture_network_requests\",\"Boolean\",\"Capture network events.\",\"F\",\"T\"],[\"capture_console_messages\",\"Boolean\",\"Capture console logs.\",\"F\",\"T\"]]","[[\"result.network_requests\",\"List\",\"List of network events.\",\"null\"],[\"result.console_messages\",\"List\",\"List of console messages.\",\"null\"]]","config = feat5(capture_network_requests=T, capture_console_messages=T)","[[\"feat5\",\"CfgObj\"],[\"feat7\",\"OutObj\"],[\"patt17\",\"Patt\"]]","chunk_0"]
-["feat18","Feat","FileDownloading","Handle and save file downloads triggered during crawling.","[[\"accept_downloads\",\"Boolean\",\"Enable downloads.\",\"F\",\"T\"],[\"downloads_path\",\"String\",\"Directory to save downloads.\",\"null\",\"\\\"/path/to/downloads\\\"\"],[\"js_code\",\"String|String[]\",\"JS to trigger download.\",\"null\",\"null\"]]","[[\"result.downloaded_files\",\"List\",\"List of paths to downloaded files.\",\"null\"]]","browser_cfg = feat4(accept_downloads=T, downloads_path=\"/downloads\") OR run_cfg = feat5(js_code=\"document.querySelector('a[download]').click()\")","[[\"feat4\",\"CfgObj\"],[\"feat5\",\"CfgObj\"],[\"feat7\",\"OutObj\"],[\"patt12\",\"Patt\"],[\"patt18\",\"Patt\"]]","chunk_0"]
-["feat19","Feat","LinkAndMediaHandling","Extract and filter links, images, videos, and tables from pages.","[[\"exclude_external_links\",\"Boolean\",\"Exclude links outside domain.\",\"F\",\"T\"],[\"exclude_social_media_links\",\"Boolean\",\"Exclude social media links.\",\"F\",\"T\"],[\"exclude_domains\",\"String[]\",\"Custom domains to exclude.\",\"[]\",\"[\\\"ads.com\\\"]\"],[\"exclude_external_images\",\"Boolean\",\"Exclude images outside domain.\",\"F\",\"T\"],[\"table_score_threshold\",\"Int\",\"Sensitivity for table detection.\",\"7\",\"5\"]]","[[\"result.links\",\"Dict\",\"Extracted internal/external links.\"],[\"result.media\",\"Dict\",\"Extracted media (images, tables, etc.).\"][\"result.media.tables\",\"List\",\"Extracted data tables.\"]]","config = feat5(exclude_external_links=T, exclude_domains=[\"spam.com\"], table_score_threshold=5)","[[\"feat5\",\"CfgObj\"],[\"feat7\",\"OutObj\"],[\"patt10\",\"Patt\"]]","chunk_0"]
-["feat20","Feat","CacheControl","Control how the local crawl cache is used.","[[\"cache_mode\",\"CacheMode\",\"Caching behavior.\",\"ENABLED\",\"cfgobj8.BYPASS\"]]","[]","config = feat5(cache_mode=cfgobj8.READ_ONLY)","[[\"feat5\",\"CfgObj\"],[\"cfgobj8\",\"CfgObj\"]]","chunk_0"]
-["feat21","Feat","MultiURLDispatchers","Manage concurrency, rate limiting, and memory for crawling multiple URLs.","[[\"dispatcher\",\"BaseDispatcher\",\"Dispatcher configuration.\",\"MemoryAdaptiveDispatcher\",\"cfgobj2\"]]","[[\"result.dispatch_result\",\"DispatchResult\",\"Concurrency metrics per result.\",\"null\"]]","results = await crawler.func3(urls, dispatcher=cfgobj2(max_session_permit=20))","[[\"func3\",\"Func\"],[\"feat7\",\"OutObj\"],[\"cfgobj2\",\"CfgObj\"],[\"cfgobj7\",\"CfgObj\"]]","chunk_0"]
-["feat22","Feat","Crawl4AI CLI","Command-line interface for basic crawling, extraction, and Q&A.","[[\"url\",\"String\",\"URL to crawl.\"],[\"-o\",\"String\",\"Output format.\",\"null\",\"\\\"markdown\\\"\"],[\"-e\",\"String\",\"Extraction config file.\",\"null\",\"\\\"config.yml\\\"\"],[\"-s\",\"String\",\"Schema file.\",\"null\",\"\\\"schema.json\\\"\"],[\"-q\",\"String\",\"LLM query.\",\"null\",\"\\\"Summarize this.\\\"\"],[\"-B\",\"String\",\"Browser config (CLI string or file).\",\"null\",null],[\"-C\",\"String\",\"Crawler config (CLI string or file).\",\"null\",null]]","[[\"output\",\"Text|JSON\",\"Result based on format.\"]]","crwl https://example.com -o markdown -q \"What is it about?\"","[]","chunk_0"]
-["outobj2","OutObj","SSLCertificate","Object containing details of a website's SSL certificate.","[]","[[\"issuer\",\"Dict\",\"Certificate issuer.\"],[\"subject\",\"Dict\",\"Certificate subject.\"],[\"valid_until\",\"String\",\"Certificate expiration date.\"],[\"fingerprint\",\"String\",\"Certificate fingerprint.\"],[\"to_json\",\"Func\",\"Export as JSON.\"],[\"to_pem\",\"Func\",\"Export as PEM.\"],[\"to_der\",\"Func\",\"Export as DER.\"]]","if result.ssl_certificate: print(result.ssl_certificate.issuer)","[[\"feat7\",\"OutObj\"]]","chunk_0"]
-["outobj3","OutObj","MarkdownGenerationResult","Object containing different versions of markdown output.","[]","[[\"raw_markdown\",\"String\",\"Unfiltered markdown.\"],[\"markdown_with_citations\",\"String\",\"Markdown with link citations.\"],[\"references_markdown\",\"String\",\"Link references.\"],[\"fit_markdown\",\"String\",\"Filtered markdown.\",\"null\"],[\"fit_html\",\"String\",\"Filtered HTML.\",\"null\"]]","if result.markdown: print(result.markdown.fit_markdown)","[[\"feat7\",\"OutObj\"],[\"feat9\",\"Feat\"],[\"feat28\",\"Feat\"]]","chunk_0"]
-["cfgobj1","CfgObj","JsonCssExtractionStrategy","Extract structured JSON using CSS selectors based on a schema.","[[\"schema\",\"Dict\",\"Extraction schema.\",\"null\",null],[\"verbose\",\"Boolean\",\"Enable verbose logging.\",\"F\",\"T\"]]","[]","strategy = cfgobj1(schema=my_schema)","[[\"feat5\",\"CfgObj\"],[\"feat10\",\"Feat\"],[\"feat6\",\"CfgObj\"]]","chunk_0"]
-["cfgobj21","CfgObj","JsonXPathExtractionStrategy","Extract structured JSON using XPath selectors based on a schema.","[[\"schema\",\"Dict\",\"Extraction schema.\",\"null\",null],[\"verbose\",\"Boolean\",\"Enable verbose logging.\",\"F\",\"T\"]]","[]","strategy = cfgobj21(schema=my_xpath_schema)","[[\"feat5\",\"CfgObj\"],[\"feat10\",\"Feat\"],[\"feat6\",\"CfgObj\"]]","chunk_0"]
-["cfgobj3","CfgObj","LLMExtractionStrategy","Extract structured JSON using an LLM based on instructions and schema.","[[\"llm_config\",\"LLMConfig\",\"LLM provider config.\",\"null\",\"feat6\"],[\"schema\",\"Dict\",\"Extraction schema.\",\"null\",null],[\"extraction_type\",\"String\",\"Schema or Block extraction.\",\"\\\"block\\\"\",\"\\\"schema\\\"\"],[\"instruction\",\"String\",\"LLM prompt instruction.\",\"null\",null],[\"chunk_token_threshold\",\"Int\",\"Max tokens per chunk.\",\"4000\",\"1000\"],[\"overlap_rate\",\"Float\",\"Overlap between chunks.\",\"0.1\",null],[\"apply_chunking\",\"Boolean\",\"Enable automatic chunking.\",\"T\",\"F\"],[\"input_format\",\"String\",\"Content format for LLM.\",\"\\\"markdown\\\"\",\"\\\"html\\\"\"],[\"extra_args\",\"Dict\",\"Additional LLM parameters.\",\"{}\",null]]","[]","strategy = cfgobj3(llm_config=my_llm_cfg, instruction=\"Extract data.\")","[[\"feat5\",\"CfgObj\"],[\"feat11\",\"Feat\"],[\"feat6\",\"CfgObj\"]]","chunk_0"]
-["cfgobj4","CfgObj","BM25ContentFilter","Filter content based on relevance to a user query using BM25.","[[\"user_query\",\"String\",\"Query for relevance.\",\"null\",\"\\\"startup tips\\\"\"],[\"bm25_threshold\",\"Float\",\"Relevance score threshold.\",\"1.0\",\"1.2\"]]","[]","filter = cfgobj4(user_query=\"my query\")","[[\"cfgobj9\",\"CfgObj\"],[\"feat28\",\"Feat\"]]","chunk_0"]
-["cfgobj5","CfgObj","PruningContentFilter","Filter content based on text/link density and structure (unsupervised).","[[\"threshold\",\"Float\",\"Pruning threshold.\",\"0.48\",\"0.5\"],[\"min_word_threshold\",\"Int\",\"Min words per block.\",\"5\",\"10\"]]","[]","filter = cfgobj5(threshold=0.6)","[[\"cfgobj9\",\"CfgObj\"],[\"feat28\",\"Feat\"]]","chunk_0"]
-["cfgobj22","CfgObj","LLMContentFilter","Filter content using an LLM based on instructions.","[[\"llm_config\",\"LLMConfig\",\"LLM provider config.\",\"null\",\"feat6\"],[\"instruction\",\"String\",\"LLM prompt instruction.\",\"null\",null],[\"chunk_token_threshold\",\"Int\",\"Max tokens for LLM chunking.\",\"4096\",\"2048\"]]","[]","filter = cfgobj22(llm_config=my_llm_cfg, instruction=\"Extract key points.\")","[[\"cfgobj9\",\"CfgObj\"],[\"feat28\",\"Feat\"],[\"feat6\",\"CfgObj\"]]","chunk_0"]
-["cfgobj6","CfgObj","BrowserProfiler","Manage persistent browser profiles for identity-based browsing.","[]","[[\"create_profile\",\"Func\",\"Create new profile interactively.\"],[\"list_profiles\",\"Func\",\"List available profiles.\"],[\"get_profile_path\",\"Func\",\"Get profile path by name.\"],[\"delete_profile\",\"Func\",\"Delete a profile.\"],[\"interactive_manager\",\"Func\",\"Launch interactive profile manager.\"]]","profiler = cfgobj6()","[[\"feat15\",\"Feat\"],[\"feat4\",\"CfgObj\"],[\"patt15\",\"Patt\"]]","chunk_0"]
-["cfgobj2","CfgObj","MemoryAdaptiveDispatcher","Dynamically manages concurrency for arun_many based on memory usage.","[[\"memory_threshold_percent\",\"Float\",\"Pause if memory exceeds threshold.\",\"90.0\",\"80.0\"],[\"max_session_permit\",\"Int\",\"Max concurrent tasks.\",\"10\",\"20\"],[\"check_interval\",\"Float\",\"How often to check memory.\",\"1.0\",\"0.5\"],[\"memory_wait_timeout\",\"Float\",\"Timeout waiting for memory.\",\"300.0\",null],[\"rate_limiter\",\"RateLimiter\",\"Rate limiting config.\",\"null\",\"RateLimiter(...)\"],[\"monitor\",\"CrawlerMonitor\",\"Monitoring config.\",\"null\",\"CrawlerMonitor(...)\"]]","[]","dispatcher = cfgobj2(memory_threshold_percent=75.0)","[[\"feat21\",\"Feat\"],[\"func3\",\"Func\"]]","chunk_0"]
-["cfgobj7","CfgObj","SemaphoreDispatcher","Manages concurrency for arun_many with a fixed limit.","[[\"max_session_permit\",\"Int\",\"Max concurrent tasks.\",\"20\",\"10\"],[\"rate_limiter\",\"RateLimiter\",\"Rate limiting config.\",\"null\",\"RateLimiter(...)\"],[\"monitor\",\"CrawlerMonitor\",\"Monitoring config.\",\"null\",\"CrawlerMonitor(...)\"]]","[]","dispatcher = cfgobj7(max_session_permit=15)","[[\"feat21\",\"Feat\"],[\"func3\",\"Func\"]]","chunk_0"]
-["cfgobj9","CfgObj","DefaultMarkdownGenerator","Generate markdown from HTML, optionally with content filters and options.","[[\"content_filter\",\"ContentFilter\",\"Filter for content pruning/ranking.\",\"null\",\"cfgobj5\"],[\"options\",\"Dict\",\"html2text-like options.\",\"{}\",\"{\\\"ignore_links\\\": T}\"],[\"content_source\",\"String\",\"HTML source ('raw_html', 'cleaned_html', 'fit_html').\",\"\\\"cleaned_html\\\"\",\"\\\"raw_html\\\"\"],[\"verbose\",\"Boolean\",\"Enable verbose logging.\",\"F\",\"T\"]]","[]","md_gen = cfgobj9(content_filter=cfgobj5(...))","[[\"feat9\",\"Feat\"],[\"feat28\",\"Feat\"],[\"cfgobj4\",\"CfgObj\"],[\"cfgobj5\",\"CfgObj\"],[\"cfgobj22\",\"CfgObj\"],[\"outobj3\",\"OutObj\"]]","chunk_0"]
-["cfgobj10","CfgObj","BFSDeepCrawlStrategy","Deep crawl strategy using Breadth-First Search.","[[\"max_depth\",\"Int\",\"Max crawl depth.\",\"null\",\"2\"],[\"include_external\",\"Boolean\",\"Include external links.\",\"F\",\"T\"],[\"max_pages\",\"Int\",\"Max pages to crawl.\",\"infinite\",\"50\"],[\"score_threshold\",\"Float\",\"Min score for URLs.\",\"-inf\",\"0.3\"],[\"filter_chain\",\"FilterChain\",\"Filter chain for URLs.\",\"null\",\"cfgobj13\"],[\"url_scorer\",\"UrlScorer\",\"Scorer for URLs.\",\"null\",\"cfgobj14\"]]","[]","strategy = cfgobj10(max_depth=3)","[[\"feat12\",\"Feat\"],[\"cfgobj13\",\"CfgObj\"],[\"cfgobj14\",\"CfgObj\"]]","chunk_0"]
-["cfgobj11","CfgObj","DFSDeepCrawlStrategy","Deep crawl strategy using Depth-First Search.","[[\"max_depth\",\"Int\",\"Max crawl depth.\",\"null\",\"2\"],[\"include_external\",\"Boolean\",\"Include external links.\",\"F\",\"T\"],[\"max_pages\",\"Int\",\"Max pages to crawl.\",\"infinite\",\"30\"],[\"score_threshold\",\"Float\",\"Min score for URLs.\",\"-inf\",\"0.5\"],[\"filter_chain\",\"FilterChain\",\"Filter chain for URLs.\",\"null\",\"cfgobj13\"],[\"url_scorer\",\"UrlScorer\",\"Scorer for URLs.\",\"null\",\"cfgobj14\"]]","[]","strategy = cfgobj11(max_depth=4)","[[\"feat12\",\"Feat\"],[\"cfgobj13\",\"CfgObj\"],[\"cfgobj14\",\"CfgObj\"]]","chunk_0"]
-["cfgobj12","CfgObj","BestFirstCrawlingStrategy","Deep crawl strategy prioritizing links based on a scorer.","[[\"max_depth\",\"Int\",\"Max crawl depth.\",\"null\",\"2\"],[\"include_external\",\"Boolean\",\"Include external links.\",\"F\",\"T\"],[\"url_scorer\",\"UrlScorer\",\"Scoring strategy for URLs.\",\"null\",\"cfgobj14\"],[\"max_pages\",\"Int\",\"Max pages to crawl.\",\"infinite\",\"25\"],[\"filter_chain\",\"FilterChain\",\"Filter chain for URLs.\",\"null\",\"cfgobj13\"]]","[]","strategy = cfgobj12(max_depth=2, url_scorer=cfgobj14(...))","[[\"feat12\",\"Feat\"],[\"cfgobj13\",\"CfgObj\"],[\"cfgobj14\",\"CfgObj\"]]","chunk_0"]
-["cfgobj13","CfgObj","FilterChain","Chain multiple filters to control which URLs are included in deep crawls.","[[\"filters\",\"List\",\"List of filters to apply.\",\"[]\",\"[]\"]]","[]","filter_chain = cfgobj13([DomainFilter(...), URLPatternFilter(...)])","[[\"feat12\",\"Feat\"],[\"cfgobj10\",\"CfgObj\"],[\"cfgobj11\",\"CfgObj\"],[\"cfgobj12\",\"CfgObj\"]]","chunk_0"]
-["cfgobj14","CfgObj","KeywordRelevanceScorer","Score URLs based on keyword relevance for BestFirstCrawlingStrategy.","[[\"keywords\",\"List\",\"Keywords to score by.\",\"[]\",\"[\\\"crawl\\\", \\\"example\\\"]\"],[\"weight\",\"Float\",\"Score importance.\",\"0.7\",\"1.0\"]]","[]","scorer = cfgobj14(keywords=[\"api\", \"guide\"])","[[\"cfgobj12\",\"CfgObj\"],[\"cfgobj10\",\"CfgObj\"],[\"cfgobj11\",\"CfgObj\"]]","chunk_0"]
-["feat28","Feat","FitMarkdown","Generate filtered markdown (fit_markdown) using a content filter to remove boilerplate.","[[\"markdown_generator\",\"DefaultMarkdownGenerator\",\"Generator configured with a content filter.\",\"null\",\"cfgobj9\"]]","[[\"result.markdown.fit_markdown\",\"String\",\"Filtered markdown content.\",\"null\"]]","config = feat5(markdown_generator=cfgobj9(content_filter=cfgobj5()))","[[\"feat5\",\"CfgObj\"],[\"feat7\",\"OutObj\"],[\"feat9\",\"Feat\"],[\"cfgobj9\",\"CfgObj\"],[\"cfgobj4\",\"CfgObj\"],[\"cfgobj5\",\"CfgObj\"],[\"cfgobj22\",\"CfgObj\"],[\"outobj3\",\"OutObj\"]]","chunk_0"]
-["patt10","Patt","PrefixBasedInput","Crawl web URLs, local files, or raw HTML using URL prefixes.","[[\"url\",\"String\",\"URL with prefix (http://, https://, file://, raw:).\",\"null\",\"\\\"raw:<html>...</html>\\\"\"],[\"config\",\"CrawlerRunConfig\",\"Crawl run configuration.\",\"null\",\"feat5\"]]","[]","result = await crawler.func2(url=\"file:///path/to/file.html\")","[[\"func2\",\"Func\"],[\"feat19\",\"Feat\"],[\"feat5\",\"CfgObj\"]]","chunk_0"]
-["patt11","Patt","Using css_selector","Limit content processing and extraction to elements matching a CSS selector.","[[\"css_selector\",\"String\",\"CSS selector for main content area.\",\"null\",\"\\\"main.content\\\"\"],[\"config\",\"CrawlerRunConfig\",\"Crawl run configuration.\",\"null\",\"feat5\"]]","[]","config = feat5(css_selector=\"article.post\")","[[\"feat5\",\"CfgObj\"]]","chunk_0"]
-["patt12","Patt","Using js_code","Execute custom JavaScript code on the page after it loads.","[[\"js_code\",\"String|String[]\",\"JavaScript code string or list.\",\"null\",\"\\\"window.scrollTo(0, document.body.scrollHeight)\\\"\"],[\"config\",\"CrawlerRunConfig\",\"Crawl run configuration.\",\"null\",\"feat5\"]]","[]","config = feat5(js_code=\"document.querySelector('.more').click()\")","[[\"feat5\",\"CfgObj\"],[\"feat13\",\"Feat\"],[\"feat18\",\"Feat\"]]","chunk_0"]
-["patt13","Patt","Using wait_for","Pause execution until a CSS selector is present or a JavaScript function returns true.","[[\"wait_for\",\"String\",\"CSS selector or JS function.\",\"null\",\"\\\"css:.loaded\\\"\"],[\"config\",\"CrawlerRunConfig\",\"Crawl run configuration.\",\"null\",\"feat5\"]]","[]","config = feat5(wait_for=\"js:() => window.isReady\")","[[\"feat5\",\"CfgObj\"],[\"feat13\",\"Feat\"]]","chunk_0"]
-["patt14","Patt","Using session_id","Reuse the same browser tab/page across multiple crawl operations.","[[\"session_id\",\"String\",\"Unique ID for the session.\",\"null\",\"\\\"my_session\\\"\"],[\"config\",\"CrawlerRunConfig\",\"Crawl run configuration.\",\"null\",\"feat5\"]]","[]","config = feat5(session_id=\"user_session\")","[[\"feat5\",\"CfgObj\"],[\"feat14\",\"Feat\"],[\"feat13\",\"Feat\"]]","chunk_0"]
-["patt15","Patt","Using user_data_dir","Store cookies, local storage, and profile data persistently.","[[\"user_data_dir\",\"String\",\"Directory path for profile.\",\"null\",\"\\\"/path/to/profile\\\"\"],[\"config\",\"BrowserConfig\",\"Browser configuration.\",\"null\",\"feat4\"]]","[]","browser_cfg = feat4(user_data_dir=\"/myprofile\", use_managed_browser=T)","[[\"feat4\",\"CfgObj\"],[\"feat15\",\"Feat\"],[\"cfgobj6\",\"CfgObj\"]]","chunk_0"]
-["patt16","Patt","Using proxy_config","Configure proxy server details (server, user, password).","[[\"proxy_config\",\"Dict\",\"Proxy configuration dictionary.\",\"null\",\"{\\\"server\\\":\\\"http://proxy.com:8080\\\"}\"],[\"config\",\"BrowserConfig\",\"Browser configuration.\",\"null\",\"feat4\"]]","[]","browser_cfg = feat4(proxy_config=my_proxy_details)","[[\"feat4\",\"CfgObj\"],[\"feat16\",\"Feat\"]]","chunk_0"]
-["patt17","Patt","Using capture_network_requests and capture_console_messages","Enable capturing network events and browser console messages for debugging.","[[\"capture_network_requests\",\"Boolean\",\"Enable network capture.\",\"F\",\"T\"],[\"capture_console_messages\",\"Boolean\",\"Enable console capture.\",\"F\",\"T\"],[\"config\",\"CrawlerRunConfig\",\"Crawl run configuration.\",\"null\",\"feat5\"]]","[]","config = feat5(capture_network_requests=T, capture_console_messages=T)","[[\"feat5\",\"CfgObj\"],[\"feat17\",\"Feat\"]]","chunk_0"]
-["patt18","Patt","Using accept_downloads and downloads_path","Enable and specify the directory for saving file downloads.","[[\"accept_downloads\",\"Boolean\",\"Allow downloads.\",\"F\",\"T\"],[\"downloads_path\",\"String\",\"Download save directory.\",\"null\",\"\\\"/path/to/folder\\\"\"],[\"config\",\"BrowserConfig\",\"Browser configuration.\",\"null\",\"feat4\"]]","[]","browser_cfg = feat4(accept_downloads=T, downloads_path=\"/my/downloads\")","[[\"feat4\",\"CfgObj\"],[\"feat18\",\"Feat\"]]","chunk_0"]
-["patt19","Patt","Using locale, timezone_id, and geolocation","Configure browser's reported locale, timezone, and GPS location.","[[\"locale\",\"String\",\"Browser locale.\",\"null\",\"\\\"en-US\\\"\"],[\"timezone_id\",\"String\",\"Browser timezone.\",\"null\",\"\\\"America/New_York\\\"\"],[\"geolocation\",\"GeolocationConfig\",\"GPS coordinates.\",\"null\",\"GeolocationConfig(...)\"],[\"config\",\"CrawlerRunConfig\",\"Crawl run configuration.\",\"null\",\"feat5\"]]","[]","config = feat5(locale=\"de-DE\", timezone_id=\"Europe/Berlin\")","[[\"feat5\",\"CfgObj\"],[\"feat15\",\"Feat\"]]","chunk_0"]
-["cfgobj15","CfgObj","CosineStrategy","Extract relevant content sections based on semantic similarity clustering.","[[\"semantic_filter\",\"String\",\"Topic/keywords for filtering.\",\"null\",\"\\\"product reviews\\\"\"],[\"sim_threshold\",\"Float\",\"Similarity threshold.\",\"0.3\",\"0.5\"],[\"word_count_threshold\",\"Int\",\"Min words per cluster.\",\"10\",\"20\"],[\"max_dist\",\"Float\",\"Max distance for clustering.\",\"0.2\",null],[\"linkage_method\",\"String\",\"Clustering method.\",\"\\\"ward\\\"\",null],[\"top_k\",\"Int\",\"Number of top clusters.\",\"3\",null],[\"model_name\",\"String\",\"Embedding model.\",\"\\\"sentence-transformers/all-MiniLM-L6-v2\\\"\",null]]","[]","strategy = cfgobj15(semantic_filter=\"technical docs\", sim_threshold=0.6)","[[\"feat5\",\"CfgObj\"],[\"feat10\",\"Feat\"]]","chunk_0"]
-["cfgobj16","CfgObj","LXMLWebScrapingStrategy","Faster HTML scraping strategy using LXML instead of BeautifulSoup.","[]","[]","config = feat5(scraping_strategy=cfgobj16())","[[\"feat5\",\"CfgObj\"]]","chunk_0"]
+# IntegratedKnowledgeManifest_SKF/1.4 LA
+# SourceDocs: [docs_crawl4ai_com_-None]
+# GenerationTimestamp: 2025-05-15T09:34:34+00:00
+# PrimaryNamespace: docs_crawl4ai_com_
+
+# SECTION: DEFINITIONS (Prefix: D)
+# Format_PrimaryDef: Dxxx:Gxxx_Entity [DEF_TYP] [NAMESPACE "relative.path"] [OPERATIONS {op1:RetT(p1N:p1T); op2_static:RetT()}] [ATTRIBUTES {attr1:AttrT1("Def:Val","RO")}] [CONSTANTS {c1:ValT1("Val")}] ("Note")
+# ---
+D001:G001_AsyncWebCrawler CompDef [NAMESPACE "."] [OPERATIONS {arun:Async[G004_CrawlResult](url:str, config:Opt[G006_CrawlerRunConfig]); arun_many:Async[Uni[List[G004_CrawlResult], AGen[G004_CrawlResult]]](urls:Uni[List[str], List[Any]], config:Opt[G006_CrawlerRunConfig], dispatcher:Opt[G014_BaseDispatcher]); start:Async[None](); close:Async[None](); create_session:Async[str]()}] ("Core asynchronous web crawling class.")
+D002:G002_arun Function ("Crawl single URL, return result.")
+D003:G003_arun_many Function ("Crawl multiple URLs concurrently.")
+D004:G004_CrawlResult DTDef [NAMESPACE "crawler.models"] [ATTRIBUTES {url:str("","RO"); html:str("","RO"); success:bool("","RO"); cleaned_html:Opt[str]("","RO"); media:Map[str,List[Dict]]("","RO"); links:Map[str,List[Dict]]("","RO"); downloaded_files:Opt[List[str]]("","RO"); screenshot:Opt[str]("","RO"); pdf:Opt[bytes]("","RO"); mhtml:Opt[str]("","RO"); markdown:Opt[Uni[str,G034_MarkdownGenerationResult]]("","RO"); extracted_content:Opt[str]("","RO"); metadata:Opt[dict]("","RO"); error_message:Opt[str]("","RO"); session_id:Opt[str]("","RO"); response_headers:Opt[dict]("","RO"); status_code:Opt[int]("","RO"); ssl_certificate:Opt[G008_SSLCertificate]("","RO"); dispatch_result:Opt[G065_DispatchResult]("","RO"); network_requests:Opt[List[Map[str,Any]]]("","RO"); console_messages:Opt[List[Map[str,Any]]]("","RO")}] ("Encapsulates crawl output, content, metadata.")
+D005:G005_BrowserConfig DTDef [NAMESPACE "async_configs"] [OPERATIONS {clone:G005_BrowserConfig()}] [ATTRIBUTES {browser_type:str("chromium","RW"); headless:bool("True","RW"); proxy:Opt[str]("None","RW"); proxy_config:Opt[dict]("None","RW"); viewport_width:int("1080","RW"); viewport_height:int("600","RW"); verbose:bool("True","RW"); use_persistent_context:bool("False","RW"); user_data_dir:Opt[str]("None","RW"); ignore_https_errors:bool("True","RW"); java_script_enabled:bool("True","RW"); cookies:List[dict]("[]","RW"); headers:dict("{}","RW"); user_agent:Opt[str]("None","RW"); light_mode:bool("False","RW"); text_mode:bool("False","RW"); use_managed_browser:bool("False","RW"); extra_args:List[str]("[]","RW"); accept_downloads:bool("False","RW"); downloads_path:Opt[str]("None","RW")}] ("Configures browser launch, environment.")
+D006:G006_CrawlerRunConfig DTDef [NAMESPACE "async_configs"] [OPERATIONS {clone:G006_CrawlerRunConfig()}] [ATTRIBUTES {verbose:bool("True","RW"); cache_mode:Opt[G009_CacheMode]("None","RW"); check_robots_txt:bool("False","RW"); word_count_threshold:int("200","RW"); only_text:bool("False","RW"); keep_data_attributes:bool("False","RW"); css_selector:Opt[str]("None","RW"); target_elements:Opt[List[str]]("None","RW"); excluded_tags:Opt[List[str]]("None","RW"); excluded_selector:Opt[str]("None","RW"); remove_forms:bool("False","RW"); remove_overlay_elements:bool("False","RW"); exclude_external_links:bool("False","RW"); exclude_social_media_links:bool("False","RW"); exclude_domains:List[str]("[]","RW"); exclude_social_media_domains:List[str]("[]","RW"); exclude_external_images:bool("False","RW"); exclude_all_images:bool("False","RW"); wait_until:str("domcontentloaded","RW"); page_timeout:int("60000","RW"); wait_for:Opt[str]("None","RW"); wait_for_images:bool("False","RW"); delay_before_return_html:float("0.1","RW"); mean_delay:float("0.1","RW"); max_range:float("0.3","RW"); semaphore_count:int("5","RW"); js_code:Opt[Uni[str,List[str]]]("None","RW"); js_only:bool("False","RW"); magic:bool("False","RW"); simulate_user:bool("False","RW"); override_navigator:bool("False","RW"); session_id:Opt[str]("None","RW"); screenshot:bool("False","RW"); screenshot_wait_for:Opt[float]("None","RW"); screenshot_height_threshold:int("20000","RW"); pdf:bool("False","RW"); capture_mhtml:bool("False","RW"); image_description_min_word_threshold:int("50","RW"); image_score_threshold:int("3","RW"); extraction_strategy:Opt[G017_ExtractionStrategy]("None","RW"); markdown_generator:Opt[MarkdownGenerationStrategy]("None","RW"); locale:Opt[str]("None","RW"); timezone_id:Opt[str]("None","RW"); geolocation:Opt[G016_GeolocationConfig]("None","RW"); enable_rate_limiting:bool("False","RW"); rate_limit_config:Opt[dict]("None","RW"); memory_threshold_percent:float("70.0","RW"); check_interval:float("1.0","RW"); max_session_permit:int("20","RW"); display_mode:Opt[DisplayMode]("None","RW"); stream:bool("False","RW"); proxy_rotation_strategy:Opt[ProxyRotationStrategy]("None","RW"); table_score_threshold:int("7","RW"); capture_network_requests:bool("False","RW"); capture_console_messages:bool("False","RW"); scraping_strategy:Opt[G026_ContentScrapingStrategy]("None","RW"); deep_crawl_strategy:Opt[DeepCrawlStrategy]("None","RW")}] ("Configures single crawl operation.")
+D007:G007_LLMConfig DTDef [NAMESPACE "."] [ATTRIBUTES {provider:str("openai/gpt-4o-mini","RW"); api_token:Opt[str]("None","RW"); base_url:Opt[str]("None","RW")}] ("Configures LLM provider settings.")
+D008:G008_SSLCertificate DTDef [NAMESPACE "ssl_certificate"] [OPERATIONS {from_url_static:Opt[G008_SSLCertificate](url:str, timeout:int); from_file_static:Opt[G008_SSLCertificate](file_path:str); from_binary_static:Opt[G008_SSLCertificate](binary_data:bytes); to_json:Opt[str](filepath:Opt[str]); to_pem:Opt[str](filepath:Opt[str]); to_der:Opt[bytes](filepath:Opt[str]); export_as_text:Opt[str]()}] [ATTRIBUTES {issuer:dict("","RO"); subject:dict("","RO"); valid_from:str("","RO"); valid_until:str("","RO"); fingerprint:str("","RO")}] ("SSL certificate data, export methods.")
+D009:G009_CacheMode EnmDef [NAMESPACE "cache_context"] ("Defines caching behavior options.")
+D010:G010_RateLimiter CompDef [NAMESPACE "."] [ATTRIBUTES {base_delay:Tuple[float,float]("(1.0, 3.0)","RW"); max_delay:float("60.0","RW"); max_retries:int("3","RW"); rate_limit_codes:List[int]("[429, 503]","RW")}] ("Manages request pacing, backoff.")
+D011:G011_CrawlerMonitor CompDef [NAMESPACE "."] [ATTRIBUTES {max_visible_rows:int("15","RW"); display_mode:DisplayMode("DETAILED","RW")}] ("Provides real-time crawl visibility.")
+D012:G012_MemoryAdaptiveDispatcher CompDef [NAMESPACE "async_dispatcher"] [ATTRIBUTES {memory_threshold_percent:float("90.0","RW"); check_interval:float("1.0","RW"); max_session_permit:int("10","RW"); memory_wait_timeout:float("300.0","RW"); rate_limiter:Opt[G010_RateLimiter]("None","RW"); monitor:Opt[G011_CrawlerMonitor]("None","RW")}] ("Dynamic concurrency based on memory.")
+D013:G013_SemaphoreDispatcher CompDef [NAMESPACE "async_dispatcher"] [ATTRIBUTES {max_session_permit:int("20","RW"); rate_limiter:Opt[G010_RateLimiter]("None","RW"); monitor:Opt[G011_CrawlerMonitor]("None","RW")}] ("Fixed concurrency limit dispatcher.")
+D014:G014_BaseDispatcher IfceDef [NAMESPACE "async_dispatcher"] ("Base class for dispatchers.")
+D015:G015_BrowserProfiler CompDef [NAMESPACE "."] [OPERATIONS {create_profile:Async[str](profile_name:Opt[str]); list_profiles:List[dict](); get_profile_path:Opt[str](profile_name:str); delete_profile:bool(profile_name:str); interactive_manager:Async[None](crawl_callback:Opt[Callable])}] ("Manages persistent browser profiles.")
+D016:G016_GeolocationConfig DTDef [NAMESPACE "."] [ATTRIBUTES {latitude:float("","RW"); longitude:float("","RW"); accuracy:Opt[float]("None","RW")}] ("Configures browser geolocation.")
+D017:G017_ExtractionStrategy IfceDef [NAMESPACE "extraction_strategy"] [OPERATIONS {extract:List[Map[str,Any]](url:str, html:str); run:List[Map[str,Any]](url:str, sections:List[str])}] ("Base class for extraction strategies.")
+D018:G018_LLMExtractionStrategy CompDef [NAMESPACE "extraction_strategy"] [OPERATIONS {show_usage:None()}] [ATTRIBUTES {llm_config:G007_LLMConfig("","RW"); instruction:Opt[str]("None","RW"); schema:Opt[dict]("None","RW"); extraction_type:str("block","RW"); chunk_token_threshold:int("4000","RW"); overlap_rate:float("0.1","RW"); word_token_rate:float("0.75","RW"); apply_chunking:bool("True","RW"); extra_args:dict("{}","RW"); verbose:bool("False","RW"); input_format:str("markdown","RW"); usages:List("","RO"); total_usage:dict("","RO")}] ("Extracts structured data using LLMs.")
+D019:G019_CosineStrategy CompDef [NAMESPACE "extraction_strategy"] [ATTRIBUTES {semantic_filter:Opt[str]("None","RW"); word_count_threshold:int("10","RW"); sim_threshold:float("0.3","RW"); max_dist:float("0.2","RW"); linkage_method:str("ward","RW"); top_k:int("3","RW"); model_name:str("sentence-transformers/all-MiniLM-L6-v2","RW"); verbose:bool("False","RW")}] ("Similarity-based content extraction, clustering.")
+D020:G020_JsonCssExtractionStrategy CompDef [NAMESPACE "extraction_strategy"] [OPERATIONS {generate_schema_static:dict(html:str, schema_type:str, llm_config:G007_LLMConfig, query:Opt[str])}] [ATTRIBUTES {schema:dict("","RW"); verbose:bool("False","RW")}] ("Extracts JSON using CSS selectors.")
+D021:G021_JsonXPathExtractionStrategy CompDef [NAMESPACE "extraction_strategy"] [OPERATIONS {generate_schema_static:dict(html:str, schema_type:str, llm_config:G007_LLMConfig, query:Opt[str])}] [ATTRIBUTES {schema:dict("","RW"); verbose:bool("False","RW")}] ("Extracts JSON using XPath selectors.")
+D022:G022_ChunkingStrategy IfceDef [NAMESPACE "chunking_strategy"] [OPERATIONS {chunk:list(text:str)}] ("Base class for text chunking.")
+D023:G023_RegexChunking CompDef [NAMESPACE "chunking_strategy"] [ATTRIBUTES {patterns:Opt[List[str]]("None","RW")}] ("Splits text by regex patterns.")
+D024:G024_SlidingWindowChunking CompDef [NAMESPACE "chunking_strategy"] [ATTRIBUTES {window_size:int("100","RW"); step:int("50","RW")}] ("Overlapping text chunks by window.")
+D025:G025_OverlappingWindowChunking CompDef [NAMESPACE "chunking_strategy"] [ATTRIBUTES {window_size:int("1000","RW"); overlap:int("100","RW")}] ("Text chunks with specified overlap.")
+D026:G026_ContentScrapingStrategy IfceDef [NAMESPACE "content_scraping_strategy"] [OPERATIONS {scrap:G029_ScrapingResult(url:str, html:str); ascrap:Async[G029_ScrapingResult](url:str, html:str)}] ("Base class for HTML scraping.")
+D027:G027_WebScrapingStrategy CompDef ("BeautifulSoup-based HTML scraping.")
+D028:G028_LXMLWebScrapingStrategy CompDef [NAMESPACE "content_scraping_strategy"] ("LXML-based HTML scraping.")
+D029:G029_ScrapingResult DTDef [NAMESPACE "content_scraping_strategy"] [ATTRIBUTES {cleaned_html:str("","RO"); success:bool("","RO"); media:G031_Media("","RO"); links:G033_Links("","RO"); metadata:dict("","RO")}] ("Result object from scraping strategy.")
+D030:G030_MediaItem DTDef [NAMESPACE "crawler.models"] [ATTRIBUTES {src:str("","RO"); alt:Opt[str]("","RO"); desc:Opt[str]("","RO"); score:Opt[float]("","RO"); type:str("","RO"); group_id:Opt[int]("","RO"); format:Opt[str]("","RO"); width:Opt[int]("None","RO"); height:Opt[int]("None","RO")}] ("Represents extracted media element.")
+D031:G031_Media DTDef [NAMESPACE "crawler.models"] [ATTRIBUTES {images:List[G030_MediaItem]("","RO"); videos:List[G030_MediaItem]("","RO"); audios:List[G030_MediaItem]("","RO"); tables:List[dict]("","RO")}] ("Collection of extracted media items.")
+D032:G032_Link DTDef [NAMESPACE "crawler.models"] [ATTRIBUTES {href:str("","RO"); text:Opt[str]("","RO"); title:Opt[str]("","RO"); base_domain:Opt[str]("","RO")}] ("Represents extracted hyperlink.")
+D033:G033_Links DTDef [NAMESPACE "crawler.models"] [ATTRIBUTES {internal:List[G032_Link]("","RO"); external:List[G032_Link]("","RO")}] ("Collection of extracted links.")
+D034:G034_MarkdownGenerationResult DTDef [NAMESPACE "crawler.models"] [ATTRIBUTES {raw_markdown:str("","RO"); markdown_with_citations:str("","RO"); references_markdown:str("","RO"); fit_markdown:Opt[str]("None","RO"); fit_html:Opt[str]("None","RO")}] ("Detailed markdown output object.")
+D035:G035_DefaultMarkdownGenerator CompDef [NAMESPACE "markdown_generation_strategy"] [ATTRIBUTES {content_filter:Opt[G036_ContentFilterStrategy]("None","RW"); options:Opt[dict]("None","RW"); content_source:str("cleaned_html","RW")}] ("Default HTML-to-Markdown generator.")
+D036:G036_ContentFilterStrategy IfceDef [NAMESPACE "content_filter_strategy"] [OPERATIONS {filter_content:List[str](html:str, min_word_threshold:Opt[int])}] ("Base class for content filters.")
+D037:G037_PruningContentFilter CompDef [NAMESPACE "content_filter_strategy"] [ATTRIBUTES {threshold:float("0.48","RW"); threshold_type:str("dynamic","RW"); min_word_threshold:int("5","RW")}] ("Heuristic content pruning filter.")
+D038:G038_BM25ContentFilter CompDef [NAMESPACE "content_filter_strategy"] [ATTRIBUTES {user_query:Opt[str]("None","RW"); bm25_threshold:float("1.0","RW"); use_stemming:bool("True","RW"); language:str("english","RW")}] ("Query-based content relevance filter.")
+D039:G039_LLMContentFilter CompDef [NAMESPACE "content_filter_strategy"] [ATTRIBUTES {llm_config:G007_LLMConfig("","RW"); instruction:str("","RW"); chunk_token_threshold:int("4096","RW"); verbose:bool("False","RW")}] ("LLM-based content filtering.")
+D040:G040_BFSDeepCrawlStrategy CompDef [NAMESPACE "deep_crawling"] [ATTRIBUTES {max_depth:int("2","RW"); include_external:bool("False","RW"); max_pages:int("inf","RW"); score_threshold:float("-inf","RW"); filter_chain:Opt[G043_FilterChain]("None","RW"); url_scorer:Opt[UrlScorer]("None","RW")}] ("Breadth-first deep crawling strategy.")
+D041:G041_DFSDeepCrawlStrategy CompDef [NAMESPACE "deep_crawling"] [ATTRIBUTES {max_depth:int("2","RW"); include_external:bool("False","RW"); max_pages:int("inf","RW"); score_threshold:float("-inf","RW"); filter_chain:Opt[G043_FilterChain]("None","RW"); url_scorer:Opt[UrlScorer]("None","RW")}] ("Depth-first deep crawling strategy.")
+D042:G042_BestFirstCrawlingStrategy CompDef [NAMESPACE "deep_crawling"] [ATTRIBUTES {max_depth:int("2","RW"); include_external:bool("False","RW"); max_pages:int("inf","RW"); score_threshold:float("-inf","RW"); filter_chain:Opt[G043_FilterChain]("None","RW"); url_scorer:Opt[UrlScorer]("None","RW")}] ("Score-prioritized deep crawling.")
+D043:G043_FilterChain CompDef [NAMESPACE "deep_crawling.filters"] [ATTRIBUTES {filters:List[UrlFilter]("","RW")}] ("Combines multiple deep crawl filters.")
+D044:G044_URLPatternFilter CompDef [NAMESPACE "deep_crawling.filters"] [ATTRIBUTES {patterns:List[str]("","RW")}] ("Filters deep crawl URLs by pattern.")
+D045:G045_DomainFilter CompDef [NAMESPACE "deep_crawling.filters"] [ATTRIBUTES {allowed_domains:Opt[List[str]]("None","RW"); blocked_domains:Opt[List[str]]("None","RW")}] ("Filters deep crawl URLs by domain.")
+D046:G046_ContentTypeFilter CompDef [NAMESPACE "deep_crawling.filters"] [ATTRIBUTES {allowed_types:Opt[List[str]]("None","RW"); blocked_types:Opt[List[str]]("None","RW")}] ("Filters deep crawl URLs by content type.")
+D047:G047_ContentRelevanceFilter CompDef [NAMESPACE "deep_crawling.filters"] [ATTRIBUTES {query:str("","RW"); threshold:float("0.7","RW")}] ("Filters deep crawl URLs by content relevance.")
+D048:G048_SEOFilter CompDef [NAMESPACE "deep_crawling.filters"] [ATTRIBUTES {threshold:float("0.5","RW"); keywords:List[str]("","RW")}] ("Filters deep crawl URLs by SEO factors.")
+D049:G049_KeywordRelevanceScorer CompDef [NAMESPACE "deep_crawling.scorers"] [ATTRIBUTES {keywords:List[str]("","RW"); weight:float("0.7","RW")}] ("Scores deep crawl URLs by keywords.")
+D050:G050_Crawl4aiDockerClient CompDef [NAMESPACE "docker_client"] [OPERATIONS {crawl:Async[Uni[CrawlResultContainer, AGen[G004_CrawlResult]]](urls:Uni[List[str], List[Any]], browser_config:Opt[G005_BrowserConfig], crawler_config:Opt[G006_CrawlerRunConfig]); get_schema:Async[dict]()}] ("Python SDK for Docker API.")
+D051:G051_/crawl APIEndpoint ("Docker API non-streaming crawl.")
+D052:G052_/crawl/stream APIEndpoint ("Docker API streaming crawl.")
+D053:G053_/html APIEndpoint ("Docker API HTML extraction.")
+D054:G054_/screenshot APIEndpoint ("Docker API screenshot capture.")
+D055:G055_/pdf APIEndpoint ("Docker API PDF export.")
+D056:G056_/execute_js APIEndpoint ("Docker API JavaScript execution.")
+D057:G057_/health APIEndpoint ("Docker API health check.")
+D058:G058_/metrics APIEndpoint ("Docker API Prometheus metrics.")
+D059:G059_/schema APIEndpoint ("Docker API schema endpoint.")
+D060:G060_/mcp/sse APIEndpoint ("Docker MCP Server-Sent Events.")
+D061:G061_/mcp/ws APIEndpoint ("Docker MCP WebSocket endpoint.")
+D062:G062_ProxyConfig DTDef [NAMESPACE "."] [OPERATIONS {from_env_static:Opt[List[G062_ProxyConfig]]()}] ("Configuration for proxy server.")
+D063:G063_RoundRobinProxyStrategy CompDef [NAMESPACE "."] [ATTRIBUTES {proxies:List[G062_ProxyConfig]("","RW")}] ("Rotates proxies using round robin.")
+D064:G064_AsyncCrawlerStrategy IfceDef [NAMESPACE "async_crawler_strategy"] [OPERATIONS {set_hook:None(hook_name:str, hook_func:Callable); kill_session:Async[None](session_id:str)}] ("Base class for async crawler strategies.")
+D065:G065_DispatchResult DTDef [NAMESPACE "crawler.models"] [ATTRIBUTES {task_id:str("","RO"); memory_usage:float("","RO"); peak_memory:float("","RO"); start_time:datetime("","RO"); end_time:datetime("","RO"); error_message:str("","RO")}] ("Concurrency/resource usage info.")
+D066:G066_crawl4ai-setup Function ("CLI command setup environment.")
+D067:G067_crawl4ai-doctor Function ("CLI command run diagnostics.")
+D068:G068_crawl4ai-download-models Function ("CLI command download models.")
+D069:G069_crwl Function ("Main Crawl4AI CLI command.")
+D070:G070_HTTPCrawlerConfig DTDef [NAMESPACE "."] [ATTRIBUTES {method:str("GET","RW"); headers:dict("{}","RW"); follow_redirects:bool("True","RW"); verify_ssl:bool("True","RW")}] ("Configuration for HTTP crawler.")
+D071:G071_AsyncHTTPCrawlerStrategy CompDef [NAMESPACE "async_crawler_strategy"] [ATTRIBUTES {browser_config:G070_HTTPCrawlerConfig("","RW")}] ("Lightweight HTTP-only crawler.")
+D072:G072_PDFCrawlerStrategy CompDef [NAMESPACE "processors.pdf"] ("Crawler strategy for PDF files.")
+D073:G073_PDFContentScrapingStrategy CompDef [NAMESPACE "processors.pdf"] ("Scraping strategy for PDF content.")
+D074:G028_LXMLWebScrapingStrategy IMPLEMENTS G026_ContentScrapingStrategy
+D075:G037_PruningContentFilter IMPLEMENTS G036_ContentFilterStrategy
+D076:G038_BM25ContentFilter IMPLEMENTS G036_ContentFilterStrategy
+D077:G039_LLMContentFilter IMPLEMENTS G036_ContentFilterStrategy
+D078:G040_BFSDeepCrawlStrategy EXTENDS DeepCrawlStrategy
+D079:G041_DFSDeepCrawlStrategy EXTENDS DeepCrawlStrategy
+D080:G042_BestFirstCrawlingStrategy EXTENDS DeepCrawlStrategy
+D081:G044_URLPatternFilter IMPLEMENTS UrlFilter
+D082:G045_DomainFilter IMPLEMENTS UrlFilter
+D083:G046_ContentTypeFilter IMPLEMENTS UrlFilter
+D084:G047_ContentRelevanceFilter IMPLEMENTS UrlFilter
+D085:G048_SEOFilter IMPLEMENTS UrlFilter
+D086:G049_KeywordRelevanceScorer IMPLEMENTS UrlScorer
+D087:G063_RoundRobinProxyStrategy IMPLEMENTS ProxyRotationStrategy
+D088:G071_AsyncHTTPCrawlerStrategy IMPLEMENTS G064_AsyncCrawlerStrategy
+D089:G072_PDFCrawlerStrategy IMPLEMENTS G064_AsyncCrawlerStrategy
+D090:G073_PDFContentScrapingStrategy IMPLEMENTS G026_ContentScrapingStrategy
+D091:G047_ContentRelevanceFilter USES_ALGORITHM BM25
+D092:G037_PruningContentFilter USES_ALGORITHM Pruning
+D093:G038_BM25ContentFilter USES_ALGORITHM BM25
+D094:G018_LLMExtractionStrategy USES_ALGORITHM Chunking
+D095:G018_LLMExtractionStrategy USES_ALGORITHM LLM
+D096:G039_LLMContentFilter USES_ALGORITHM LLM
+D097:G019_CosineStrategy USES_ALGORITHM Clustering
+D098:G019_CosineStrategy USES_ALGORITHM Embedding
+D099:G020_JsonCssExtractionStrategy USES_ALGORITHM CSS Selectors
+D100:G021_JsonXPathExtractionStrategy USES_ALGORITHM XPath Selectors
+D101:G023_RegexChunking USES_ALGORITHM Regex
+D102:G024_SlidingWindowChunking USES_ALGORITHM Sliding Window
+D103:G025_OverlappingWindowChunking USES_ALGORITHM Overlapping Window
+D104:G035_DefaultMarkdownGenerator USES_ALGORITHM HTML-to-Markdown
+
+# SECTION: INTERACTIONS (Prefix: I)
+# Format: Ixxx:Source_Ref INT_VERB Target_Ref_Or_Literal ("Note_Conditions_Error(Gxxx_ErrorType)")
+# ---
+I001:G001_AsyncWebCrawler INVOKES G002_arun()
+I002:G001_AsyncWebCrawler INVOKES G003_arun_many()
+I003:G001_AsyncWebCrawler USES_COMPONENT G005_BrowserConfig ("via constructor")
+I004:G001_AsyncWebCrawler USES_COMPONENT G064_AsyncCrawlerStrategy ("via constructor")
+I005:G001_AsyncWebCrawler USES_COMPONENT G064_AsyncCrawlerStrategy ("via attribute crawler_strategy")
+I006:G001_AsyncWebCrawler TRIGGERS on_browser_created ("Hook")
+I007:G001_AsyncWebCrawler TRIGGERS on_page_context_created ("Hook")
+I008:G001_AsyncWebCrawler TRIGGERS before_goto ("Hook")
+I009:G001_AsyncWebCrawler TRIGGERS after_goto ("Hook")
+I010:G001_AsyncWebCrawler TRIGGERS on_user_agent_updated ("Hook")
+I011:G001_AsyncWebCrawler TRIGGERS on_execution_started ("Hook")
+I012:G001_AsyncWebCrawler TRIGGERS before_retrieve_html ("Hook")
+I013:G001_AsyncWebCrawler TRIGGERS before_return_html ("Hook")
+I014:G002_arun USES_COMPONENT G006_CrawlerRunConfig ("via config parameter")
+I015:G002_arun PRODUCES_EVENT G004_CrawlResult
+I016:G003_arun_many USES_COMPONENT G006_CrawlerRunConfig ("via config parameter")
+I017:G003_arun_many USES_COMPONENT G014_BaseDispatcher ("via dispatcher parameter")
+I018:G003_arun_many PRODUCES_EVENT G004_CrawlResult ("via list or async generator")
+I019:G004_CrawlResult READS_FROM internal state ("attributes")
+I020:G005_BrowserConfig USES_COMPONENT G062_ProxyConfig ("via proxy_config attribute")
+I021:G005_BrowserConfig USES_COMPONENT G016_GeolocationConfig ("via geolocation attribute")
+I022:G005_BrowserConfig INVOKES clone()
+I023:G006_CrawlerRunConfig USES_COMPONENT G009_CacheMode ("via cache_mode attribute")
+I024:G006_CrawlerRunConfig USES_COMPONENT G017_ExtractionStrategy ("via extraction_strategy attribute")
+I025:G006_CrawlerRunConfig USES_COMPONENT MarkdownGenerationStrategy ("via markdown_generator attribute")
+I026:G006_CrawlerRunConfig USES_COMPONENT G016_GeolocationConfig ("via geolocation attribute")
+I027:G006_CrawlerRunConfig USES_COMPONENT G010_RateLimiter ("via rate_limit_config attribute")
+I028:G006_CrawlerRunConfig USES_COMPONENT ProxyRotationStrategy ("via proxy_rotation_strategy attribute")
+I029:G006_CrawlerRunConfig USES_COMPONENT G026_ContentScrapingStrategy ("via scraping_strategy attribute")
+I030:G006_CrawlerRunConfig USES_COMPONENT DeepCrawlStrategy ("via deep_crawl_strategy attribute")
+I031:G006_CrawlerRunConfig INVOKES clone()
+I032:G007_LLMConfig READS_FROM environment variable ("api_token='env:...'")
+I033:G008_SSLCertificate INVOKES to_json()
+I034:G008_SSLCertificate INVOKES to_pem()
+I035:G008_SSLCertificate INVOKES to_der()
+I036:G008_SSLCertificate INVOKES export_as_text()
+I037:G008_SSLCertificate INVOKES from_url()
+I038:G008_SSLCertificate INVOKES from_file()
+I039:G008_SSLCertificate INVOKES from_binary()
+I040:G010_RateLimiter CONFIGURED_BY base_delay (Tuple[float,float])
+I041:G010_RateLimiter CONFIGURED_BY max_delay (float)
+I042:G010_RateLimiter CONFIGURED_BY max_retries (int)
+I043:G010_RateLimiter CONFIGURED_BY rate_limit_codes (List[int])
+I044:G011_CrawlerMonitor CONFIGURED_BY max_visible_rows (int)
+I045:G011_CrawlerMonitor CONFIGURED_BY display_mode (DisplayMode)
+I046:G012_MemoryAdaptiveDispatcher CONFIGURED_BY memory_threshold_percent (float)
+I047:G012_MemoryAdaptiveDispatcher CONFIGURED_BY check_interval (float)
+I048:G012_MemoryAdaptiveDispatcher CONFIGURED_BY max_session_permit (int)
+I049:G012_MemoryAdaptiveDispatcher CONFIGURED_BY memory_wait_timeout (float)
+I050:G012_MemoryAdaptiveDispatcher USES_COMPONENT G010_RateLimiter ("via constructor")
+I051:G012_MemoryAdaptiveDispatcher USES_COMPONENT G011_CrawlerMonitor ("via constructor")
+I052:G013_SemaphoreDispatcher CONFIGURED_BY max_session_permit (int)
+I053:G013_SemaphoreDispatcher USES_COMPONENT G010_RateLimiter ("via constructor")
+I054:G013_SemaphoreDispatcher USES_COMPONENT G011_CrawlerMonitor ("via constructor")
+I055:G015_BrowserProfiler INVOKES create_profile()
+I056:G015_BrowserProfiler INVOKES list_profiles()
+I057:G015_BrowserProfiler INVOKES get_profile_path()
+I058:G015_BrowserProfiler INVOKES delete_profile()
+I059:G015_BrowserProfiler INVOKES interactive_manager()
+I060:G018_LLMExtractionStrategy USES_COMPONENT G007_LLMConfig ("via constructor")
+I061:G018_LLMExtractionStrategy INVOKES show_usage()
+I062:G020_JsonCssExtractionStrategy INVOKES generate_schema_static()
+I063:G020_JsonCssExtractionStrategy USES_COMPONENT G007_LLMConfig ("via generate_schema_static")
+I064:G021_JsonXPathExtractionStrategy INVOKES generate_schema_static()
+I065:G021_JsonXPathExtractionStrategy USES_COMPONENT G007_LLMConfig ("via generate_schema_static")
+I066:G026_ContentScrapingStrategy INVOKES scrap()
+I067:G026_ContentScrapingStrategy INVOKES ascrap()
+I068:G064_AsyncCrawlerStrategy INVOKES set_hook()
+I069:G064_AsyncCrawlerStrategy INVOKES kill_session()
+I070:G062_ProxyConfig INVOKES from_env_static()
+I071:G050_Crawl4aiDockerClient INVOKES crawl()
+I072:G050_Crawl4aiDockerClient INVOKES get_schema()
+I073:G050_Crawl4aiDockerClient USES_COMPONENT G005_BrowserConfig ("via crawl parameter")
+I074:G050_Crawl4aiDockerClient USES_COMPONENT G006_CrawlerRunConfig ("via crawl parameter")
+I075:G051_/crawl API_REQUEST G050_Crawl4aiDockerClient ("POST request")
+I076:G051_/crawl API_RESPONSE CrawlResultContainer
+I077:G052_/crawl/stream API_REQUEST G050_Crawl4aiDockerClient ("POST request, streaming")
+I078:G052_/crawl/stream API_RESPONSE G004_CrawlResult ("streaming")
+I079:G053_/html API_REQUEST G050_Crawl4aiDockerClient ("POST request")
+I080:G054_/screenshot API_REQUEST G050_Crawl4aiDockerClient ("POST request")
+I081:G055_/pdf API_REQUEST G050_Crawl4aiDockerClient ("POST request")
+I082:G056_/execute_js API_REQUEST G050_Crawl4aiDockerClient ("POST request")
+I083:G057_/health API_REQUEST G050_Crawl4aiDockerClient ("GET request")
+I084:G058_/metrics API_REQUEST G050_Crawl4aiDockerClient ("GET request")
+I085:G059_/schema API_REQUEST G050_Crawl4aiDockerClient ("GET request")
+I086:G060_/mcp/sse DATA_FLOW(Server -> Client)
+I087:G061_/mcp/ws DATA_FLOW(Client <-> Server)
+I088:G066_crawl4ai-setup TRIGGERS Playwright browser installation
+I089:G067_crawl4ai-doctor TRIGGERS Diagnostics
+I090:G068_crawl4ai-download-models TRIGGERS Model Download
+I091:G069_crwl USES_COMPONENT G005_BrowserConfig ("via config file/params")
+I092:G069_crwl USES_COMPONENT G006_CrawlerRunConfig ("via config file/params")
+I093:G069_crwl USES_COMPONENT G017_ExtractionStrategy ("via config file/params")
+I094:G069_crwl USES_COMPONENT G007_LLMConfig ("via config file/params")
+I095:G069_crwl USES_COMPONENT G036_ContentFilterStrategy ("via config file/params")
+I096:G071_AsyncHTTPCrawlerStrategy USES_COMPONENT G070_HTTPCrawlerConfig ("via constructor")
+I097:G035_DefaultMarkdownGenerator USES_COMPONENT G036_ContentFilterStrategy ("via constructor")
+I098:G039_LLMContentFilter USES_COMPONENT G007_LLMConfig ("via constructor")
+I099:G043_FilterChain USES_COMPONENT UrlFilter ("via constructor list")
+I100:G040_BFSDeepCrawlStrategy USES_COMPONENT G043_FilterChain ("via constructor")
+I101:G040_BFSDeepCrawlStrategy USES_COMPONENT UrlScorer ("via constructor")
+I102:G041_DFSDeepCrawlStrategy USES_COMPONENT G043_FilterChain ("via constructor")
+I103:G041_DFSDeepCrawlStrategy USES_COMPONENT UrlScorer ("via constructor")
+I104:G042_BestFirstCrawlingStrategy USES_COMPONENT G043_FilterChain ("via constructor")
+I105:G042_BestFirstCrawlingStrategy USES_COMPONENT UrlScorer ("via constructor")
+I106:G063_RoundRobinProxyStrategy USES_COMPONENT G062_ProxyConfig ("via constructor list")
+
+# SECTION: USAGE_PATTERNS (Prefix: U)
+# Format: U_Name:PatternTitleKeyword
+#         U_Name.N:[Actor_Or_Ref] ACTION_KEYWORD (Target_Or_Data_Involving_Ref) -> [Result_Or_State_Change_Involving_Ref]
+# ---
+UPattern001:SimplePageFetch
+UPattern001.1:[System] CREATE G001_AsyncWebCrawler () -> [G001_AsyncWebCrawler instance] (via async with)
+UPattern001.2:[G001_AsyncWebCrawler instance] INVOKE G001.arun(url:str) -> [G004_CrawlResult]
+UPattern001.3:[G004_CrawlResult] GET_ATTR G004_CrawlResult.markdown -> [str]
+UPattern001.4:[System] PROCESS_DATA (G004_CrawlResult.markdown) -> [Output markdown]
+UPattern002:CustomBrowserAndRunSettings
+UPattern002.1:[System] CREATE G005_BrowserConfig () -> [G005_BrowserConfig]
+UPattern002.2:[System] CREATE G006_CrawlerRunConfig () -> [G006_CrawlerRunConfig]
+UPattern002.3:[System] CREATE G001_AsyncWebCrawler (config:G005_BrowserConfig) -> [G001_AsyncWebCrawler instance] (via async with)
+UPattern002.4:[G001_AsyncWebCrawler instance] INVOKE G001.arun(url:str, config:G006_CrawlerRunConfig) -> [G004_CrawlResult]
+UPattern002.5:[G004_CrawlResult] CHECK_STATE G004_CrawlResult.success -> [bool]
+UPattern002.6:[System] PROCESS_DATA (G004_CrawlResult) -> [Access result attributes]
+UPattern003:ConcurrentStreamingFetch
+UPattern003.1:[System] CREATE G006_CrawlerRunConfig (stream:bool=True) -> [G006_CrawlerRunConfig]
+UPattern003.2:[System] CREATE G012_MemoryAdaptiveDispatcher () -> [G012_MemoryAdaptiveDispatcher] (or G013_SemaphoreDispatcher)
+UPattern003.3:[System] CREATE G001_AsyncWebCrawler () -> [G001_AsyncWebCrawler instance] (via async with)
+UPattern003.4:[G001_AsyncWebCrawler instance] INVOKE G001.arun_many(urls:List[str], config:G006_CrawlerRunConfig, dispatcher:G014_BaseDispatcher) -> [AGen[G004_CrawlResult]]
+UPattern003.5:[System] ITERATE (AGen[G004_CrawlResult]) -> [G004_CrawlResult]
+UPattern003.6:[G004_CrawlResult] CHECK_STATE G004_CrawlResult.success -> [bool]
+UPattern003.7:[System] PROCESS_DATA (G004_CrawlResult) -> [Process result as it becomes available]
+UPattern004:SchemaBasedJsonExtraction
+UPattern004.1:[System] CREATE dict (schema definition) -> [dict]
+UPattern004.2:[System] CREATE G020_JsonCssExtractionStrategy (schema:dict) -> [G020_JsonCssExtractionStrategy]
+UPattern004.3:[System] CREATE G006_CrawlerRunConfig (extraction_strategy:G017_ExtractionStrategy) -> [G006_CrawlerRunConfig]
+UPattern004.4:[System] CREATE G001_AsyncWebCrawler () -> [G001_AsyncWebCrawler instance] (via async with)
+UPattern004.5:[G001_AsyncWebCrawler instance] INVOKE G001.arun(url:str, config:G006_CrawlerRunConfig) -> [G004_CrawlResult]
+UPattern004.6:[G004_CrawlResult] CHECK_STATE G004_CrawlResult.success -> [bool]
+UPattern004.7:[G004_CrawlResult] GET_ATTR G004_CrawlResult.extracted_content -> [str]
+UPattern004.8:[System] PROCESS_DATA (G004_CrawlResult.extracted_content) -> [Parse JSON output]
+UPattern005:LLMBasedJsonExtraction
+UPattern005.1:[System] CREATE G007_LLMConfig (provider:str, api_token:Opt[str]) -> [G007_LLMConfig]
+UPattern005.2:[System] CREATE dict (schema definition, e.g., Pydantic schema) -> [dict]
+UPattern005.3:[System] CREATE G018_LLMExtractionStrategy (llm_config:G007_LLMConfig, schema:dict, instruction:str) -> [G018_LLMExtractionStrategy]
+UPattern005.4:[System] CREATE G006_CrawlerRunConfig (extraction_strategy:G017_ExtractionStrategy) -> [G006_CrawlerRunConfig]
+UPattern005.5:[System] CREATE G001_AsyncWebCrawler () -> [G001_AsyncWebCrawler instance] (via async with)
+UPattern005.6:[G001_AsyncWebCrawler instance] INVOKE G001.arun(url:str, config:G006_CrawlerRunConfig) -> [G004_CrawlResult]
+UPattern005.7:[G004_CrawlResult] CHECK_STATE G004_CrawlResult.success -> [bool]
+UPattern005.8:[G004_CrawlResult] GET_ATTR G004_CrawlResult.extracted_content -> [str]
+UPattern005.9:[System] PROCESS_DATA (G004_CrawlResult.extracted_content) -> [Parse JSON output]
+UPattern005.10:[G018_LLMExtractionStrategy] INVOKE G018_LLMExtractionStrategy.show_usage() -> [None]
+UPattern006:BreadthFirstWebsiteTraversal
+UPattern006.1:[System] CREATE G040_BFSDeepCrawlStrategy (max_depth:int, include_external:bool) -> [G040_BFSDeepCrawlStrategy]
+UPattern006.2:[System] CREATE G006_CrawlerRunConfig (deep_crawl_strategy:DeepCrawlStrategy) -> [G006_CrawlerRunConfig]
+UPattern006.3:[System] CREATE G001_AsyncWebCrawler () -> [G001_AsyncWebCrawler instance] (via async with)
+UPattern006.4:[G001_AsyncWebCrawler instance] INVOKE G001.arun(url:str, config:G006_CrawlerRunConfig) -> [List[G004_CrawlResult]] (or AGen depending on stream=True)
+UPattern006.5:[System] ITERATE (List[G004_CrawlResult]) -> [G004_CrawlResult]
+UPattern006.6:[G004_CrawlResult] GET_ATTR G004_CrawlResult.url -> [str]
+UPattern006.7:[G004_CrawlResult] GET_ATTR G004_CrawlResult.metadata -> [dict]
+UPattern007:ReuseBrowserSession
+UPattern007.1:[System] CREATE G001_AsyncWebCrawler () -> [G001_AsyncWebCrawler instance] (via async with)
+UPattern007.2:[System] CREATE G006_CrawlerRunConfig (session_id:str, wait_for:str) -> [G006_CrawlerRunConfig]
+UPattern007.3:[G001_AsyncWebCrawler instance] INVOKE G001.arun(url:str, config:G006_CrawlerRunConfig) -> [G004_CrawlResult] (Initial load)
+UPattern007.4:[System] CREATE G006_CrawlerRunConfig (session_id:str, js_code:Uni[str,List[str]], wait_for:str, js_only:bool=True) -> [G006_CrawlerRunConfig] (Config for next step)
+UPattern007.5:[G001_AsyncWebCrawler instance] INVOKE G001.arun(url:str, config:G006_CrawlerRunConfig) -> [G004_CrawlResult] (Execute JS in session)
+UPattern007.6:[G001_AsyncWebCrawler instance] INVOKE G064_AsyncCrawlerStrategy.kill_session(session_id:str) -> [None] (Clean up session)
+UPattern008:GenerateVisualOutputs
+UPattern008.1:[System] CREATE G006_CrawlerRunConfig (pdf:bool=True, screenshot:bool=True) -> [G006_CrawlerRunConfig]
+UPattern008.2:[System] CREATE G001_AsyncWebCrawler () -> [G001_AsyncWebCrawler instance] (via async with)
+UPattern008.3:[G001_AsyncWebCrawler instance] INVOKE G001.arun(url:str, config:G006_CrawlerRunConfig) -> [G004_CrawlResult]
+UPattern008.4:[G004_CrawlResult] CHECK_STATE G004_CrawlResult.success -> [bool]
+UPattern008.5:[G004_CrawlResult] GET_ATTR G004_CrawlResult.pdf -> [bytes]
+UPattern008.6:[G004_CrawlResult] GET_ATTR G004_CrawlResult.screenshot -> [str]
+UPattern008.7:[System] PROCESS_DATA (G004_CrawlResult.pdf) -> [Save PDF to file]
+UPattern008.8:[System] PROCESS_DATA (G004_CrawlResult.screenshot) -> [Decode base64 and save screenshot to file]
+UPattern009:RefineContentWithFilter
+UPattern009.1:[System] CREATE G037_PruningContentFilter (threshold:float) -> [G037_PruningContentFilter]
+UPattern009.2:[System] CREATE G035_DefaultMarkdownGenerator (content_filter:G036_ContentFilterStrategy) -> [G035_DefaultMarkdownGenerator]
+UPattern009.3:[System] CREATE G006_CrawlerRunConfig (markdown_generator:MarkdownGenerationStrategy) -> [G006_CrawlerRunConfig]
+UPattern009.4:[System] CREATE G001_AsyncWebCrawler () -> [G001_AsyncWebCrawler instance] (via async with)
+UPattern009.5:[G001_AsyncWebCrawler instance] INVOKE G001.arun(url:str, config:G006_CrawlerRunConfig) -> [G004_CrawlResult]
+UPattern009.6:[G004_CrawlResult] CHECK_STATE G004_CrawlResult.success -> [bool]
+UPattern009.7:[G004_CrawlResult] GET_ATTR G004_CrawlResult.markdown -> [G034_MarkdownGenerationResult]
+UPattern009.8:[G034_MarkdownGenerationResult] GET_ATTR G034_MarkdownGenerationResult.fit_markdown -> [str]
+UPattern010:CaptureBrowserLogs
+UPattern010.1:[System] CREATE G006_CrawlerRunConfig (capture_network_requests:bool=True, capture_console_messages:bool=True) -> [G006_CrawlerRunConfig]
+UPattern010.2:[System] CREATE G001_AsyncWebCrawler () -> [G001_AsyncWebCrawler instance] (via async with)
+UPattern010.3:[G001_AsyncWebCrawler instance] INVOKE G001.arun(url:str, config:G006_CrawlerRunConfig) -> [G004_CrawlResult]
+UPattern010.4:[G004_CrawlResult] CHECK_STATE G004_CrawlResult.success -> [bool]
+UPattern010.5:[G004_CrawlResult] GET_ATTR G004_CrawlResult.network_requests -> [List[Map[str,Any]]]
+UPattern010.6:[G004_CrawlResult] GET_ATTR G004_CrawlResult.console_messages -> [List[Map[str,Any]]]
+UPattern010.7:[System] PROCESS_DATA (G004_CrawlResult.network_requests) -> [Analyze or export network data]
+UPattern010.8:[System] PROCESS_DATA (G004_CrawlResult.console_messages) -> [Analyze or export console messages]
+UPattern011:CommandLineQuickFetch
+UPattern011.1:[System] INVOKE G069_crwl (url:str) -> [System Output]
+# ---
+
+# END_OF_MANIFEST

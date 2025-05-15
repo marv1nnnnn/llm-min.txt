@@ -1,0 +1,851 @@
+# IntegratedKnowledgeManifest_SKF/1.4 LA
+# SourceDocs: [svelte_dev_docs-None]
+# GenerationTimestamp: 2025-05-15T12:16:17+00:00
+# PrimaryNamespace: svelte_dev_docs
+
+# SECTION: DEFINITIONS (Prefix: D)
+# Format_PrimaryDef: Dxxx:Gxxx_Entity [DEF_TYP] [NAMESPACE "relative.path"] [OPERATIONS {op1:RetT(p1N:p1T); op2_static:RetT()}] [ATTRIBUTES {attr1:AttrT1("Def:Val","RO")}] [CONSTANTS {c1:ValT1("Val")}] ("Note")
+# ---"
+D001:G001 Svelte CompDef ("a way of writing user interface components")
+D002:G002 SvelteKit CompDef ("a framework for rapidly developing robust, performant web applications using Svelte")
+D003:G003 Svelte compiler ToolDef ("converts your components to JavaScript that can be run to render the HTML for the page and to CSS that styles the page") ATTRIBUTES {compatibility.componentApi:number("4","RW")("compiler option"), css:string("injected","RW")("compiler option"), preserveWhitespace:boolean("false","RW")("compiler option"), accessors:boolean("true","RW")("compiler option, ignored in runes mode"), immutable:boolean("true","RW")("compiler option, ignored in runes mode"), legacy:boolean("removed")("compiler option, removed"), hydratable:boolean("removed")("compiler option, removed"), enableSourcemap:boolean("removed")("compiler option, removed"), tag:string("removed")("compiler option, removed"), loopGuardTimeout:any("removed")("compiler option, removed"), format:any("removed")("compiler option, removed"), sveltePath:any("removed")("compiler option, removed"), errorMode:any("removed")("compiler option, removed"), varsReport:any("removed")("compiler option, removed")}
+D004:G004 Vite ToolDef ("Development server, HMR integration.")
+D005:G005 Runes API APIEndpointDef ("Svelte 5 reactivity, compiler instructions.")
+D006:G006 $state FunctionDef OPERATIONS {$state(initial:any):any} ("Declares reactive state.")
+D007:G007 $derived FunctionDef OPERATIONS {$derived(computation:()=>any):any} ("Rune, derived state declaration.")
+D008:G008 $effect FunctionDef OPERATIONS {$effect(callback:()=>any):void} ("Rune, side effect declaration.")
+D009:G009 $props FunctionDef OPERATIONS {$props():any} ("Rune, component properties declaration.")
+D010:G010 $bindable FunctionDef OPERATIONS {$bindable(initial:any):any} ("Rune, explicitly bindable props.")
+D011:G011 $state.raw FunctionDef OPERATIONS {$state.raw(initial:any):any} ("Declares state that is not made deeply reactive")
+D012:G012 $state.snapshot FunctionDef OPERATIONS {$state.snapshot(proxy:any):any} ("To take a static snapshot of a deeply reactive $state proxy")
+D013:G013 Component IfceDef ("Can be used to create strongly typed Svelte components.")
+D014:G014 SvelteComponent CompDef ("Svelte 4 base component class.") ("Deprecated")
+D015:G015 snippets DTDef ("Svelte 5 content projection.")
+D016:G016 {@render ...} SyntaxDef ("Syntax, render snippets.")
+D017:G017 children (prop) DTDef ("Prop, default snippet content.")
+D018:G018 bind:this SyntaxDef ("Syntax, bind component instance/exports.")
+D019:G019 dot notation (component) SyntaxDef ("Syntax, dynamic component tag.")
+D020:G020 <svelte:options> SyntaxDef ("Element, component compiler options.")
+D021:G021 mount FunctionDef NAMESPACE "." OPERATIONS {mount(component:Uni[G255,G013], options:G175):any} ("Instantiate component, client-side.")
+D022:G022 hydrate FunctionDef NAMESPACE "." OPERATIONS {hydrate(component:Uni[G255,G013], options:G175):any} ("Hydrate component, client-side.")
+D023:G023 unmount FunctionDef NAMESPACE "." OPERATIONS {unmount(component:any, options:Opt[{outro:boolean}]):Promise[void]} ("Unmounts a component that was previously mounted")
+D024:G024 tick FunctionDef NAMESPACE "." OPERATIONS {tick():Promise[void]} ("Utility, wait for DOM updates.")
+D025:G026 @const SyntaxDef ("Syntax, constant declaration (stricter).")
+D026:G027 :is(...) SyntaxDef ("CSS, scoped selector.")
+D027:G028 :where(...) SyntaxDef ("CSS, scoped selector, specificity.")
+D028:G029 :global(...) SyntaxDef ("CSS, escape scoping.")
+D029:G030 @apply SyntaxDef ("CSS, Tailwind directive.")
+D030:G031 <svelte:element> SyntaxDef ("Syntax, dynamic element tag.")
+D031:G032 svelte-css-wrapper DTDef ("Internal element, CSS custom properties.")
+D032:G033 svelte/legacy ModDef NAMESPACE "legacy" ("Module, legacy compatibility functions.")
+D033:G034 svelte/server ModDef NAMESPACE "server" ("Module, server-side rendering functions.")
+D034:G035 svelte/reactivity ModDef NAMESPACE "reactivity" ("Module, reactive built-ins.")
+D035:G036 svelte/compiler ModDef NAMESPACE "compiler" ("Module, compiler utilities.")
+D036:G037 estree-walker LibDef ("Library, AST traversal.")
+D037:G038 createEventDispatcher FunctionDef NAMESPACE "." OPERATIONS {createEventDispatcher():G151} ("Deprecated, emit component events.") ("Deprecated")
+D038:G039 slots SyntaxDef ("Deprecated, content projection.") ("Deprecated")
+D039:G040 on: directive SyntaxDef ("Deprecated, element event handler.") ("Deprecated")
+D040:G041 $$restProps SyntaxDef ("Deprecated, rest props.") ("Deprecated")
+D041:G042 $$props SyntaxDef ("Deprecated, all props.") ("Deprecated")
+D042:G043 let: directive SyntaxDef ("Deprecated, slot props.") ("Deprecated")
+D043:G044 <svelte:fragment> SyntaxDef ("Deprecated element, named slot wrapper.") ("Deprecated")
+D044:G045 run (legacy) FunctionDef NAMESPACE "legacy" OPERATIONS {run(callback:()=>any):void} ("Legacy effect/server run helper.")
+D045:G046 preventDefault (legacy) FunctionDef NAMESPACE "legacy" OPERATIONS {preventDefault(handler:Function):Function} ("Legacy preventDefault modifier helper.")
+D046:G047 createClassComponent FunctionDef NAMESPACE "legacy" OPERATIONS {createClassComponent(options:G172 & {component:Uni[G255,G013]}):G014 & any} ("Legacy component creation helper.")
+D047:G048 asClassComponent FunctionDef NAMESPACE "legacy" OPERATIONS {asClassComponent(component:Uni[G255,G013]):G014} ("Legacy component constructor helper.")
+D048:G049 $on (deprecated) FunctionDef ("Deprecated method, Svelte 4 event listener.") ("Deprecated")
+D049:G050 $set (deprecated) FunctionDef ("Deprecated method, Svelte 4 prop setter.") ("Deprecated")
+D050:G051 $destroy (deprecated) FunctionDef ("Deprecated method, Svelte 4 instance destroy.") ("Deprecated")
+D051:G052 events (mount option) DTDef ("Deprecated option, mount event listeners.") ("Deprecated")
+D052:G053 compatibility.componentApi DTDef ("Compiler option, Svelte 4 class API.")
+D053:G054 css (compiler option) DTDef ("Compiler option, CSS output handling.")
+D054:G055 preserveWhitespace DTDef ("Compiler option, whitespace handling.")
+D055:G056 accessors DTDef ("Compiler option, prop accessors.")
+D056:G057 immutable DTDef ("Compiler option, immutability behavior.")
+D057:G058 legacy (compiler option) DTDef ("Compiler option, IE compatibility (removed).") ("Removed")
+D058:G059 hydratable DTDef ("Compiler option, hydration (removed).") ("Removed")
+D059:G060 enableSourcemap DTDef ("Compiler option, source maps (removed).") ("Removed")
+D060:G061 tag (compiler option) DTDef ("Compiler option, custom element tag (removed).") ("Removed")
+D061:G062 loopGuardTimeout DTDef ("Compiler option (removed).") ("Removed")
+D062:G063 format DTDef ("Compiler option (removed).") ("Removed")
+D063:G064 sveltePath DTDef ("Compiler option (removed).") ("Removed")
+D064:G065 errorMode DTDef ("Compiler option (removed).") ("Removed")
+D065:G066 varsReport DTDef ("Compiler option (removed).") ("Removed")
+D066:G067 RenderOutput DTDef ATTRIBUTES {html:string("RO"), head:string("RO")} ("Data type, render function return.")
+D067:G068 <template shadowrootmode="..."> SyntaxDef ("HTML element, declarative shadow roots.")
+D068:G069 contenteditable SyntaxDef ("HTML attribute, binding behavior.")
+D069:G070 bind:files BindingDef ("Binding, two-way file input.")
+D070:G071 reset (event) EventDef ("Event, form reset binding reaction.")
+D071:G072 walk (function) FunctionDef OPERATIONS {walk(ast:any, options:any):void} ("Utility, AST traversal.")
+D072:G073 Service console ServiceDef OPERATIONS {log(message:any,...optionalParams:any[]):void} ("Global debugging instance, stdout/stderr.")
+D073:G074 Console CompDef ("Class for custom console instances.")
+D074:G075 add FunctionDef OPERATIONS {add(a:number, b:number):number; add(getA:()=>number, getB:()=>number):()=>number; add(input:G076):G077} ("Example function, sums object properties.")
+D075:G076 { a: number, b: number } DTDef ("Input object type for add function.")
+D076:G077 { readonly value: number } DTDef ("Return object type for add function.")
+D077:G078 increment FunctionDef OPERATIONS {increment():void} ("Increments reactive count.")
+D078:G079 Signal IfceDef ("Compiler-transformed reactive variable type.")
+D079:G080 Todo CompDef ATTRIBUTES {done:boolean, text:any} OPERATIONS {constructor(text:any):void; reset():void; reset:()=>void} ("Example class with reactive fields.")
+D080:G170 MyComponent CompDef ("Imported example component.")
+D081:G172 ComponentConstructorOptions IfceDef ("Legacy component instantiation options.")
+D082:G173 ComponentEvents DTDef ("Legacy component events type.") ("Deprecated")
+D083:G174 ComponentProps DTDef ("Get component props type.")
+D084:G175 MountOptions IfceDef ATTRIBUTES {target:Uni[Document,Element,ShadowRoot], events:Opt[Map[string,Function]]("deprecated"), props:Opt[Map[string,any]], intro:Opt[boolean]("true")} ("Options for mount function.")
+D085:G176 Snippet IfceDef ("Type for snippet blocks.")
+D086:G177 afterUpdate FunctionDef ("Deprecated lifecycle hook.") ("Deprecated")
+D087:G178 beforeUpdate FunctionDef ("Deprecated lifecycle hook.") ("Deprecated")
+D088:G180 flushSync FunctionDef NAMESPACE "." OPERATIONS {flushSync():void} ("Synchronously flush pending updates.")
+D089:G189 console (Node.js) ModDef ("Node.js debugging console.")
+D090:G192 CustomEvent CompDef ("Web API event constructor.")
+D091:G265 render (server) FunctionDef NAMESPACE "server" OPERATIONS {render(component:Uni[G255,G013], options:Opt[{props:Opt[Map[string,any]], context:Opt[Map[any,any]], idPrefix:Opt[string]}]):G067} ("Render component server-side.")
+D092:G266 <svelte:component> SyntaxDef ("Syntax, dynamic component tag (Svelte 4).") ("Deprecated")
+D093:G073 [OPERATIONS {error(message:any,...optionalParams:any[]):void; warn(message:any,...optionalParams:any[]):void}]
+D094:G074 [OPERATIONS {log(message:any,...optionalParams:any[]):void; error(message:any,...optionalParams:any[]):void; warn(message:any,...optionalParams:any[]):void}]
+D095:G189 [EXPORTS G074] [EXPORTS G073]
+D096:G006 ("Note: Deeply reactive for objects/arrays unless $state.raw is used. Can be used in class fields. Compiler transforms references to $.get/$.set. Cannot be directly exported if reassigned, but exporting object properties or getter functions is allowed.")
+D097:G011 ("Note: Can contain reactive state.")
+D098:G080 ("Note: Compiler transforms fields into non-enumerable get/set methods.")
+D099:G163 [OPERATIONS {update(updater:Function):void}]
+D100:G166 ("Note: Type definitions were removed to discourage usage.")
+D101:G061 ("Note: Deprecated in Svelte 4+ in favor of customElement option.")
+D102:G014 ("Note: In Svelte 4+, gained typing capabilities and replaces SvelteComponentTyped.")
+D103:G206 ("Note: Local by default in Svelte 4+.")
+D104:G155 ("Note: In Svelte 4+, processing order within a group is markup, script, style.")
+D105:G160 [DEPRECATED] ("Note: Deprecated in Svelte 4+.")
+D106:G162 ("Note: Applied to outroing elements in Svelte 4+ to make them inert.")
+D107:G165 ("Note: In Svelte 4+, throws an error on falsy values instead of stores.")
+D108:G081 [OPERATIONS {on<Type extends keyof WindowEventMap>(window:WindowEventMap, type:Type, handler:Function, options:Opt[AddEventListenerOptions]):()=>void; on<Type extends keyof DocumentEventMap>(document:DocumentEventMap, type:Type, handler:Function, options:Opt[AddEventListenerOptions]):()=>void; on<Element extends HTMLElement, Type extends keyof HTMLElementEventMap>(element:Element, type:Type, handler:Function, options:Opt[AddEventListenerOptions]):()=>void; on<Element extends MediaQueryList, Type extends keyof MediaQueryListEventMap>(element:Element, type:Type, handler:Function, options:Opt[AddEventListenerOptions]):()=>void; on(element:EventTarget, type:string, handler:EventListener, options:Opt[AddEventListenerOptions]):()=>void}]
+D109:G092 [ATTRIBUTES {compilerOptions:Opt[CompileOptions], extensions:Opt[Array[string]], preprocess:Opt[any], vitePlugin:Opt[PluginOptions]}]
+D110:G093 [ATTRIBUTES {adapter:Opt[G095], alias:Opt[Map[string,string]], appDir:Opt[string], csp:Opt[G098], csrf:Opt[G101], embedded:Opt[boolean], env:Opt[G104], files:Opt[G108], inlineStyleThreshold:Opt[number], moduleExtensions:Opt[Array[string>], outDir:Opt[string], output:Opt[G122], paths:Opt[G125], prerender:Opt[G129], router:Opt[G140], serviceWorker:Opt[G116], typescript:Opt[G145], version:Opt[G147]}]
+D111:G098 [ATTRIBUTES {mode:Opt[Uni["hash","nonce","auto"]], directives:Opt[G099], reportOnly:Opt[G099]}]
+D112:G123 [ENUM {modulepreload, preload-js, preload-mjs}]
+D113:G124 [ENUM {split, single, inline}]
+D114:G134 [ATTRIBUTES {status:any, path:any, referrer:any, referenceType:any, message:any}]
+D115:G136 [ATTRIBUTES {path:any, id:any, referrers:any, message:any}]
+D116:G138 [ATTRIBUTES {generatedFromId:any, entry:any, matchedId:any, message:any}]
+D117:G141 [ENUM {pathname, hash}]
+D118:G142 [ENUM {client, server}]
+D119:G147 [ATTRIBUTES {name:Opt[string], pollInterval:Opt[number]}]
+D120:process.stdout DTDef [NODEJS] ("Node.js standard output stream")
+D121:process.stderr DTDef [NODEJS] ("Node.js standard error stream")
+D122:util.format FunctionDef [NODEJS] NAMESPACE "util" OPERATIONS {format(...args:any[]):string} ("Node.js utility function for string formatting")
+D123:printf(3) FunctionDef ("C-style formatting function concept")
+D124:Error DTDef ("JavaScript Error object")
+D125:AddEventListenerOptions IfceDef [WEB_API]
+D126:WindowEventMap DTDef [WEB_API]
+D127:DocumentEventMap DTDef [WEB_API]
+D128:HTMLElementEventMap DTDef [WEB_API]
+D129:MediaQueryListEventMap DTDef [WEB_API]
+D130:EventTarget IfceDef [WEB_API]
+D131:EventListener IfceDef [WEB_API]
+D132:Node.TEXT_NODE ConstDef [WEB_API] ("DOM Node type constant for text nodes")
+D133:getComputedStyle FunctionDef [WEB_API] OPERATIONS {getComputedStyle(element:Element):any}
+D134:structuredClone FunctionDef [WEB_API] OPERATIONS {structuredClone(value:any):any}
+D135:MutationObserver ClassDef [WEB_API]
+D136:$.get (internal) FunctionDef [SVELTE_INTERNAL] NAMESPACE "Svelte$.Svelte" OPERATIONS {get(source:G079):any} ("Internal compiler function for accessing reactive state")
+D137:$.set (internal) FunctionDef [SVELTE_INTERNAL] NAMESPACE "Svelte$.Svelte" OPERATIONS {set(source:G079, value:any):void} ("Internal compiler function for setting reactive state")
+D138:$.state (internal) FunctionDef [SVELTE_INTERNAL] NAMESPACE "Svelte$.Svelte" OPERATIONS {state(value:any):G079} ("Internal compiler function for creating reactive state")
+D139:.svelte.js DTDef [FILE] ("Svelte component compiled to JavaScript module")
+D140:.svelte.ts DTDef [FILE] ("Svelte component with TypeScript script block")
+D141:sv create FunctionDef [CLI] ("SvelteKit project creation command")
+D142:npm create FunctionDef [CLI] ("npm package creation command")
+D143:vite-plugin-svelte LibDef [PLUGIN] ("Vite plugin for Svelte")
+D144:Rollup ToolDef [BUNDLER]
+D145:Webpack ToolDef [BUNDLER]
+D146:rollup-plugin-svelte LibDef [PLUGIN] ("Rollup plugin for Svelte")
+D147:svelte-loader LibDef [PLUGIN] ("Webpack loader for Svelte")
+D148:SPA ConceptDef ("Single Page Application")
+D149:VS Code extension (Svelte) ToolDef [EDITOR_PLUGIN]
+D150:sv check FunctionDef [CLI] ("Svelte code checking command")
+D151:Svelte Language Server ServiceDef [TOOL]
+D152:Discord chatroom (Svelte) ServiceDef [COMMUNITY]
+D153:Stack Overflow (Svelte tag) ServiceDef [COMMUNITY]
+D154:Reddit channel (Svelte) ServiceDef [COMMUNITY]
+D155:Svelte Society OrgDef [COMMUNITY]
+D156:@component (comment tag) SyntaxDef ("JSDoc-like tag for component documentation")
+D157:Unit Test ConceptDef [TEST_TYPE]
+D158:Component Test ConceptDef [TEST_TYPE]
+D159:E2E Test ConceptDef [TEST_TYPE]
+D160:uvu LibDef [TEST_RUNNER]
+D161:WebdriverIO LibDef [TEST_FRAMEWORK]
+D162:SSR ConceptDef [FEATURE] ("Server-Side Rendering")
+D163:HMR ConceptDef [FEATURE] ("Hot Module Reloading")
+D164:Next.js FmwkDef
+D165:page.js LibDef [ROUTER]
+D166:navaid LibDef [ROUTER]
+D167:universal-router LibDef [ROUTER]
+D168:svelte-routing LibDef [ROUTER]
+D169:svelte-navigator LibDef [ROUTER]
+D170:svelte-spa-router LibDef [ROUTER]
+D171:abstract-state-router LibDef [ROUTER]
+D172:Routify LibDef [ROUTER]
+D173:location.hash ConceptDef [WEB_API] ("Browser URL hash")
+D174:reroute HookDef [SVELTEKIT] ("SvelteKit routing hook")
+D175:load (function) FunctionDef [SVELTEKIT] ("SvelteKit data loading function")
+D176:middleware ConceptDef ("Request handling layer")
+D177:sveltesociety.dev WebsiteDef
+D178:Svelte Native FmwkDef ("Svelte framework for NativeScript") ("Svelte 4 only")
+D179:NativeScript FmwkDef ("Framework for native mobile apps")
+D180:React Native FmwkDef ("Framework for native mobile apps")
+D181:{@html ...} SyntaxDef ("Render raw HTML")
+D182:svelte-hmr LibDef [PLUGIN] ("HMR plugin for Svelte")
+D183:tick (transition function) FunctionDef ("Function returned by custom transition for DOM updates")
+D184:t (transition parameter) DTDef ("Transition progress parameter (0 to 1)")
+D185:u (transition parameter) DTDef ("Transition progress parameter (1 - t)")
+D186:svelte.config.js DTDef [FILE] ("Svelte/SvelteKit configuration file")
+D187:compilerOptions (config property) DTDef ("Svelte compiler options in config")
+D188:CompileOptions IfceDef ("Svelte compiler options type")
+D189:extensions (config property) DTDef ("File extensions for Svelte components in config")
+D190:preprocess (config property) DTDef ("Preprocessor options in config")
+D191:vitePlugin (config property) DTDef ("vite-plugin-svelte options in config")
+D192:PluginOptions IfceDef ("Vite plugin options type")
+D193:$lib (alias) ConstDef [SVELTEKIT] ("Default alias for the lib directory")
+D194:jsconfig.json DTDef [FILE] ("JavaScript project configuration file")
+D195:tsconfig.json DTDef [FILE] ("TypeScript project configuration file")
+D196:%sveltekit.nonce% SyntaxDef [SVELTEKIT] ("Placeholder for CSP nonce in app.html")
+D197:frame-ancestors ConstDef [CSP_DIRECTIVE]
+D198:report-uri ConstDef [CSP_DIRECTIVE]
+D199:sandbox ConstDef [CSP_DIRECTIVE]
+D200:mode (csp property) DTDef ("CSP mode ('hash', 'nonce', 'auto')")
+D201:directives (csp property) DTDef ("CSP directives configuration")
+D202:handle (hook) HookDef [SVELTEKIT] ("SvelteKit server hook for request handling")
+D203:style-src ConstDef [CSP_DIRECTIVE]
+D204:unsafe-inline ConstDef [CSP_VALUE] ("CSP value allowing inline styles/scripts")
+D205:Content-Type ConceptDef [HTTP_HEADER]
+D206:$env/static/public ModDef [SVELTEKIT] ("Module for public static environment variables")
+D207:$env/dynamic/public ModDef [SVELTEKIT] ("Module for public dynamic environment variables")
+D208:$env/static/private ModDef [SVELTEKIT] ("Module for private static environment variables")
+D209:$env/dynamic/private ModDef [SVELTEKIT] ("Module for private dynamic environment variables")
+D210:%sveltekit.assets% SyntaxDef [SVELTEKIT] ("Placeholder for assets path in app.html")
+D211:$app/paths ModDef [SVELTEKIT] ("Module for app paths")
+D212:$service-worker.files ModDef [SVELTEKIT] ("Module exposing service worker files list")
+D213:$app/navigation ModDef [SVELTEKIT] ("Module for client-side navigation")
+D214:beforeNavigate HookDef [SVELTEKIT] ("SvelteKit hook before navigation")
+D215:$app/state ModDef [SVELTEKIT] ("Module for app state")
+D216:updated (store) StoreDef [SVELTEKIT] ("Store indicating if a new app version is available")
+D217:child_process ModDef [NODEJS] ("Node.js module for creating subprocesses")
+D218:execSync FunctionDef [NODEJS] NAMESPACE "child_process" OPERATIONS {execSync(command:string):any} ("Synchronously runs a command")
+D219:sveltekit (vite plugin) FunctionDef [SVELTEKIT] NAMESPACE "@sveltejs/kit/vite" OPERATIONS {sveltekit():any} ("Vite plugin function for SvelteKit")
+D220:browser (bundler condition) ConceptDef [BUNDLER] ("Bundler condition for browser environments")
+D221:@rollup/plugin-node-resolve LibDef [PLUGIN] ("Rollup plugin for node module resolution")
+D222:CJS runtime version ConceptDef [RUNTIME] ("CommonJS runtime version of Svelte") ("Removed in Svelte 4")
+D223:ESM output ConceptDef [OUTPUT_FORMAT] ("ECMAScript Module output format")
+D224:customElement (svelte:options) DTDef ("Option for defining Svelte component as custom element")
+D225:SvelteComponentTyped DTDef ("Legacy Svelte component type") [DEPRECATED]
+D226:await (control flow) SyntaxDef ("Svelte await block")
+D227:key (control flow) SyntaxDef ("Svelte key block")
+D228:DOM nodes removal batching ConceptDef [BREAKING_CHANGE] ("Change in DOM node removal order")
+D229:addEventListener FunctionDef [WEB_API] ("Attaches an event handler")
+D230:onclick SyntaxDef [HTML] ("HTML inline event attribute")
+D231:event delegation ConceptDef ("Pattern for handling events on multiple elements")
+D232:Stream DTDef ("Generic stream type (e.g., Node.js stream)")
+D233:G003 [ATTRIBUTES {customElement:G268("RW")("compiler option")}]
+D234:G007 ("Note: Derived values can be reassigned unless declared with `const` (Svelte 5.25+). They are not deeply reactive like $state values.")
+D235:G013 [ATTRIBUTES {element:typeof HTMLElement("RO")("custom element constructor, static")}] [OPERATIONS {constructor(internals:G171, props:Props):{ $on?:Function, $set?:Function } & Exports}]
+D236:G014 [ATTRIBUTES {element:typeof HTMLElement("RO")("custom element constructor, static")}] [OPERATIONS {constructor(options:G172):G014 & Exports; $destroy():void("deprecated"); $on<K extends string>(type:K, callback:Function):()=>void("deprecated"); $set(props:Partial[Props]):void("deprecated")}]
+D237:G021 [OPERATIONS {mount<Props extends Record[string,any], Exports extends Record[string,any]>(component:Uni[G255,G013], options:G175):Exports}]
+D238:G022 [OPERATIONS {hydrate<Props extends Record[string,any], Exports extends Record[string,any]>(component:Uni[G255,G013], options:{} extends Props ? { target:Uni[Document,Element,ShadowRoot], props?:Props, events?:Record[string,Function], context?:Map[any,any], intro?:boolean, recover?:boolean } : { target:Uni[Document,Element,ShadowRoot], props:Props, events?:Record[string,Function], context?:Map[any,any], intro?:boolean, recover?:boolean }):Exports}]
+D239:G023 [OPERATIONS {unmount(component:Record[string,any], options:Opt[{outro:boolean}]):Promise[void]}] ("Note: Returns Promise<void> since 5.13.0 if outro is true.")
+D240:G025 [OPERATIONS {onMount<T>(fn:()=>Uni[NotFunction[T],Promise[NotFunction[T]],()=>any]):void}] ("Note: Cleanup function returned synchronously is called on unmount.")
+D241:G038 [OPERATIONS {createEventDispatcher<EventMap extends Record[string,any] = any>():G151}]
+D242:G095 [ATTRIBUTES {edge:boolean("RW")("serverless adapter option")}]
+D243:G151 [OPERATIONS {<Type extends keyof EventMap>(...args:any[]):boolean}]
+D244:G154 [OPERATIONS {preprocess(source:string, preprocessor:Uni[G155,Array[G155]], options:Opt[{filename:string}]):Promise[G156]}] ("Note: Each preprocessor must have a name.")
+D245:G163 ("Note: Implementing own stores requires passing an update function to the create function.")
+D246:G172 [ATTRIBUTES {target:Uni[Element,Document,ShadowRoot], anchor:Opt[Node], props:Opt[Props], context:Opt[Map[any,any]], hydrate:Opt[boolean], intro:Opt[boolean], recover:Opt[boolean], sync:Opt[boolean], idPrefix:Opt[string], $$inline:Opt[boolean]}]
+D247:G173 [DEF_TYP] ("Note: Obsolete with new Component type.")
+D248:G174 [DEF_TYP]
+D249:G175 [ATTRIBUTES {target:Uni[Document,Element,ShadowRoot], anchor:Opt[Node], events:Opt[Record[string,Function]]("deprecated"), context:Opt[Map[any,any]], intro:Opt[boolean], props:Opt[Props]}]
+D250:G176 [IFCE_TYP] [OPERATIONS {<Parameters extends unknown[] = []>(...args:Parameters):any}]
+D251:G179 [OPERATIONS {createRawSnippet<Params extends unknown[]>(fn:(...params:Getters[Params])=>{ render:()=>string, setup?:(element:Element)=>Uni[void,()=>void] }):G176[Params]}]
+D252:G180 [OPERATIONS {flushSync<T = void>(fn:Opt[()=>T]):T}]
+D253:G181 [OPERATIONS {getAllContexts<T extends Map[any,any] = Map[any,any]>():T}]
+D254:G182 [OPERATIONS {getContext<T>(key:any):T}]
+D255:G183 [OPERATIONS {hasContext(key:any):boolean}]
+D256:G184 [OPERATIONS {onDestroy(fn:()=>any):void}]
+D257:G185 [OPERATIONS {setContext<T>(key:any, context:T):T}]
+D258:G186 [OPERATIONS {untrack<T>(fn:()=>T):T}]
+D259:G210 [OPERATIONS {backIn(t:number):number}]
+D260:G211 [OPERATIONS {backInOut(t:number):number}]
+D261:G212 [OPERATIONS {backOut(t:number):number}]
+D262:G213 [OPERATIONS {bounceIn(t:number):number}]
+D263:G214 [OPERATIONS {bounceInOut(t:number):number}]
+D264:G215 [OPERATIONS {bounceOut(t:number):number}]
+D265:G216 [OPERATIONS {circIn(t:number):number}]
+D266:G217 [OPERATIONS {circInOut(t:number):number}]
+D267:G218 [OPERATIONS {circOut(t:number):number}]
+D268:G219 [OPERATIONS {cubicIn(t:number):number}]
+D269:G220 [OPERATIONS {cubicInOut(t:number):number}]
+D270:G221 [OPERATIONS {cubicOut(t:number):number}]
+D271:G222 [OPERATIONS {elasticIn(t:number):number}]
+D272:G223 [OPERATIONS {elasticInOut(t:number):number}]
+D273:G224 [OPERATIONS {elasticOut(t:number):number}]
+D274:G225 [DEF_TYP] [DEPRECATED] ("Note: Use Component instead.")
+D275:G228 [OPERATIONS {linear(t:number):number}]
+D276:G229 [OPERATIONS {quadIn(t:number):number}]
+D277:G230 [OPERATIONS {quadInOut(t:number):number}]
+D278:G231 [OPERATIONS {quadOut(t:number):number}]
+D279:G232 [OPERATIONS {quartIn(t:number):number}]
+D280:G233 [OPERATIONS {quartInOut(t:number):number}]
+D281:G234 [OPERATIONS {quartOut(t:number):number}]
+D282:G235 [OPERATIONS {quintIn(t:number):number}]
+D283:G236 [OPERATIONS {quintInOut(t:number):number}]
+D284:G237 [OPERATIONS {quintOut(t:number):number}]
+D285:G238 [OPERATIONS {sineIn(t:number):number}]
+D286:G239 [OPERATIONS {sineInOut(t:number):number}]
+D287:G240 [OPERATIONS {sineOut(t:number):number}]
+D288:G241 [ATTRIBUTES {test:any("RW")("Vitest config options")}]
+D289:G249 [OPERATIONS {getByRole<HTMLElement>(role:ByRoleMatcher, options:Opt[ByRoleOptions]):HTMLElement}]
+D290:G250 [OPERATIONS {setup(options:Opt[Options]):UserEvent; click(element:Element):Promise[void]}]
+D291:G255 [DEF_TYP] ("Note: Obsolete with new Component type.")
+D292:G256 [OPERATIONS {createBubbler():(type:string)=>(event:Event)=>boolean}]
+D293:G257 [OPERATIONS {handlers(...handlers:EventListener[]):EventListener}]
+D294:G258 [OPERATIONS {nonpassive(node:HTMLElement, args:[event:string, handler:()=>EventListener]):void}]
+D295:G259 [OPERATIONS {once(fn:(event:Event,...args:Array[unknown])=>void):(event:Event,...args:unknown[])=>void}]
+D296:G260 [OPERATIONS {passive(node:HTMLElement, args:[event:string, handler:()=>EventListener]):void}]
+D297:G261 [OPERATIONS {self(fn:(event:Event,...args:Array[unknown])=>void):(event:Event,...args:unknown[])=>void}]
+D298:G262 [OPERATIONS {stopImmediatePropagation(fn:(event:Event,...args:Array[unknown])=>void):(event:Event,...args:unknown[])=>void}]
+D299:G263 [OPERATIONS {stopPropagation(fn:(event:Event,...args:Array[unknown])=>void):(event:Event,...args:unknown[])=>void}]
+D300:G264 [OPERATIONS {trusted(fn:(event:Event,...args:Array[unknown])=>void):(event:Event,...args:unknown[])=>void}]
+D301:G268 DTDef ("Value type for the customElement compiler option.")
+D302:G268 [ATTRIBUTES {tag:Opt[string]("RW"), shadow:Opt[Uni[string,"none"]]("RW"), props:Opt[G269]("RW"), extend:Opt[Function]("RW")}]
+D303:G269 DTDef ("Options for custom element properties.")
+D304:G269 [ATTRIBUTES {attribute:Opt[string]("RW"), reflect:Opt[boolean]("RW"), type:Opt[G270]("RW")}]
+D305:G270 EnumDef [ENUM {String, Boolean, Number, Array, Object}] ("Types for custom element property reflection.")
+D306:G271 IfceDef [WEB_API] ("Interface for Element Internals API.")
+D307:G272 DTDef ("Instance property for Element Internals.")
+D308:G273 EventDef [WEB_API] ("Custom element lifecycle callback when connected to DOM.")
+D309:G274 EventDef [WEB_API] ("Custom element lifecycle callback when disconnected from DOM.")
+D310:G275 SyntaxDef [SVELTEKIT] ("Page option to disable client-side rendering.")
+D311:G276 SyntaxDef [SVELTEKIT] ("HTML attribute to force server render on link click.")
+D312:G277 ConceptDef [SVELTEKIT] ("Files containing server-side code in SvelteKit.")
+D313:G278 AttributeDef ("Option for serverless adapters enabling edge rendering.")
+D314:G279 ConceptDef ("Apps using hybrid SSR + CSR rendering.")
+D315:G280 ConceptDef [SVELTEKIT] ("Rendering pages to static HTML at build time.")
+D316:G281 ConceptDef [SVELTEKIT] ("Rendering pages on the server at request time.")
+D317:G282 ConceptDef [SVELTEKIT] ("Generating static pages incrementally.")
+D318:G283 ConceptDef [SVELTEKIT] ("Ability to use different rendering types for different parts of an application.")
+D319:G284 ConceptDef [SVELTEKIT] ("FAQ section on calling separate backends.")
+D320:G285 ConceptDef [SVELTEKIT] ("Platforms like AWS Lambda, Vercel Functions, Netlify Functions.")
+D321:G286 ComponentDef [SVELTEKIT] ("Default adapter for serverless platforms.")
+D322:G287 ConceptDef [SVELTEKIT] ("Adapters developed by the community.")
+D323:G288 ConceptDef [SVELTEKIT] ("Deploying SvelteKit app to a self-managed server.")
+D324:G289 ConceptDef [SVELTEKIT] ("Deploying SvelteKit app within a container.")
+D325:G290 ConceptDef [SVELTEKIT] ("Applications that function without a network connection.")
+D326:G291 ConceptDef [SVELTEKIT] ("Web applications with enhanced capabilities like offline support and push notifications.")
+D327:G292 ConceptDef [SVELTEKIT] ("Accessing device features like camera, geolocation, push notifications in mobile apps.")
+D328:G293 ConceptDef [SVELTEKIT] ("Building browser extensions with SvelteKit.")
+D329:G294 ConceptDef [SVELTEKIT] ("Deploying Svelte apps on low-power devices.")
+D330:G295 ConceptDef ("Reactivity model where state updates notify dependencies (push), and derived values re-evaluate when read (pull).")
+D331:G296 SyntaxDef ("Script block using TypeScript.")
+D332:G297 DTDef [FILE] ("Vite configuration file.")
+D333:G298 SyntaxDef ("Vitest comment to set the test environment.")
+D334:G299 FunctionDef NAMESPACE "G008" OPERATIONS {root(fn:()=>Uni[void,()=>void]):()=>void} ("Rune for creating a non-tracked effect scope that doesn't auto-cleanup.")
+D335:G300 DTDef [FILE] ("Svelte component compiled to JavaScript.")
+D336:G301 DTDef [FILE] ("Vitest test file for Svelte components/logic.")
+D337:G302 DTDef [FILE] ("Vitest test file for Svelte components/logic using effects.")
+D338:G303 DTDef [FILE] ("Vitest test file for Svelte components.")
+D339:G304 DTDef [FILE] ("Playwright configuration file.")
+D340:G304 [ATTRIBUTES {testDir:string("RW"), testMatch:RegExp("RW"), webServer:DTDef("RW")}]
+D341:G304.webServer DTDef [ATTRIBUTES {command:string("RW"), port:number("RW")}]
+D342:G305 DTDef ("Object representing a browser page in Playwright tests.")
+D343:G305 [OPERATIONS {goto(url:string):Promise[void]; locator(selector:string):any}]
+D344:G306 AssertionDef ("Playwright assertion to check element visibility.")
+D345:G307 LibraryDef [TEST_FRAMEWORK] ("Testing Library utility for simulating user interactions.")
+D346:G013 [OPERATIONS {constructor(this:void, internals:G171, props:Props):{ $on?:Function, $set?:Function } & Exports}]
+D347:G171 DTDef [TYPE_ALIAS "Branded<{}, 'ComponentInternals'>"] ("Internal implementation details that vary between environments")
+D348:G173 DTDef [TYPE_ALIAS "Comp extends G014 ? Events : never"] ("Legacy component events type.")
+D349:G174 DTDef [TYPE_ALIAS "Comp extends G014<infer Props> ? Props : Comp extends G013<infer Props, any, string> ? Props : never"] ("Convenience type to get the props the given component expects.") ("Note: In Svelte 4, you would do ComponentProps<MyComponent> because MyComponent was a class.")
+D350:G175 ("Note: events option is deprecated. intro option defaults to true.")
+D351:G176 IfceDef [OPERATIONS {<Parameters extends unknown[] = []>(this:void, ...args:number extends Parameters['length'] ? never : Parameters):any}] ("The type of a #snippet block.") ("Note: You can only call a snippet through the {@render ...} tag. See the snippet documentation for more info.")
+D352:G009 ("Note: Declares the props that a component accepts.")
+D353:G014 [ATTRIBUTES {[prop:string]:any("RW")}] ("Note: constructor, $destroy, $on, $set methods only exist when using legacy compatibility helpers and are deprecated. Migrate towards using mount instead.")
+D354:G225 ClassDef [EXTENDS G014] ("Use Component instead. See migration guide for more information.")
+D355:G177 FunctionDef [OPERATIONS {afterUpdate(fn:()=>void):void}] ("Note: Use $effect instead. The first time the callback runs will be after the initial onMount. In runes mode use $effect instead.")
+D356:G178 FunctionDef [OPERATIONS {beforeUpdate(fn:()=>void):void}] ("Note: Use $effect.pre instead. The first time the callback runs will be before the initial onMount. In runes mode use $effect.pre instead.")
+D357:G038 ("Note: Use callback props and/or the $host() rune instead — see migration guide. Creates an event dispatcher that can be used to dispatch component events. Event dispatchers are functions that can take two arguments: name and detail. Component events created with createEventDispatcher create a CustomEvent. These events do not bubble. The detail argument corresponds to the CustomEvent.detail property and can contain any type of data.")
+D358:G179 ("Note: Create a snippet programmatically. This is intended for advanced use cases.")
+D359:G180 ("Note: Synchronously flush any pending updates. Returns void if no callback is provided, otherwise returns the result of calling the callback.")
+D360:G181 ("Note: Retrieves the whole context map that belongs to the closest parent component. Must be called during component initialisation. Useful, for example, if you programmatically create a component and want to pass the existing context to it.")
+D361:G182 ("Note: Retrieves the context that belongs to the closest parent component with the specified key. Must be called during component initialisation.")
+D362:G183 ("Note: Checks whether a given key has been set in the context of a parent component. Must be called during component initialisation.")
+D363:G022 ("Note: Hydrates a component on the given target and returns the exports and potentially the props (if compiled with accessors: true) of the component")
+D364:G021 ("Note: Mounts a component to the given target and returns the exports and potentially the props (if compiled with accessors: true) of the component. Transitions will play during the initial render unless the intro option is set to false.")
+D365:G184 ("Note: Schedules a callback to run immediately before the component is unmounted. Out of onMount, beforeUpdate, afterUpdate and onDestroy, this is the only one that runs inside a server-side component.")
+D366:G025 ("Note: onMount, like $effect, schedules a function to run as soon as the component has been mounted to the DOM. Unlike $effect, the provided function only runs once. It must be called during the component’s initialisation (but doesn’t need to live inside the component; it can be called from an external module). If a function is returned synchronously from onMount, it will be called when the component is unmounted. onMount functions do not run during server-side rendering.")
+D367:G185 ("Note: Associates an arbitrary context object with the current component and the specified key and returns that object. The context is then available to children of the component (including slotted content) with getContext. Like lifecycle functions, this must be called during component initialisation.")
+D368:G024 FunctionDef [OPERATIONS {tick():Promise[void]}] ("Returns a promise that resolves once any pending state changes have been applied.")
+D369:G023 ("Note: Unmounts a component that was previously mounted using mount or hydrate. Since 5.13.0, if options.outro is true, transitions will play before the component is removed from the DOM. Returns a Promise that resolves after transitions have completed if options.outro is true, or immediately otherwise (prior to 5.13.0, returns void).")
+D370:G186 ("Note: When used inside a $derived or $effect, any state read inside fn will not be treated as a dependency.")
+D371:G151 IfceDef [OPERATIONS {<Type extends keyof EventMap>(type:Type, parameter?:EventMap[Type] | null | undefined, options?:any):boolean}]
+D372:use: SyntaxDef ("Directive for applying actions to elements.")
+D373:$host() FunctionDef [RUNES] ("Rune for accessing component host element or dispatching events.")
+D374:$effect.pre FunctionDef [RUNES] NAMESPACE "G008" ("Rune for scheduling code before DOM updates.")
+D375:Attachments ConceptDef ("Svelte 5.29+ mechanism for element behaviors.")
+D376:component-library LibraryDef ("Example library exporting Svelte components.")
+D377:index.d.ts DTDef [FILE] ("TypeScript declaration file for library typings.")
+D378:swipeleft EventDef ("Example custom event dispatched by an action.")
+D379:onswipeleft SyntaxDef ("Example attribute for handling custom 'swipeleft' event.")
+D380:swiperight EventDef ("Example custom event dispatched by an action.")
+D381:onswiperight SyntaxDef ("Example attribute for handling custom 'swiperight' event.")
+D382:G005 ("Note: Runes are symbols that you use in .svelte and .svelte.js / .svelte.ts files to control the Svelte compiler. If you think of Svelte as a language, runes are part of the syntax — they are keywords. Runes have a $ prefix and look like functions. You don’t need to import them — they are part of the language. They’re not values — you can’t assign them to a variable or pass them as arguments to a function. Just like JavaScript keywords, they are only valid in certain positions (the compiler will help you if you put them in the wrong place). Runes didn’t exist prior to Svelte 5.")
+D383:G006 ("Note: Declares reactive state.")
+D384:G008 ("Note: Runs code when a component is mounted to the DOM, and then whenever its dependencies change, i.e. $state or $derived values. The timing of the execution is after the DOM has been updated. If you return a function from the effect, it will be called right before the effect is run again, or when the component is unmounted. Does not run during server side rendering.")
+
+# SECTION: INTERACTIONS (Prefix: I)
+# Format: Ixxx:Source_Ref INT_VERB Target_Ref_Or_Literal ("Note_Conditions_Error(Gxxx_ErrorType)")
+# ---"
+I001:G002 INVOKES G004 ("leveraging Vite")
+I002:G003 TRIGGERS G005 ("Runes are basically compiler instructions")
+I003:G003 DATA_FLOW(Component source -> JS/CSS) ("converts your components to JavaScript... and to CSS")
+I004:G007 READS_FROM G006 ("state that is entirely defined through a computation of other state")
+I005:G008 READS_FROM G006 ("create side effects")
+I006:G016 USES_COMPONENT G015 ("show snippet with {@render children()}")
+I007:G021 INVOKES G013
+I008:G021 INVOKES G255
+I009:G022 INVOKES G013
+I010:G022 INVOKES G255
+I011:G023 INVOKES G013 ("Unmounts a component")
+I012:G018 READS_FROM G056 ("returns... property accessors (if compiled with accessors: true)")
+I013:G019 USES_COMPONENT G013 ("foo.bar is treated as a component")
+I014:G020 CONFIGURED_BY G003 ("component compiler options")
+I015:G003 AFFECTS G027 ("Svelte analyses selectors inside :is(...)")
+I016:G003 AFFECTS G028 ("Svelte analyses selectors inside :where(...)")
+I017:G029 USES_COMPONENT G027 ("use :global(...) inside the :is(...)")
+I018:G029 USES_COMPONENT G028 ("use :global(...) inside the :where(...)")
+I019:G029 USES_COMPONENT G030 ("add a :global selector to preserve rules that use Tailwind-generated :is(...) selectors")
+I020:G003 RAISES_ERROR(CompilerError) ("will throw a compiler error" - strict HTML)
+I021:G003 RAISES_ERROR(CompilerError) ("content inside that tag is a compiler error" - svelte:options content)
+I022:G003 RAISES_ERROR(CompilerError) ("causes an error" - binding to component exports)
+I023:G003 RAISES_ERROR(CompilerError) ("This makes little sense... you should just do <div>" - svelte:element literal)
+I024:G038 PRODUCES G192 ("the event itself was always a CustomEvent")
+I025:G039 REPLACED_BY G015 ("Svelte 5 replaces them with snippets")
+I026:G041 REPLACED_BY G009 ("Replaced by JS spreading")
+I027:G042 REPLACED_BY G009 ("Replaced by not destructuring")
+I028:G044 REPLACED_BY G015 ("Replaced by snippets")
+I029:G047 INVOKES G013
+I030:G047 INVOKES G255
+I031:G047 PRODUCES G014 ("returns a Svelte 4 compatible component")
+I032:G048 INVOKES G013
+I033:G048 INVOKES G255
+I034:G048 PRODUCES G014 ("returns a Svelte 4 compatible component")
+I035:G049 REPLACED_BY G052 ("pass them via the events property")
+I036:G050 REPLACED_BY G006 ("use $state instead")
+I037:G051 REPLACED_BY G023 ("use unmount instead")
+I038:G052 USED_BY G021
+I039:G052 USED_BY G022
+I040:G053 CONFIGURED_BY G003 ("compiler option")
+I041:G054 CONFIGURED_BY G003 ("compiler option")
+I042:G054 AFFECTS G265 ("If you need CSS to be returned from render, you can set the css compiler option")
+I043:G055 CONFIGURED_BY G003 ("compiler option")
+I044:G055 CONFIGURED_BY G020 ("on a per-component basis in <svelte:options>")
+I045:G056 CONFIGURED_BY G003 ("compiler option")
+I046:G056 AFFECTS G018 ("adds... property accessors (if compiled with accessors: true)")
+I047:G265 INVOKES G013
+I048:G265 INVOKES G255
+I049:G265 PRODUCES G067 ("returns an object with body and head properties")
+I050:G014 REPLACED_BY G013 ("SvelteComponent... is deprecated in favour of the new Component type")
+I051:G255 OBSOLETED_BY G013 ("obsolete because the new Component type is the component type already")
+I052:G018 NO_LONGER_RETURNS G049 ("no longer returns a class instance with $on")
+I053:G018 NO_LONGER_RETURNS G050 ("no longer returns a class instance with $set")
+I054:G018 NO_LONGER_RETURNS G051 ("no longer returns a class instance with $destroy")
+I055:G266 REPLACED_BY G013 ("<svelte:component> is no longer necessary")
+I056:G036 NO_LONGER_EXPORTS G072 ("walk no longer exported")
+I057:G072 IMPORTED_FROM G037 ("import it directly from that package instead")
+I058:G039 PRESERVED_IN G068 ("<slot> elements in declarative shadow roots are preserved")
+I059:G021 AFFECTED_BY G175 ("unless the intro option is set to false")
+I060:G006 USED_IN G080 ("use $state in class fields")
+I061:G080 USES G006 ("define value as a reactive $state field on the Foo class")
+I062:G006 TRANSFORMED_BY G003 ("every reference to count is transformed by the Svelte compiler")
+I063:G006 CANNOT_BE_DIRECTLY_EXPORTED ("you can only export that state if it’s not directly reassigned")
+I064:G078 MODIFIES G006 ("count += 1")
+I065:G006 CAN_BE_EXPORTED ("This is allowed — since we're updating counter.count")
+I066:G078 MODIFIES G006 ("counter.count += 1")
+I067:G021 NOT_SYNCHRONOUS_WITH G025 ("onMount won’t have been called by the time the function returns")
+I068:G022 NOT_SYNCHRONOUS_WITH G025 ("onMount won’t have been called by the time the function returns")
+I069:G021 MAY_REQUIRE G180 ("If you need that guarantee, call flushSync")
+I070:G022 MAY_REQUIRE G180 ("If you need that guarantee, call flushSync")
+I071:G177 REPLACED_BY G008 ("use $effect(...) instead")
+I072:G178 REPLACED_BY G024 ("use... tick instead")
+I073:G073 WRITES_TO D028:process.stdout
+I074:G073 WRITES_TO D029:process.stderr
+I075:G074 WRITES_TO D140:Stream ("any Node.js stream")
+I076:G073 USES D030:util.format ("arguments are all passed to util.format()")
+I077:G074 USES D030:util.format ("arguments are all passed to util.format()")
+I078:G081 REPLACES D137:addEventListener ("Using this rather than addEventListener")
+I079:G081 PRESERVES_ORDER_RELATIVE_TO D138:onclick ("preserve the correct order relative to handlers added declaratively (with attributes like onclick)")
+I080:G006 USED_IN Class fields ("use $state in class fields")
+I081:G003 TRANSFORMS G006 ("every reference to count is transformed by the Svelte compiler")
+I082:G003 PRODUCES D044:$.get (internal) ("code above is roughly equivalent to this")
+I083:G003 PRODUCES D045:$.set (internal) ("code above is roughly equivalent to this")
+I084:G011 CAN_CONTAIN G006 ("raw state can contain reactive state")
+I085:G012 USED_WITH D042:structuredClone ("pass some state to an external library or API... such as structuredClone")
+I086:G006 AFFECTS G077 ("updating input.a and input.b... log(total.value); // 7")
+I087:G001 USED_WITH G004 ("use Svelte directly with Vite")
+I088:G004 USED_WITH D051:vite-plugin-svelte ("npm run build will generate HTML, JS, and CSS files inside the dist directory using vite-plugin-svelte")
+I089:G001 USED_WITH D052:Rollup
+I090:G001 USED_WITH D053:Webpack
+I091:G001 TESTED_WITH G241
+I092:G001 TESTED_WITH G246
+I093:G241 USED_WITH G246 ("jsdom paired with a test runner like Vitest")
+I094:G001 TESTED_WITH G244
+I095:G001 TESTED_WITH G243
+I096:G002 TESTED_WITH G244 ("setup Playwright for end-to-end testing")
+I097:G001 TESTED_WITH G247
+I098:G001 TESTED_WITH D068:uvu
+I099:G001 TESTED_WITH D069:WebdriverIO
+I100:G002 PROVIDES Router ("The official routing library is SvelteKit")
+I101:G002 PROVIDES D070:SSR
+I102:G002 PROVIDES D071:HMR
+I103:G002 COMPARED_TO D072:Next.js
+I104:G001 USED_WITH D073:page.js
+I105:G001 USED_WITH D074:navaid
+I106:G001 USED_WITH D075:universal-router
+I107:G001 USED_WITH D076:svelte-routing
+I108:G001 USED_WITH D077:svelte-navigator
+I109:G001 USED_WITH D078:svelte-spa-router
+I110:G001 USED_WITH D079:abstract-state-router
+I111:G001 USED_WITH D080:Routify
+I112:G002 USED_WITH G199 ("turn a SvelteKit SPA into a mobile app with Tauri")
+I113:G002 USED_WITH G200 ("turn a SvelteKit SPA into a mobile app with Capacitor")
+I114:G001 USED_WITH D086:Svelte Native ("Svelte Native lets you write NativeScript apps using Svelte components")
+I115:D086:Svelte Native USES D087:NativeScript
+I116:D086:Svelte Native COMPARED_TO D088:React Native
+I117:G003 REMOVES Unused Styles ("Svelte removes the styles from the component")
+I118:G003 ADDS Scoping Class ("generating a class unique to the given component")
+I119:G029 USED_TO Escape Scoping ("explicitly opt into global styles by using :global(...)")
+I120:G002 BUILT_ON G004
+I121:G002 BUILT_ON D090:svelte-hmr
+I122:G206 TRIGGERS G084 ("A transition is triggered by an element entering or leaving the DOM")
+I123:G204 TRIGGERS G084
+I124:G205 TRIGGERS G084
+I125:G206 INDICATES G084 ("a bidirectional transition")
+I126:G209 EXPORTS G207
+I127:G209 EXPORTS G208
+I128:G084 CAN_RETURN D091:tick (transition function)
+I129:G084 CAN_RETURN G087:css (transition)
+I130:G087:css (transition) TRIGGERS Web Animation ("Svelte will generate keyframes for a web animation")
+I131:G084 DISPATCHES G088
+I132:G084 DISPATCHES G089
+I133:G084 DISPATCHES G090
+I134:G084 DISPATCHES G091
+I135:D094:svelte.config.js CONFIGURES G002
+I136:D094:svelte.config.js CONFIGURES Tooling ("used by other tooling that integrates with Svelte")
+I137:G093 CONFIGURES G002 ("The kit property configures SvelteKit")
+I138:G096 PASSED_TO G004 ("automatically passed to Vite")
+I139:G096 PASSED_TO TypeScript ("automatically passed to ... TypeScript")
+I140:G096 CONTROLS D101:$lib (alias) ("The built-in $lib alias is controlled by config.kit.files.lib")
+I141:G096 REQUIRES npm run dev ("You will need to run npm run dev to have SvelteKit automatically generate the required alias configuration")
+I142:G096 AFFECTS D102:jsconfig.json
+I143:G096 AFFECTS D103:tsconfig.json
+I144:G098 HELPS_PROTECT_AGAINST XSS ("CSP helps to protect your users against cross-site scripting (XSS) attacks")
+I145:G098 AUGMENTS Directives ("SvelteKit will augment the specified directives with nonces or hashes")
+I146:D104:%sveltekit.nonce% USED_IN G117 ("add a nonce for scripts and links manually included in src/app.html")
+I147:G098 ADDED_VIA meta http-equiv ("When pages are prerendered, the CSP header is added via a <meta http-equiv> tag")
+I148:G098 IGNORES D105:frame-ancestors (when prerendered)
+I149:G098 IGNORES D106:report-uri (when prerendered)
+I150:G098 IGNORES D107:sandbox (when prerendered)
+I151:G098 USES D108:mode (csp property)
+I152:G098 USES D109:directives (csp property)
+I153:G098 CAN_BE_REPLACED_BY D110:handle (hook) ("use the handle hook to roll your own CSP")
+I154:G084 REQUIRES D111:style-src D112:unsafe-inline (in CSP) ("most Svelte transitions work by creating an inline <style> element. If you use these... you must either leave the style-src directive unspecified or add unsafe-inline")
+I155:G101 HELPS_PROTECT_AGAINST CSRF ("Protection against cross-site request forgery (CSRF) attacks")
+I156:G102 CHECKS origin header ("check the incoming origin header")
+I157:G102 VERIFIES Server Origin ("verify that it matches the server’s origin")
+I158:G103 AFFECTS Event Listeners ("SvelteKit will add its event listeners related to navigation etc on the parent of %sveltekit.body%")
+I159:G103 AFFECTS params (concept) ("will pass params from the server rather than inferring them from location.pathname")
+I160:G103 NOT_SUPPORTED_WITH Multiple SvelteKit Apps ("generally not supported to embed multiple SvelteKit apps on the same page")
+I161:G106 SIGNALS D114:$env/static/public
+I162:G106 SIGNALS D115:$env/dynamic/public
+I163:G107 SIGNALS D116:$env/static/private
+I164:G107 SIGNALS D117:$env/dynamic/private
+I165:G119 CONTROLS CSS Inlining ("specifies the maximum length of a CSS file... to be inlined")
+I166:G120 AFFECTS Router ("Files with extensions that match neither config.extensions nor config.kit.moduleExtensions will be ignored by the router")
+I167:D021:G124 (BundleStrategy split) AFFECTS Vite Config ("adjust the bundling behaviour by setting output.experimentalMinChunkSize and output.manualChunks inside your Vite config’s build.rollupOptions")
+I168:D021:G124 (BundleStrategy inline) REQUIRES build.assetsInlineLimit ("If you want to inline your assets, you’ll need to set Vite’s build.assetsInlineLimit option")
+I169:G127 USED_TO Prepend Links ("need to prepend all your root-relative links with the base value")
+I170:G128 AFFECTS Asset Paths ("Whether to use relative asset paths")
+I171:D020:G123 (preloadStrategy) AFFECTS Application Startup ("SvelteKit will preload the JavaScript modules needed for the initial page... resulting in faster application startup")
+I172:D021:G124 AFFECTS JS/CSS Loading ("affects how your app’s JavaScript and CSS files are loaded")
+I173:G128 (relative paths property true) REPLACES G127 ("base and assets imported from $app/paths will be replaced with relative asset paths during server-side rendering")
+I174:G128 (relative paths property true) REPLACES G126 ("base and assets imported from $app/paths will be replaced with relative asset paths during server-side rendering")
+I175:G128 (relative paths property false) AFFECTS D118:%sveltekit.assets% ("%sveltekit.assets% and references to build artifacts will always be root-relative paths")
+I176:G128 (relative paths property false) AFFECTS Build Artifact References ("%sveltekit.assets% and references to build artifacts will always be root-relative paths")
+I177:G128 (relative paths property false) RECOMMENDED_WITH base element ("If your app uses a <base> element, you should set this to false")
+I178:G131 FINDS Pages FROM G132 ("find pages to prerender by following links from entries")
+I179:G133 TAKES D022:G134 (PrerenderHttpErrorHandlerValue)
+I180:G135 TAKES D023:G136 (PrerenderMissingIdHandlerValue)
+I181:G137 TAKES D024:G138 (PrerenderEntryGeneratorMismatchHandlerValue)
+I182:D026:G142 (resolution router property client) USES Route Manifest ("manifest is used... to determine which components to load")
+I183:D026:G142 (resolution router property client) USES D082:reroute ("manifest is used (along with the reroute hook, if it exists) to determine which components to load")
+I184:D026:G142 (resolution router property client) DETERMINES G013 ("determine which components to load")
+I185:D026:G142 (resolution router property client) DETERMINES G255 ("determine which components to load")
+I186:D026:G142 (resolution router property client) DETERMINES D083:load (function) ("determine which... load functions to run")
+I187:D026:G142 (resolution router property server) DETERMINES Route ("SvelteKit can determine the route on the server")
+I188:D026:G142 (resolution router property server) CAN_BE_INTERCEPTED_BY D084:middleware ("server has an opportunity to intercept each navigation (for example through a middleware)")
+I189:D026:G142 (resolution router property server) PRERENDERED_WITH Route ("resolution is prerendered along with the route itself")
+I190:G144 DETERMINES D120:$service-worker.files ("Determine which files in your static directory will be available in $service-worker.files")
+I191:G146 EDITS D103:tsconfig.json ("allows you to edit the generated tsconfig.json")
+I192:G147 HELPS_WITH Client-side Navigation ("Client-side navigation can be buggy if you deploy a new version")
+I193:G147 DETECTS New Version ("detects that a new version has been deployed")
+I194:G147 FALLS_BACK_TO Full-page Navigation ("it will fall back to traditional full-page navigation")
+I195:G149 TRIGGERS Polling ("SvelteKit will poll for new versions in the background")
+I196:G149 AFFECTS D124:updated (store) ("set the value of updated.current true when it detects one")
+I197:D122:beforeNavigate USED_TO Force Full-page Navigation ("using techniques such as setting the pollInterval and then using beforeNavigate")
+I198:D122:beforeNavigate READS_FROM D124:updated (store) ("if (updated.current ...)")
+I199:G150 USED_TO Migrate Svelte 3 to 4 ("Use the migration script to migrate some of these automatically: npx svelte-migrate@latest svelte-4")
+I200:G038 HAS_STRICTER_TYPES (in Svelte 4+)
+I201:G152 HAS_STRICTER_TYPES (in Svelte 4+)
+I202:G153 HAS_STRICTER_TYPES (in Svelte 4+)
+I203:G025 HAS_STRICTER_TYPES (in Svelte 4+) ("now shows a type error if you return a function asynchronously")
+I204:G061 REPLACED_BY D132:customElement (svelte:options) ("The tag option is deprecated in favor of the new customElement option")
+I205:D133:SvelteComponentTyped REPLACED_BY G014 ("Replace all instances of SvelteComponentTyped with SvelteComponent")
+I206:G206 MODIFIED_BY G187 ("To make transitions global, add the |global modifier")
+I207:Default Slot Bindings NOT_EXPOSED_TO Named Slots ("Default slot bindings are no longer exposed to named slots and vice versa")
+I208:G154 USES G155
+I209:G155 HAS_CHANGED_ORDER ("The order in which preprocessors are applied has changed")
+I210:G191 SHOULD_COME_BEFORE Script Preprocessors ("make sure it comes before any script or style preprocessor")
+I211:G191 SHOULD_COME_BEFORE Style Preprocessors ("make sure it comes before any script or style preprocessor")
+I212:G160 REPLACED_BY G161 ("We recommend switching to our new package eslint-plugin-svelte")
+I213:G162 APPLIED_TO Outroing Elements ("the inert attribute is now applied to outroing elements")
+I214:Svelte Runtime USES classList.toggle ("the runtime now uses classList.toggle(name, boolean)")
+I215:Svelte Runtime USES G192 ("the runtime now uses the CustomEvent constructor")
+I216:G164 USES G163 ("implementing their own stores from scratch using the StartStopNotifier interface (which is passed to the create function of writable etc)")
+I217:G165 THROWS_ERROR_ON Falsy Values ("derived will now throw an error on falsy values instead of stores passed to it")
+I218:G166 REMOVED Type Definitions ("type definitions for svelte/internal` were removed")
+I219:D136:DOM nodes removal batching AFFECTS D043:MutationObserver ("Removal of DOM nodes is now batched which slightly changes its order, which might affect the order of events fired if you’re using a MutationObserver")
+I220:G167 REPLACED_BY G168 ("migrate this to use the svelteHTML namespace")
+I221:Types from G167 SHOULD_USE Types from G169 ("migrate those to use the types from svelte/elements instead")
+I222:G025 (async function) INT_VERB Cleanup function ("not called")
+I223:G003 CONFIGURED_BY G268 (customElement option)
+I224:G268 REPLACES G061 ("deprecated in favor of")
+I225:G267 INVOKES Uni[G013.element,G014.element] ("define('my-element', MyElement.element)")
+I226:G268.extend EXTENDS Custom element class
+I227:G271 USED_WITH G268.extend ("use ElementInternals for better HTML form integration")
+I228:Svelte custom element wrapper HANDLES G273
+I229:Svelte custom element wrapper HANDLES G274
+I230:Svelte custom element wrapper CREATES G013 ("inner Svelte component") (next tick after G273)
+I231:Svelte custom element wrapper SETS Props (on inner component) (after creation)
+I232:Svelte custom element wrapper MAKES_AVAILABLE Exported functions (after mount)
+I233:Svelte custom element wrapper BATCHES Shadow DOM updates (next tick)
+I234:Svelte custom element wrapper DESTROYS G013 (next tick after G274)
+I235:Svelte custom element styles ARE_ Encapsulated (unless G268.shadow is "none")
+I236:Svelte custom element styles ARE_ Inlined (as JS string)
+I237:Svelte custom elements ARE_NOT Suitable for G162 (SSR)
+I238:Svelte custom element slotted content (DOM) RENDERS Eagerly
+I239:Svelte custom element slotted content (Svelte) RENDERS Lazily
+I240:G043 (let: directive) HAS_NO_EFFECT_IN Svelte custom elements
+I241:Svelte custom elements REQUIRE Polyfills (for old browsers)
+I242:G181 (getContext) CANNOT_BE_USED_ACROSS Svelte custom elements
+I243:G185 (setContext) CANNOT_BE_USED_ACROSS Svelte custom elements
+I244:`on` prefix (prop/attribute) INTERPRETED_AS Event listener (on custom elements)
+I245:Svelte runtime USES classList.toggle
+I246:G002 (Default) USES G162 (SSR) (for first page)
+I247:G002 (Default) USES D148:SPA (CSR) (for subsequent pages)
+I248:G002 (SSG) USES G280 (Static rendering)
+I249:G193 (adapter-static) USED_FOR G002 (SSG)
+I250:Prerender option USED_TO Mix G280 AND G281
+I251:G194 (adapter-vercel) PROVIDES G282 (ISR)
+I252:G002 ALLOWS G283 (Mixing rendering types)
+I253:G002 (SPA) USES D148:SPA (CSR) (exclusively)
+I254:G002 (SPA) CAN_SKIP G277 (server files)
+I255:G275 (csr = false) REMOVES JS (on a page)
+I256:G275 (csr = false) RENDERS Subsequent links (on server)
+I257:G276 (data-sveltekit-reload) RENDERS Specific links (on server)
+I258:Separate backend CAN_SKIP G277 (server files)
+I259:Separate backend REFERENCES G284 (External backend calls FAQ)
+I260:G002 (Serverless) SIMPLE_ON G285 (Serverless platforms)
+I261:G286 (Default zero config adapter) RUNS G002 (on supported platforms)
+I262:Uni[G194, G196, G197] PROVIDE Platform-specific config (for G002 serverless)
+I263:G287 (Community adapters) DEPLOY_TO G285 (almost any env)
+I264:Uni[G194, G196] OFFER G278 (edge option)
+I265:G195 (adapter-node) USED_FOR G288 (Own server/VPS deployment)
+I266:G195 (adapter-node) USED_FOR G289 (Container deployment)
+I267:G198 (@sveltejs/package) USED_TO Create libraries
+I268:G002 SUPPORTS Service workers
+I269:G002 USED_TO_BUILD G290 (Offline apps)
+I270:G002 USED_TO_BUILD G291 (PWAs)
+I271:G002 (SPA) TURNED_INTO Mobile app (with Uni[G199, G200])
+I272:Uni[G199, G200] PROVIDE G292 (Mobile app features) (via plugins)
+I273:G124 (bundleStrategy: 'single') HELPFUL_FOR Mobile/Embedded (due to connection limits)
+I274:G002 (SPA) TURNED_INTO Desktop app (with Uni[G199, G201, G202])
+I275:G193 (adapter-static) USED_FOR G293 (Browser extension building)
+I276:G287 (Community adapters) USED_FOR G293 (Browser extension building)
+I277:G001 CAN_RUN_ON G294 (Low power devices)
+I278:Uni[G007 expression, G203 function] DEPENDS_ON State (read synchronously)
+I279:G186 (untrack) EXEMPTS State (from dependency tracking)
+I280:G007 (derived values) CAN_BE_ Reassigned (Svelte 5.25+)
+I281:G007 (derived values) ARE_NOT Deeply reactive
+I282:State update NOTIFIES Dependencies (push)
+I283:G007 (derived values) RE_EVALUATED_WHEN Read (pull)
+I284:G007 (new value === previous value) TRIGGERS Downstream updates skipped
+I285:G181 ({@html ...}) DOES_NOT_COMPILE Svelte code
+I286:G181 ({@html ...}) content IS_ Invisible_TO Svelte scoped styles
+I287:G253 (on: directive legacy) Handlers declared inline HAVE_NO_PERFORMANCE_PENALTY
+I288:G253 (on: directive legacy) CAN_HAVE Multiple listeners
+I289:Component events DO_NOT_ Bubble
+I290:Modifiers (except G259) ARE_NOT Valid_ON Component event handlers
+I291:G038 (createEventDispatcher) REPLACED_BY Callback props (migration guidance)
+I292:G241 (Vitest) RECOMMENDED_WITH Uni[G004, G002]
+I293:G150 (Svelte CLI) SETS_UP G241
+I294:G297 (vite.config.js) CONFIGURES G241
+I295:G297 (vite.config.js) CONFIGURES D220 (browser conditions) (for G241)
+I296:Alias configuration ALTERNATIVE_TO D220 (browser conditions) (for G241)
+I297:Rune usage POSSIBLE_IN Test files (if filename includes .svelte)
+I298:Code using effects NEEDS_WRAPPING_IN G299 ($effect.root) (for testing)
+I299:G241 (Vitest) USED_FOR D158 (Component Test)
+I300:G246 (jsdom) REQUIRED_FOR D158 (Component Test) (with G241)
+I301:G297 (vite.config.js) SETS G241.test.environment ("jsdom") (for D158)
+I302:D158 (low level) USES Uni[G021, G023]
+I303:D158 (low level) INTERACTS_WITH DOM (document.body.innerHTML, querySelector)
+I304:D158 (low level) USES G251 (expect)
+I305:G247 (@testing-library/svelte) HELPS_STREAMLINE D158
+I306:G247 USED_WITH Uni[G249, G250]
+I307:Wrapper component RECOMMENDED_FOR Testing bindings, context, snippet props
+I308:G244 (Playwright) USED_FOR D159 (E2E Test)
+I309:G243 (Cypress) USED_FOR D159 (E2E Test)
+I310:NightwatchJS USED_FOR D159 (E2E Test)
+I311:G150 (Svelte CLI) SETS_UP G244
+I312:`npm init playwright` SETS_UP G244
+I313:G304 (playwright.config.js) CONFIGURES G244
+I314:G304 (playwright.config.js) CONFIGURES Starting app (for G244)
+I315:D159 (E2E Test) INTERACTS_WITH DOM
+I316:D159 (E2E Test) USES G251 (expect)
+I317:G305 (page Playwright) USED_IN D159 (E2E Test)
+I318:G305.goto USED_IN D159 (E2E Test)
+I319:G305.locator USED_IN D159 (E2E Test)
+I320:G306 (toBeVisible) USED_IN D159 (E2E Test)
+I321:G173 REPLACED_BY G174 ("Use ComponentProps instead.")
+I322:G175.events REPLACED_BY Callback props ("Use callback props instead.")
+I323:G176 INVOKED_VIA G016 ("You can only call a snippet through the {@render ...} tag.")
+I324:G176 CAN_REFERENCE External declarations (script, each block)
+I325:G176 CAN_REFERENCE Self
+I326:G176 CAN_REFERENCE Other snippets (in scope)
+I327:G176 PASSED_AS Props (explicit)
+I328:G176 PASSED_AS Props (implicit) (when declared inside component tags)
+I329:Content inside component tags (not snippet) BECOMES G017 (children snippet)
+I330:G017 (children prop) CANNOT_COEXIST_WITH Content inside component tags ("you cannot have a prop called children if you also have content inside the component")
+I331:G176 (optional) RENDERED_VIA Optional chaining (`children?.()`)
+I332:G176 (optional) RENDERED_VIA If block (`{#if children}`)
+I333:G176 IMPLEMENTS G176 ("Snippets implement the Snippet interface")
+I334:G176 IMPORTED_FROM G001 ("import type { Snippet } from 'svelte'")
+I335:G176 EXPORTED_FROM Script module (if top-level and no non-module script refs) ("This requires Svelte 5.5.0 or newer")
+I336:G176 CREATED_VIA G179 (createRawSnippet)
+I337:G039 REPLACED_BY G176 ("slots are deprecated in Svelte 5")
+I338:D027:use: APPLIED_TO Element
+I339:D027:use: INVOKES G152 (Action)
+I340:G152 (Action) USES G008 ($effect) ("will typically use an $effect")
+I341:G152 (Action) RUNS ON Element mounted
+I342:G152 (Action) DOES_NOT_RUN_ON SSR
+I343:G152 (Action) DOES_NOT_RUN_AGAIN_IF Argument changes
+I344:G152 (Action) (Legacy) COULD_RETURN G153 (ActionReturn)
+I345:G153 (ActionReturn) (update method) INVOKED_WITH Latest argument value
+I346:G008 ($effect) PREFERRED_OVER G153 (ActionReturn) (update/destroy)
+I347:G152 (Action) CAN_DISPATCH G192 (CustomEvent)
+I348:G038 REPLACED_BY Callback props (migration guide)
+I349:G038 REPLACED_BY D028:$host() (migration guide)
+I350:G177 REPLACED_BY G008 ($effect)
+I351:G178 REPLACED_BY D029:$effect.pre
+I352:D030:Attachments RECOMMENDED_OVER G152 (Action) (Svelte 5.29+)
+I353:D030:Attachments MORE_FLEXIBLE_THAN G152 (Action)
+I354:D030:Attachments MORE_COMPOSABLE_THAN G152 (Action)
+I355:G005 CONTROL G003 (Svelte compiler)
+I356:G005 USED_IN Uni[G300, G140]
+I357:G005 ARE_NOT Imported
+I358:G005 ARE_NOT Values
+I359:G005 ARE_ Keywords
+I360:G005 ARE_ Valid_IN Certain positions
+I361:G003 RAISES_ERROR(CompilerError) (if runes in wrong position)
+I362:G005 DID_NOT_EXIST_PRIOR_TO Svelte 5
+I363:G008 ($effect) SCHEDULES Function (on DOM mount)
+I364:G008 ($effect) RUNS_WHEN Dependencies change
+I365:G008 ($effect) RUNS_AFTER DOM updated
+I366:G008 ($effect) CAN_RETURN Cleanup function
+I367:Cleanup function (from G008) CALLED_BEFORE G008 runs again
+I368:Cleanup function (from G008) CALLED_WHEN Component unmounted
+I369:G008 ($effect) DOES_NOT_RUN_DURING SSR
+I370:G025 (onMount) SCHEDULES Function (on DOM mount)
+I371:G025 (onMount) RUNS Once
+I372:G025 (onMount) MUST_BE_CALLED_DURING Component initialisation
+I373:G025 (onMount) CAN_BE_CALLED_FROM External module
+I374:G025 (onMount) CAN_RETURN Cleanup function (synchronously)
+I375:Cleanup function (from G025) CALLED_WHEN Component unmounted
+I376:G025 (onMount) DOES_NOT_RUN_DURING SSR
+I377:G185 (setContext) ASSOCIATES Context object WITH Current component
+I378:G185 (setContext) ASSOCIATES Context object WITH Key
+I379:Context object (from G185) AVAILABLE_TO Uni[Children, Slotted content] (with G182)
+I380:G185 (setContext) MUST_BE_CALLED_DURING Component initialisation
+I381:G186 (untrack) PREVENTS Dependency tracking (inside Uni[G007, G008])
+I382:G184 RUNS_INSIDE Server-side component
+I383:G184 IS_ONLY_LIFECYCLE_HOOK_THAT RUNS_INSIDE Server-side component (among onMount, beforeUpdate, afterUpdate, onDestroy)
+I384:G023 (unmount) RETURNS Promise (since 5.13.0 if outro: true)
+I385:G023 (unmount) RETURNS void (prior to 5.13.0)
+I386:G023 (unmount with outro: true) PLAYS Transitions BEFORE Removal
+I387:G023 (unmount with outro: true) PROMISE_RESOLVES_AFTER Transitions complete
+I388:G023 (unmount without outro: true) PROMISE_RESOLVES Immediately
+I389:G181 USEFUL_FOR Passing context to programmatically created component
+I390:G174 (Svelte 4) USED_WITH G170 (MyComponent class)
+I391:G174 (Svelte 5) USED_WITH typeof G170 (MyComponent)
+I392:G021 MAY_RETURN Props (if compiled with accessors: true)
+I393:G022 MAY_RETURN Props (if compiled with accessors: true)
+I394:G179.fn.setup CAN_RETURN Cleanup function
+I395:Cleanup function (from G179.fn.setup) CALLED_WHEN Element unmounted
+I396:G013 constructor DEPRECATED_WHEN Using legacy compatibility helpers
+I397:G014 constructor DEPRECATED_WHEN Using G048 (asClassComponent)
+I398:G014.$destroy DEPRECATED_WHEN Using legacy compatibility helpers
+I399:G014.$on DEPRECATED_WHEN Using legacy compatibility helpers
+I400:G014.$set DEPRECATED_WHEN Using legacy compatibility helpers
+I401:G225 REPLACED_BY G013 ("Use Component instead.")
+I402:G173 OBSOLETE_WHEN Using G013 ("obsolete when working with the new Component type")
+I403:G177 DEPRECATED ("Use $effect instead")
+I404:G178 DEPRECATED ("Use $effect.pre instead")
+I405:G038 DEPRECATED ("Use callback props and/or the $host() rune instead")
+
+# SECTION: USAGE_PATTERNS (Prefix: U)
+# Format: U_Name:PatternTitleKeyword
+#         U_Name.N:[Actor_Or_Ref] ACTION_KEYWORD (Target_Or_Data_Involving_Ref) -> [Result_Or_State_Change_Involving_Ref]
+# ACTION_KEYWORD Enum: CREATE (instance), CONFIGURE (object/settings), INVOKE (operation/method), GET_ATTR (read attribute/property), SET_ATTR (write attribute/property), PROCESS_DATA, CHECK_STATE, ITERATE (over a collection/stream, e.g., async for), RAISE_ERR, HANDLE_ERR(Gxxx_ErrorType)
+---
+U_SvelteKitProjectCreation:CLI Setup
+U_SvelteKitProjectCreation.1:[User] INVOKE (D141:sv create "my-app") -> [Project scaffolded]
+U_SvelteKitProjectCreation.2:[User] INVOKE (npm install) -> [Dependencies installed]
+U_SvelteKitProjectCreation.3:[User] INVOKE (npm run dev) -> [G002:SvelteKit application running]
+
+U_Svelte5BasicReactivity:Runes
+U_Svelte5BasicReactivity.1:[User] DECLARES (G006:$state(initialValue)) -> [Reactive state variable]
+U_Svelte5BasicReactivity.2:[User] DECLARES (G007:$derived(() => computation)) -> [Derived state variable]
+U_Svelte5BasicReactivity.3:[User] DECLARES (G008:$effect(() => sideEffectCallback)) -> [Side effect registered]
+U_Svelte5BasicReactivity.4:[User] MODIFIES (G006:$state variable) -> [State updated]
+U_Svelte5BasicReactivity.5:[G001:Svelte runtime] UPDATES (UI) -> [UI reflects new state/derived values]
+U_Svelte5BasicReactivity.6:[G001:Svelte runtime] INVOKES (sideEffectCallback) -> [Side effect executed]
+
+U_Svelte5ComponentEvents:CallbackProps
+U_Svelte5ComponentEvents.1:[Child Component] DECLARES (callback prop) using (G009:$props()) -> [Prop available for invocation]
+U_Svelte5ComponentEvents.2:[Child Component] INVOKES (callback prop function) -> [Function called in parent scope]
+U_Svelte5ComponentEvents.3:[Parent Component] PASSES (function) as (prop to Child Component) -> [Child receives callback]
+U_Svelte5ComponentEvents.4:[Parent Component] HANDLES (event logic) within (passed function) -> [Event handled]
+
+U_Svelte5ContentProjection:Snippets
+U_Svelte5ContentProjection.1:[Child Component] DECLARES (snippet prop) using (G009:$props()) -> [Prop available for rendering]
+U_Svelte5ContentProjection.2:[Child Component] RENDERS (snippet) using (G016:{@render snippetName()}) -> [Snippet content inserted]
+U_Svelte5ContentProjection.3:[Parent Component] DEFINES (snippet content) using (G015:{#snippet snippetName()}) within (Child Component tags) -> [Snippet definition available]
+U_Svelte5ContentProjection.4:[Child Component] INVOKES (snippet prop function) with (data) -> [Data passed to snippet]
+U_Svelte5ContentProjection.5:[Parent Component] RECEIVES (data) in (G015:{#snippet snippetName(data)}) definition -> [Data available in snippet scope]
+
+U_Svelte5ClientMount:ComponentInstantiation
+U_Svelte5ClientMount.1:[User] IMPORTS (G021.mount) and (G013:Component) -> [Functions/Types available]
+U_Svelte5ClientMount.2:[User] GETS (target DOM element) -> [Element reference]
+U_Svelte5ClientMount.3:[User] INVOKES (G021.mount(Component, G175:{ target: element, props: {...} })) -> [Component mounted, exports returned]
+U_Svelte5ClientMount.4:[User] MAY INVOKE (G180.flushSync()) -> [Pending updates applied synchronously]
+
+U_Svelte5ServerRender:ComponentRendering
+U_Svelte5ServerRender.1:[User] IMPORTS (G265.render) from (G034:svelte/server) and (G013:Component) -> [Functions/Types available]
+U_Svelte5ServerRender.2:[User] INVOKES (G265.render(Component, { props: {...} })) -> [G067:RenderOutput object]
+U_Svelte5ServerRender.3:[User] GET_ATTR (G067.html) -> [Rendered HTML string]
+U_Svelte5ServerRender.4:[User] GET_ATTR (G067.head) -> [Rendered head string]
+
+U_Svelte5MigrationCLI:AutomatedMigration
+U_Svelte5MigrationCLI.1:[User] INVOKES (G150:svelte-migrate) via (npx sv migrate svelte-5) -> [Migration process started]
+U_Svelte5MigrationCLI.2:[G150:svelte-migrate] MODIFIES (Project files) -> [Code updated to Svelte 5 syntax/APIs]
+U_Svelte5MigrationCLI.3:[User] PERFORMS (Manual cleanup/adjustments) -> [Migration completed]
+
+# END_OF_MANIFEST

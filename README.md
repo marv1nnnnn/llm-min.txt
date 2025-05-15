@@ -24,166 +24,182 @@
 
 ## What is `llm-min.txt` and Why is it Important?
 
-If you've ever used an AI coding assistant (like GitHub Copilot, Cursor, or others powered by Large Language Models - LLMs), you might have noticed they sometimes don't know about the very latest updates to programming tools or libraries. This is because AI models have a "knowledge cutoff" – a point in time beyond which they haven't learned new information. Software, especially new libraries, changes quickly, and these changes can break your code if the AI isn't aware of them.
+If you've ever used an AI coding assistant (like GitHub Copilot, Cursor, or others powered by Large Language Models - LLMs), you've likely encountered situations where they don't know about the latest updates to programming libraries. This knowledge gap exists because AI models have a "knowledge cutoff" – a point beyond which they haven't learned new information. Since software evolves rapidly, this limitation can lead to outdated recommendations and broken code.
 
-Several great ideas have tried to solve this problem:
+Several innovative approaches have emerged to address this challenge:
 - <a href="https://llmstxt.org/"><img src="https://llmstxt.org/logo.png" alt="llms.txt logo" width="60" style="vertical-align:middle; margin-right:8px;"/></a> [llms.txt](https://llmstxt.org/)
-  This is a community project where people create special text files (`llms.txt`) that provide up-to-date information about software libraries for AIs.
+  A community-driven initiative where contributors create reference files (`llms.txt`) containing up-to-date library information specifically formatted for AI consumption.
 
 - <a href="https://context7.com/"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRbPuwKNduEABBD5gAZO_AS9z0FyUAml72j3g&s" alt="Context7 logo" width="60" style="vertical-align:middle; margin-left:4px;"/></a> [Context7](https://context7.com/)
-  This is a service that helps give AIs the right information (context) they need, often by summarizing documentation.
+  A service that dynamically provides contextual information to AIs, often by intelligently summarizing documentation.
 
-These are helpful, but they have some challenges:
-- `llms.txt` files can get very, very long. Some are over **800,000** "tokens" (think of tokens as pieces of words). That's a lot for an AI to read!
+While these solutions are valuable, they face certain limitations:
+- `llms.txt` files can become extraordinarily large – some exceeding **800,000** tokens (word fragments). This size can overwhelm many AI systems' context windows.
   
     <img src="assets/token.png" alt="Token comparison for llms.txt" width="500"/>
     
-    Many smaller `llms.txt` files are just links to the official websites, which the AI still needs to go and read. Even the full text versions (usually as `llms-full.txt`)can be too big for some AIs to handle all at once. It's also not always clear if these files are the absolute latest version.
+    Many shorter `llms.txt` variants simply contain links to official documentation, requiring the AI to fetch and process those documents separately. Even the comprehensive versions (`llms-full.txt`) often exceed what most AI assistants can process at once. Additionally, these files may not always reflect the absolute latest documentation.
 
-- `Context7` is a bit like a "black box" – you can use it, but it's not always clear exactly how it's picking and choosing information for the AI. It also mainly works with code on GitHub or existing `llms.txt` files, not just any software package.
+- `Context7` operates somewhat as a "black box" – while useful, its precise information selection methodology isn't fully transparent to users. It primarily works with GitHub code repositories or existing `llms.txt` files, rather than any arbitrary software package.
 
-**So, how can we make this better?**
+**`llm-min.txt` offers a fresh approach:**
 
 <img src="assets/icon.png" alt="llm-min.txt icon" width="300"/>
 
-Think about `min.js` files in web development. These are JavaScript files that have had all the unnecessary bits (like comments and spaces) removed. They're hard for humans to read, but computers understand them perfectly, and they're much smaller.
+Inspired by `min.js` files in web development (JavaScript with unnecessary elements removed), `llm-min.txt` adopts a similar philosophy for technical documentation. Instead of feeding an AI a massive, verbose manual, we leverage another AI to distill that documentation into a super-condensed, highly structured summary. The resulting `llm-min.txt` file captures only the most essential information needed to understand a library's usage, packaged in a format optimized for AI assistants rather than human readers.
 
-`llm-min.txt` takes a similar idea for software documentation. Instead of giving an AI a huge, verbose manual, we use another AI to read the manual and create a super-condensed, structured summary. This summary, the `llm-min.txt` file, captures only the most important information the AI assistant needs to understand how to use a library. It's designed for AIs to read, not humans.
-
-Modern AIs are surprisingly good at this! They can figure out a very short and efficient way to write down the key facts.
+Modern AI reasoning capabilities excel at this distillation process, creating remarkably efficient knowledge representations that deliver maximum value with minimal token consumption.
 
 ---
 ## Understanding `llm-min.txt`: A Machine-Optimized Format 🧩
 
-The `llm-min.txt` file is designed for **maximum compactness and efficient machine parsing**, not direct human reading. It uses a specific structure based on positional JSON arrays:
+The `llm-min.txt` file utilizes the **Structured Knowledge Format (SKF)** – a compact, machine-optimized format designed for efficient AI parsing rather than human readability. This format organizes technical information into distinct, highly structured sections with precise relationships.
 
-1.  **Header Line (`#META#...`):** A single line identifying the library (`L:`), version (`V:`), and generation timestamp (`D:`).
-    *   Example: `#META#L:example-lib#V:1.0#D:2024-05-26T10:00:00Z`
+**Key Elements of the SKF Format:**
 
-2.  **Schema Definition Line (`#SCHEMA#...`):** **CRITICAL!** This single line defines the *meaning* of each position within the subsequent data arrays. It acts as the key for parsing the rest of the file.
-    *   It defines mappings for the main AIU array (e.g., `A:id;B:typ;...`) and nested arrays for inputs (`IN:`), outputs (`OUT:`), and relationships (`REL:`).
-    *   The letters (`A`, `B`, `a`, `b`, etc.) are placeholders in the schema; **the position (index) is what matters.** Index 0 corresponds to the first field defined (e.g., `A:id`), index 1 to the second (e.g., `B:typ`), and so on.
-    *   Example: `#SCHEMA#A:id;B:typ;C:name;D:purp;E:in;F:out;G:use;H:rel;I:src#IN:a:p;b:t;c:d;d:def;e:ex#OUT:f:f;g:t;h:d#REL:i:id;j:typ#`
+1.  **Header Metadata:** Every file begins with essential contextual information:
+    *   `# IntegratedKnowledgeManifest_SKF`: Format identifier and version
+    *   `# SourceDocs: [...]`: Original documentation sources
+    *   `# GenerationTimestamp: ...`: Creation timestamp
+    *   `# PrimaryNamespace: ...`: Top-level package/namespace, critical for understanding import paths
 
-3.  **AIU List (Lines after Schema):** The remainder of the file consists of lines, each being a standard JSON array literal representing one "Atomic Information Unit" (AIU).
+2.  **Three Core Structured Sections:** The content is organized into distinct functional categories:
+    *   `# SECTION: DEFINITIONS (Prefix: D)`: Describes the static aspects of the library:
+        *   Canonical component definitions with unique global IDs (e.g., `D001:G001_MyClass`)
+        *   Namespace paths relative to `PrimaryNamespace`
+        *   Method signatures with parameters and return types
+        *   Properties/fields with types and access modifiers
+        *   Static relationships like inheritance or interface implementation
+        *   **Important:** This section effectively serves as the glossary for the file, as the traditional glossary (`G` section) is used during generation but deliberately omitted from the final output to save space.
 
-**What are Atomic Information Units (AIUs)?**
+    *   `# SECTION: INTERACTIONS (Prefix: I)`: Captures dynamic behaviors within the library:
+        *   Method invocations (`INVOKES`)
+        *   Component usage patterns (`USES_COMPONENT`)
+        *   Event production/consumption
+        *   Error raising and handling logic, with references to specific error types
 
-Think of an AIU as a tiny, focused data record about one specific aspect of the library (a function, feature, pattern, etc.). In this format, each AIU is represented by a single JSON array.
+    *   `# SECTION: USAGE_PATTERNS (Prefix: U)`: Provides concrete usage examples:
+        *   Common workflows for core functionality
+        *   Step-by-step sequences involving object creation, configuration, method invocation, and error handling
+        *   Each pattern has a descriptive name (e.g., `U_BasicCrawl`) with numbered steps (`U_BasicCrawl.1`, `U_BasicCrawl.2`)
 
-**AIU Array Format:**
+3.  **Line-Based Structure:** Each item appears on its own line following precise formatting conventions that enable reliable machine parsing.
 
-*   Each AIU is a JSON array like `["id1", "Feat", "FeatureName", ...]`.
-*   The meaning of each element is determined *solely by its position (index)* according to the `#SCHEMA#` line.
-*   For example, using the schema above:
-    *   Index 0 (`A:id`): The AIU's unique ID (String).
-    *   Index 1 (`B:typ`): The AIU's type (String, e.g., "Func", "Feat").
-    *   Index 4 (`E:in`): An array of nested arrays, each representing an input parameter `[[p, t, d, def, ex], ...]`. The meaning of `p`, `t`, `d`, etc. is defined by `IN:` in the schema.
-    *   Index 7 (`H:rel`): An array of nested arrays for relationships `[[id, typ], ...]`, defined by `REL:`.
-*   Absent optional values (like default values for parameters) are represented by JSON `null`. Empty strings are `""`.
-
-**A Quick Look at the Format:**
-
-Here's a simplified example using the new positional format:
+**Example SKF Format (Simplified):**
 
 ```text
-#META#L:example-lib#V:1.0#D:2024-05-26T10:00:00Z
-#SCHEMA#A:id;B:typ;C:name;D:purp;E:in;F:out;G:use;H:rel;I:src#IN:a:p;b:t;c:d;d:def;e:ex#OUT:f:f;g:t;h:d#REL:i:id;j:typ#
-["greet_func","Func","greet","Greets a user.",[["name","str","User\\'s name.",null,"Alice"]],[["message","str","The greeting."]],"greet(name=\\'World\\')",[], "chunk_1"]
-["config_obj","CfgObj","AppConfig","Application configuration.",[["debug_mode","T","Enable debug.", "F", "T"]],[],"AppConfig(debug_mode=True)", [], "chunk_2"]
+# IntegratedKnowledgeManifest_SKF/1.4 LA
+# SourceDocs: [example-lib-docs]
+# GenerationTimestamp: 2024-05-28T12:00:00Z
+# PrimaryNamespace: example_lib
+
+# SECTION: DEFINITIONS (Prefix: D)
+# Format_PrimaryDef: Dxxx:Gxxx_Entity [DEF_TYP] [NAMESPACE "relative.path"] [OPERATIONS {op1:RetT(p1N:p1T)}] [ATTRIBUTES {attr1:AttrT1}] ("Note")
+# ---
+D001:G001_Greeter [CompDef] [NAMESPACE "."] [OPERATIONS {greet:Str(name:Str)}] ("A simple greeter class")
+D002:G002_AppConfig [CompDef] [NAMESPACE "config"] [ATTRIBUTES {debug_mode:Bool("RO")}] ("Application configuration")
+# ---
+
+# SECTION: INTERACTIONS (Prefix: I)
+# Format: Ixxx:Source_Ref INT_VERB Target_Ref_Or_Literal ("Note_Conditions_Error(Gxxx_ErrorType)")
+# ---
+I001:G001_Greeter.greet INVOKES G003_Logger.log ("Logs greeting activity")
+# ---
+
+# SECTION: USAGE_PATTERNS (Prefix: U)
+# Format: U_Name:PatternTitleKeyword
+#         U_Name.N:[Actor_Or_Ref] ACTION_KEYWORD (Target_Or_Data_Involving_Ref) -> [Result_Or_State_Change_Involving_Ref]
+# ---
+U_BasicGreeting:Basic User Greeting
+U_BasicGreeting.1:[User] CREATE (G001_Greeter) -> [greeter_instance]
+U_BasicGreeting.2:[greeter_instance] INVOKE (greet name='Alice') -> [greeting_message]
+# ---
+# END_OF_MANIFEST
 ```
 
-*   The **Header** (`#META#`) provides basic metadata.
-*   The **Schema** (`#SCHEMA#`) is the **essential key** to interpret the arrays below it.
-*   The subsequent lines are **AIU arrays**:
-    *   The first array describes `greet_func`. We know "Func" is the type because it's at index 1, and the schema maps index 1 (`B`) to `typ`. The input parameter `name` is derived from the nested array at index 4 (`E`), whose structure is defined by `IN:`.
-    *   The second array describes `config_obj`. Its type `CfgObj` is at index 1. The `debug_mode` parameter uses "T" / "F" for boolean values as specified in the guideline.
-
-This highly compressed, positional format minimizes token count, making it extremely efficient for LLMs to process once they understand the schema.
-
-The exact parsing rules and abbreviations are detailed in the `llm-min-guideline.md` file generated alongside `llm-min.txt`.
+The `llm-min-guideline.md` file (generated alongside `llm-min.txt`) provides detailed decoding instructions and schema definitions that enable an AI to correctly interpret the SKF format. It serves as the essential companion document explaining the notation, field meanings, and relationship types used throughout the file.
 
 ---
 
 ## Does it Really Work? Visualizing the Impact
 
-`llm-min` is designed to dramatically reduce the token count of library documentation, making it significantly more efficient for AI models to process. The chart below showcases the typical compression results for a few Python libraries, comparing the token count of the original documentation (`llm-full.txt`) against the `llm-min.txt` version generated by `llm-min`.
+`llm-min.txt` achieves dramatic token reduction while preserving the essential knowledge needed by AI assistants. The chart below compares token counts between original library documentation (`llm-full.txt`) and the compressed `llm-min.txt` versions:
 
 ![Token Compression Comparison](assets/comparison.png)
 
-This visualization demonstrates substantial token reductions, often in the range of 90-95% or even higher. This compactness, combined with the structured AIU format, enables AI coding assistants to ingest and understand library information much faster and more effectively. They get the core facts without wading through extensive prose.
+These results demonstrate token reductions typically ranging from 90-95%, with some cases exceeding 97%. This extreme compression, combined with the highly structured SKF format, enables AI tools to ingest and process library documentation far more efficiently than with raw text.
 
-For instance, in the `sample/crawl4ai/` folder, you can find:
-*   `sample/crawl4ai/llm-full.txt`: The original, full documentation.
-*   `sample/crawl4ai/llm-min.txt`: The compressed version created by `llm-min`.
-*   `sample/crawl4ai/llm-min-guideline.md`: A copy of the instruction sheet the AI used to create the `llm-min.txt` file.
-  
-Compressed file are usually near 10,000 tokens, which are usually enough for most LLM to handle.
+In our samples directory, you can examine these impressive results firsthand:
+*   `sample/crawl4ai/llm-full.txt`: Original documentation (uncompressed)
+*   `sample/crawl4ai/llm-min.txt`: The compressed SKF representation
+*   `sample/crawl4ai/llm-min-guideline.md`: The format decoder companion file
 
-** How to use it?**
+Most compressed files contain around 10,000 tokens – well within the processing capacity of modern AI assistants.
+
+**How to use it?**
+
+Simply reference the files in your AI-powered IDE's conversation, and watch your assistant immediately gain detailed knowledge of the library:
+
+![Demo](assets/demo.gif)
 
 ---
 
 ## Quick Start 🚀
 
-Ready to try it out? Here's how:
+Getting started with `llm-min` is straightforward:
 
 **1. Installation:**
 
-*   **If you just want to use `llm-min` (Recommended):**
-    Open your terminal or command prompt and type:
+*   **For regular users (recommended):**
     ```bash
     pip install llm-min
 
-    # This next command installs small browser tools llm-min needs to read websites
+    # Install required browser automation tools
     playwright install
     ```
-    (`pip` is Python's package installer. If you don't have Python or pip, you might need to install Python first from [python.org](https://www.python.org/downloads/)).
 
-*   **If you want to contribute to `llm-min` or modify its code:**
+*   **For contributors and developers:**
     ```bash
-    # First, get the code (if you haven't already)
+    # Clone the repository (if not already done)
     # git clone https://github.com/your-repo/llm-min.git
     # cd llm-min
 
-    # Set up a virtual environment (good practice for Python projects)
+    # Create and activate a virtual environment
     python -m venv .venv
-    source .venv/bin/activate # On Windows, use: .venv\Scripts\activate
+    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
-    # Install the project and its tools using 'uv' (a fast Python package manager)
+    # Install dependencies with UV (faster than pip)
     uv sync
     uv pip install -e .
 
-    # Optional: For checking your code quality before sharing
+    # Optional: Set up pre-commit hooks for code quality
     # uv pip install pre-commit
     # pre-commit install
     ```
 
 **2. Set Up Your Gemini API Key:** 🔑
 
-`llm-min` uses Google's Gemini AI model to understand and compress the documentation. To use it, you'll need a Gemini API Key.
+`llm-min` uses Google's Gemini AI to generate compressed documentation. You'll need a Gemini API key to proceed:
 
-*   **Recommended:** The easiest way is to set an "environment variable" named `GEMINI_API_KEY` with your key value. `llm-min` will find it automatically. How to set environment variables depends on your operating system (a quick web search for "set environment variable macos/windows/linux" will show you how).
-*   **Alternatively:** You can type your API key directly into the command when you run `llm-min` using the `--gemini-api-key` option (see examples below).
+*   **Best practice:** Set an environment variable named `GEMINI_API_KEY` with your key value:
+    ```bash
+    # Linux/macOS
+    export GEMINI_API_KEY=your_api_key_here
+    
+    # Windows (Command Prompt)
+    set GEMINI_API_KEY=your_api_key_here
+    
+    # Windows (PowerShell)
+    $env:GEMINI_API_KEY="your_api_key_here"
+    ```
 
-You can get a Gemini API key from the [Google AI Studio](https://aistudio.google.com/app/apikey) or Google Cloud Console.
+*   **Alternative:** Supply your key directly via the `--gemini-api-key` command-line option.
 
-**3. Create Your First `llm-min.txt` (Using the Command Line):** 💻
+You can obtain a Gemini API key from the [Google AI Studio](https://aistudio.google.com/app/apikey) or Google Cloud Console.
 
-You'll tell `llm-min` what documentation to process. You can give it:
-*   A Python package name (e.g., "requests").
-*   A direct web address (URL) to online documentation.
-*   A folder on your computer containing documentation files.
+**3. Generate Your First `llm-min.txt` File:** 💻
 
-**Input Options (Choose one):**
-
-| Option           | Short | Type      | What it does                                                                  |
-|------------------|-------|-----------|-------------------------------------------------------------------------------|
-| `--package`      | `-pkg`| `TEXT`    | Name of a Python package (e.g., "requests", "typer").                         |
-| `--doc-url`      | `-u`  | `TEXT`    | Web address of documentation (e.g., "https://docs.python.org/3/").          |
-| `--input-folder` | `-i`  | `DIRECTORY`| Path to a local folder with doc files (like .md, .txt).                    |
-
-**Common Settings:**
+Choose one of the following input sources:
 
 | Option              | Short | Type      | What it does                                                                 |
 |---------------------|-------|-----------|------------------------------------------------------------------------------|
@@ -196,62 +212,62 @@ You'll tell `llm-min` what documentation to process. You can give it:
 | `--gemini-model`    | `-m`  | `TEXT`    | Which Gemini model to use (default: `gemini-2.5-flash-preview-04-17`).       |
 | `--verbose`         | `-v`  |           | Show more detailed messages while it's working.                              |
 
-**Examples:**
+**Key Command-Line Options:**
 
 *   Process the Python package `typer`, read up to 50 web pages, and save to a folder called `my_docs`:
     ```bash
     llm-min -pkg "typer" -o my_docs -p 50 --gemini-api-key YOUR_API_KEY_HERE
     ```
 
-*   Process the FastAPI documentation from its website, read up to 50 pages, and save to `my_docs`:
-    ```bash
-    llm-min -u "https://fastapi.tiangolo.com/" -o my_docs -p 50 --gemini-api-key YOUR_API_KEY_HERE
-    ```
+**Example Commands:**
 
-*   Process documentation files from a local folder named `./docs` and save to `my_docs`:
-    ```bash
-    llm-min --input-folder "./docs" -o my_docs --gemini-api-key YOUR_API_KEY_HERE
-    ```
+```bash
+# Process the "typer" package, save to "my_docs" folder
+llm-min -pkg "typer" -o my_docs -p 50
 
-**4. Using `llm-min` in Your Own Python Code:** 🐍
+# Process the FastAPI documentation website
+llm-min -u "https://fastapi.tiangolo.com/" -o my_docs -p 50
 
-You can also use `llm-min` directly within your Python scripts.
+# Process documentation files in a local folder
+llm-min -i "./docs" -o my_docs
+```
+
+**4. Programmatic Usage in Python:** 🐍
+
+You can also integrate `llm-min` directly into your Python applications:
 
 ```python
 from llm_min import LLMMinGenerator
 import os
 
-# Settings for the AI (optional, llm-min will use defaults if you don't specify)
+# Configuration for the AI processing
 llm_config = {
-    "api_key": os.environ.get("GEMINI_API_KEY"), # Tries to get key from environment
-    "model_name": "gemini-2.5-flash-preview-04-17", # The recommended AI model
-    "chunk_size": 1000000, # How much text to process at a time
-    "max_crawl_pages": 200, # Max web pages to read
-    "max_crawl_depth": 3,   # How deep to follow links
+    "api_key": os.environ.get("GEMINI_API_KEY"),  # Use environment variable
+    "model_name": "gemini-2.5-flash-preview-04-17",  # Recommended model
+    "chunk_size": 600000,  # Characters per AI processing batch
+    "max_crawl_pages": 200,  # Maximum pages to crawl
+    "max_crawl_depth": 3,  # Link following depth
 }
 
-# Create the llm-min generator
-# Output files will go into a folder like ./my_output_docs/requests/
+# Initialize the generator (output files will go to ./my_output_docs/[package_name]/)
 generator = LLMMinGenerator(output_dir="./my_output_docs", llm_config=llm_config)
 
-# Example: Create llm-min.txt for the 'requests' Python package
+# Generate llm-min.txt for the 'requests' package
 try:
     generator.generate_from_package("requests")
     print("✅ Successfully created documentation for 'requests'!")
 except Exception as e:
-    print(f"❌ Oh no! Something went wrong with 'requests': {e}")
+    print(f"❌ Error processing 'requests': {e}")
 
-# Example: Create llm-min.txt from a website URL
+# Generate llm-min.txt from a documentation URL
 try:
     generator.generate_from_url("https://bun.sh/llms-full.txt")
-    print("✅ Successfully created documentation for 'https://bun.sh/llms-full.txt'!")
+    print("✅ Successfully processed 'https://bun.sh/llms-full.txt'!")
 except Exception as e:
-    print(f"❌ Oh no! Something went wrong with 'https://bun.sh/llms-full.txt': {e}")
+    print(f"❌ Error processing URL: {e}")
 ```
 
-This Python example shows how to set up the generator, give it some settings, and then tell it to create `llm-min.txt` files from either a package name or a URL.
-
-For a full list of all command-line options, type:
+For a complete list of command-line options, run:
 ```bash
 llm-min --help
 ```
@@ -259,142 +275,161 @@ llm-min --help
 
 ## Output Directory Structure 📂
 
-When `llm-min` finishes, it will create a folder structure like this to keep things tidy:
+When `llm-min` completes its processing, it creates the following organized directory structure:
 
 ```text
 your_chosen_output_dir/
 └── name_of_package_or_website/
-    ├── llm-full.txt             # The original, complete text it read
-    ├── llm-min.txt              # The super-compact, positional array summary for AIs
-    └── llm-min-guideline.md     # The **parsing guide** explaining the llm-min.txt format and schema
+    ├── llm-full.txt             # Complete documentation text (original content)
+    ├── llm-min.txt              # Compressed SKF/1.4 LA structured summary
+    └── llm-min-guideline.md     # Essential format decoder for AI interpretation
 ```
 
-So, if you ran `llm-min -pkg "requests" -o my_llm_docs`, you'd find:
+For example, running `llm-min -pkg "requests" -o my_llm_docs` produces:
 
 ```text
 my_llm_docs/
 └── requests/
-    ├── llm-full.txt
-    ├── llm-min.txt
-    └── llm-min-guideline.md
+    ├── llm-full.txt             # Original documentation
+    ├── llm-min.txt              # Compressed SKF format (D, I, U sections)
+    └── llm-min-guideline.md     # Format decoding instructions
 ```
-**Important:** The `llm-min-guideline.md` is crucial for understanding how to correctly interpret the data within the corresponding `llm-min.txt` file.
+
+**Important:** The `llm-min-guideline.md` file is a critical companion to `llm-min.txt`. It provides the detailed schema definitions and format explanations that an AI needs to correctly interpret the structured data. When using `llm-min.txt` with an AI assistant, always include this guideline file as well.
 
 ---
 
 ## Choosing the Right AI Model (Why Gemini) 🧠
 
-`llm-min` uses Google's Gemini family of AI models. While you *can* try to tell it to use a different Gemini model with the `--gemini-model` option, we **strongly suggest sticking with the default: `gemini-2.5-flash-preview-04-17`**.
+`llm-min` utilizes Google's Gemini family of AI models for document processing. While you can select a specific Gemini model via the `--gemini-model` option, we strongly recommend using the default: `gemini-2.5-flash-preview-04-17`.
 
-Here's why this model is a good choice for `llm-min`:
-1.  **It's Smart:** This model is good at understanding complex text and figuring out the important parts, which is exactly what we need for summarizing documentation accurately.
-2.  **It Can Read A Lot:** It has a "long context window" (1 million tokens!), meaning it can read and remember a very large amount of documentation at once. This is super helpful because many software manuals are quite long.
-3.  **It's Cheap (Compared to other models)**: It's one of the cheaper models, so it won't cost you a fortune to use it.
+This particular model offers an optimal combination of capabilities for documentation compression:
 
-Using this default model gives a good balance of quality, speed, and cost for creating these compact `llm-min.txt` files.
+1.  **Advanced Reasoning:** Excels at understanding complex technical documentation and extracting the essential structural relationships needed for the SKF format.
+
+2.  **Exceptional Context Window:** With a 1-million token input capacity, it can process large documentation chunks at once, enabling more coherent and comprehensive analysis.
+
+3.  **Cost Efficiency:** Provides an excellent balance of capability and affordability compared to other large-context models.
+
+The default model has been carefully selected to deliver the best results for the `llm-min` compression process across a wide range of documentation styles and technical domains.
 
 ---
 
 ## How it Works: A Look Inside (src/llm_min) ⚙️
 
-Here's a simplified look at what happens when you run `llm-min`:
+The `llm-min` tool employs a sophisticated multi-stage process to transform verbose documentation into a compact, machine-optimized SKF manifest:
 
-1.  **Input:** You provide instructions via the command line (like `-pkg "requests"`) or by calling `llm-min` functions in your Python code.
-2.  **Documentation Gathering:** Based on your input, `llm-min` finds the relevant documentation (from PyPI, web crawl, or local files).
-3.  **Text Processing:** The gathered text is cleaned and split into manageable chunks. The original text is saved as `llm-full.txt`.
-4.  **Sequential AI Analysis (Gemini):**
-    *   **Chunk 1 (Extraction):** The first chunk is sent to the Gemini AI model with the `FRAGMENT_GENERATION_PROMPT_TEMPLATE`. The AI is instructed to extract key information and format it into **lines that attempt to be the positional JSON arrays** (AIUs) according to the schema defined in the prompt. The AI assigns a unique ID to each AIU line and tags it with the chunk ID (`src`).
-    *   **Chunk 2+ (Merge & Refine):** For subsequent chunks, the **raw text lines generated from the previous step** (`accumulated_aiu_lines_str`) and the new text chunk are sent to the Gemini AI with the `AIU_MERGE_PROMPT_TEMPLATE`. The AI is instructed to:
-        *   Analyze both the existing AIU lines and the new chunk.
-        *   Identify overlapping concepts.
-        *   **Reuse existing IDs** if updating an AIU, or **generate new unique IDs** for new concepts.
-        *   Merge and refine information (purpose, inputs, outputs, usage, relationships).
-        *   Update the source (`src`) field based on whether the AIU was new/modified or largely unchanged.
-        *   Consolidate redundant information and remove irrelevant lines.
-        *   Ensure relationships (`rel`) refer to IDs present in the *newly generated output list*.
-        *   Output a *new* set of lines attempting the same positional JSON array format.
-    *   This merge process repeats for all remaining chunks, with the output of one step becoming the input for the next.
-5.  **Final Assembly:** The raw text lines produced after processing the final chunk are assembled into the `llm-min.txt` file. The `#META#` and `#SCHEMA#` lines are prepended, defining the library metadata and the **critical parsing key** for the AIU array lines that follow. Minimal processing (like whitespace cleaning) occurs in the Python code; the structure and content rely heavily on the LLM following the prompt instructions.
+1.  **Input Processing:** Based on your command-line options (e.g., `--package "requests"`), `llm-min` gathers documentation from the appropriate source (PyPI, web crawling, or local files).
 
-**Workflow Overview:**
+2.  **Text Preparation:** The collected documentation is cleaned and segmented into manageable chunks for processing. The original text is preserved as `llm-full.txt`.
 
-```text
-+--------------+      +-------------+      +---------------+      +--------------------+      +-----------------+      +---------------------+      +-----------------+
-| User Input   | ---> | Doc         | ---> | Text          | ---> | Gemini AI          | ---> | Raw AIU Lines   | ---> | Gemini AI           | ---> | Final Raw       |
-| (CLI/Python) |      | Gathering   |      | Processing    |      | (Chunk 1: Extract) |      | (String)        |      | (Chunk 2+: Merge)   |      | AIU Lines       |
-+--------------+      +-------------+      +---------------+      +--------------------+      +-----------------+      +---------------------+      +-----------------+
-                                                                                                                                                     |
-                                                                                                                                                     V
-                                                                                                                                               +---------------+
-                                                                                                                                               | llm-min.txt   |
-                                                                                                                                               | (#META# +     |
-                                                                                                                                               | #SCHEMA# +    |
-                                                                                                                                               | Final Lines)  |
-                                                                                                                                               +---------------+
+3.  **Three-Step AI Analysis Pipeline (Gemini):** This is the heart of the SKF manifest generation, orchestrated by the `compact_content_to_structured_text` function in `compacter.py`:
+
+    *   **Step 1: Global Glossary Generation (Internal Only):**
+        *   Each document chunk is analyzed using the `SKF_PROMPT_CALL1_GLOSSARY_TEMPLATE` prompt to identify key technical entities and generate a *chunk-local* glossary fragment with temporary `Gxxx` IDs.
+        *   These fragments are consolidated via the `SKF_PROMPT_CALL1_5_MERGE_GLOSSARY_TEMPLATE` prompt, which resolves duplicates and creates a unified entity list.
+        *   The `re_id_glossary_items` function then assigns globally sequential `Gxxx` IDs (G001, G002, etc.) to these consolidated entities.
+        *   This global glossary is maintained in memory throughout the process but is **not included in the final `llm-min.txt` output** to conserve space.
+
+    *   **Step 2: Definitions & Interactions (D & I) Generation:**
+        *   For the first document chunk (or if there's only one chunk), the AI uses the `SKF_PROMPT_CALL2_DETAILS_SINGLE_CHUNK_TEMPLATE` with the global glossary to generate initial D and I items.
+        *   For subsequent chunks, the `SKF_PROMPT_CALL2_DETAILS_ITERATIVE_TEMPLATE` is used, providing both the global glossary and previously generated D&I items as context to avoid duplication.
+        *   As each chunk is processed, newly identified D and I items are accumulated and assigned sequential global IDs (D001, D002, etc. and I001, I002, etc.).
+
+    *   **Step 3: Usage Patterns (U) Generation:**
+        *   Similar to Step 2, the first chunk uses `SKF_PROMPT_CALL3_USAGE_SINGLE_CHUNK_TEMPLATE`, receiving the global glossary, all accumulated D&I items, and the current chunk text.
+        *   Subsequent chunks use `SKF_PROMPT_CALL3_USAGE_ITERATIVE_TEMPLATE`, which additionally receives previously generated U-items to enable pattern continuation and avoid duplication.
+        *   Usage patterns are identified with descriptive names (e.g., `U_BasicNetworkFetch`) and contain numbered steps (e.g., `U_BasicNetworkFetch.1`, `U_BasicNetworkFetch.2`).
+
+4.  **Final Assembly:** The complete `llm-min.txt` file is created by combining:
+    *   The SKF manifest header (protocol version, source docs, timestamp, primary namespace)
+    *   The accumulated `DEFINITIONS` section
+    *   The accumulated `INTERACTIONS` section
+    *   The accumulated `USAGE_PATTERNS` section
+    *   A final `# END_OF_MANIFEST` marker
+
+**Conceptual Pipeline Overview:**
+
+```
+User Input      →  Doc Gathering   →  Text Processing   →  AI Step 1: Glossary   →  In-Memory Global    →  AI Step 2: D&I     →  Accumulated D&I
+(CLI/Python)       (Package/URL)      (Chunking)           (Extract + Merge)        Glossary (Gxxx)        (Per chunk)          (Dxxx, Ixxx)
+                                                                                                                                     ↓
+           ┌─────────────────────────────────────────────────────────────────────────────────────────────────┐                      ↓
+           ↓                                                                                                 ↑                      ↓
+Final SKF Manifest   ←   Assembly   ←   Accumulated Usage   ←   AI Step 3: Usage   ←   Global Glossary + Accumulated D&I
+(llm-min.txt)            (D,I,U)        Patterns (U_Name.N)      (Per chunk)           (Required context for generating valid U-items)
 ```
 
-To make things efficient, especially the web crawling and AI communication parts, `llm-min` uses asynchronous operations. This means it can perform multiple tasks concurrently (like fetching several web pages or waiting for AI responses) without getting stuck waiting for one single step to finish, speeding up the overall process. 💨
-
-The core logic for this process lives within the `LLMMinGenerator` class and the `compact_content_to_structured_text` function in the `src/llm_min/` directory.
+This multi-stage approach ensures that the SKF manifest is comprehensive, avoids duplication across chunks, and maintains consistent cross-references between entities, definitions, interactions, and usage patterns.
 
 ---
 
 ## What's Next? Future Plans 🔮
 
-We're excited about the potential of `llm-min` and have a few ideas for where it could go next. These are still under consideration, and we'd love community feedback!
+We're exploring several exciting directions to evolve `llm-min`:
 
-*   **A Public `llm-min.txt` Repository?** 🌐
-    Ideally, library authors would include an `llm-min.txt` file with their releases. Since that might take time, we've considered creating a central, public website (perhaps like `llms.txt` or `Context7`) where the community could share and find `llm-min.txt` files for various libraries. However, maintaining quality, handling different versions, and managing potential costs are significant challenges to figure out.
+*   **Public Repository for Pre-Generated Files** 🌐
+    A central hub where the community could share and discover `llm-min.txt` files for popular libraries would be valuable. This would eliminate the need for individual users to generate these files repeatedly and ensure consistent, high-quality information. Key challenges include quality control, version management, and hosting infrastructure costs.
 
-*   **Inferring Documentation from Code?** 💻
-    Could `llm-min` analyze the source code itself (using tools like Abstract Syntax Trees - ASTs) to automatically generate documentation summaries? This is an exciting avenue, though early experiments haven't been fully successful yet. It's a complex task, but potentially very powerful.
+*   **Code-Based Documentation Inference** 💻
+    An intriguing possibility is using source code analysis (via Abstract Syntax Trees) to automatically generate or augment documentation summaries. While initial experiments have shown this to be technically challenging, particularly for complex libraries with dynamic behaviors, it remains a promising research direction that could enable even more accurate documentation.
 
-*   **What About an MCP Server?** 🤔
-    While technically possible, running `llm-min` as a Model Control Protocol (MCP) server doesn't feel like the right fit right now. A key goal of `llm-min` is to provide reliable, static context (the `.txt` file) to reduce the uncertainty sometimes found with dynamic AI interactions. A server model might reintroduce some of that uncertainty.
+*   **Model Control Protocol Integration** 🤔
+    While technically feasible, implementing `llm-min` as an MCP server doesn't fully align with our current design philosophy. The strength of `llm-min.txt` lies in providing reliable, static context – a deterministic reference that reduces the uncertainty sometimes associated with dynamic AI integrations. We're monitoring user needs to determine if a server-based approach might deliver value in the future.
 
-These are just initial thoughts, and the direction will depend on user needs and contributions!
+We welcome community input on these potential directions!
 
 ---
 
 ## Common Questions (FAQ) ❓
 
-Here are answers to some questions you might have:
+**Q: Do I need a reasoning-capable model to generate an `llm-min.txt` file?** 🧠
 
+A: Yes, generating an `llm-min.txt` file requires a model with strong reasoning capabilities like Gemini. The process involves complex information extraction, entity relationship mapping, and structured knowledge representation. However, once generated, the `llm-min.txt` file can be effectively used by any competent coding model (e.g., Claude 3.5 Sonnet) to answer library-specific questions.
 
-**Q: Do I need to use a reasoning model to generate an `llm-min.txt` file?** 🧠
+**Q: Does `llm-min.txt` preserve all information from the original documentation?** 📚
 
-A: Yes, you need a reasoning model to generate an `llm-min.txt` file. This task involves a lot of abstract thinking, so it's not something a simple LLM without reasoning capabilities can do.
+A: No, `llm-min.txt` is explicitly designed as a lossy compression format. It prioritizes programmatically relevant details (classes, methods, parameters, return types, core usage patterns) while deliberately omitting explanatory prose, conceptual discussions, and peripheral information. This selective preservation is what enables the dramatic token reduction while maintaining the essential technical reference information an AI assistant needs.
 
-**Q: Does `llm-min.txt` ensure no information is lost?** 🧠
+**Q: Why does generating an `llm-min.txt` file take time?** ⏱️
 
-A: No, as llm-min is a compression tool, it is not possible to ensure no information is lost. However, it is designed to be a comprehensive summary of the documentation that can be used by AI assistants to answer questions about the library.
+A: Creating an `llm-min.txt` file involves a sophisticated multi-stage AI pipeline:
+1. Gathering and preprocessing documentation
+2. Analyzing each chunk to identify entities (glossary generation)
+3. Consolidating entities across chunks
+4. Extracting detailed definitions and interactions from each chunk
+5. Generating representative usage patterns
 
-**Q: Why does generating an `llm-min.txt` file take some time?** 🕒
+This intensive process can take several minutes, particularly for large libraries. However, once created, the resulting `llm-min.txt` file can be reused indefinitely, providing much faster reference information for AI assistants.
 
-A: It's a multi-step process: finding documentation, potentially crawling many web pages (which depends on website speed and network conditions), processing potentially large amounts of text, and interacting with the powerful Gemini AI model (which has its own processing time). While `llm-min` uses asynchronous operations to speed things up where possible, analyzing and summarizing extensive documentation inherently takes a few minutes. The upside is that once generated, the compact `llm-min.txt` file is much faster for AI assistants to use.
+**Q: I received a "Gemini generation stopped due to MAX_TOKENS limit" error. What should I do?** 🛑
 
-**Q: How much does it typically cost to generate one `llm-min.txt` file?** 💰
+A: This error indicates that the Gemini model reached its output limit while processing a particularly dense or complex documentation chunk. Try reducing the `--chunk-size` option (e.g., from 600,000 to 300,000 characters) to give the model smaller batches to process. While this might slightly increase API costs due to more separate calls, it often resolves token limit errors.
 
-A: This depends directly on the amount of text processed by the Gemini API. For a moderately sized library, the cost might fall roughly between **$0.10 and $1.00 USD**. This is just an estimate. Factors like the total size of the documentation, the complexity of the text, and the specific AI model used can influence the final cost. Always refer to the official [Google Cloud AI pricing page](https://cloud.google.com/vertex-ai/pricing#gemini) for the latest details on Gemini API usage costs.
+**Q: What's the typical cost for generating one `llm-min.txt` file?** 💰
 
-**Q: Did you vibe code this project?** 🎥
+A: Processing costs vary based on documentation size and complexity, but for a moderate-sized library, expect to spend between **$0.01 and $1.00 USD** in Gemini API charges. Key factors affecting cost include:
+- Total documentation size
+- Number of chunks processed
+- Complexity of the library's structure
+- Selected Gemini model
 
-A: Yes, I did. This project was developed using [Roocode](https://roocode.com/) with my custom configuration called [Rooroo](https://github.com/marv1nnnnn/rooroo).
+For current pricing details, refer to the [Google Cloud AI pricing page](https://cloud.google.com/vertex-ai/pricing#gemini).
+
+**Q: Was this project developed using an AI pair programming approach?** 🤖
+
+A: Yes, this project was developed using [Roocode](https://roocode.com/) with a custom configuration called [Rooroo](https://github.com/marv1nnnnn/rooroo), demonstrating the potential of human-AI collaboration in creating tools that enhance AI capabilities.
 
 ---
 
 ## Want to Help? Contributing 🤝
 
-We'd love your help to make `llm-min` better! 🎉 Feel free to open issues on GitHub if you find bugs or have ideas. Pull requests (code contributions) are also very welcome.
+We welcome contributions to make `llm-min` even better! 🎉 
 
-Some areas where we'd especially appreciate help:
-*   Making it even better at finding documentation automatically.
-*   Improving the way it compresses and structures the information.
-*   Adding support for more AI models or better ways to talk to them.
-*   Writing more tests to make sure everything works reliably.
+Whether you're reporting bugs, suggesting features, or submitting code changes via pull requests, your involvement helps improve this tool for everyone. Check our GitHub repository for contribution guidelines and open issues.
 
 ---
 
 ## License 📜
 
-This project is licensed under the MIT License. You can see the full details in the `LICENSE` file.
+This project is licensed under the MIT License. See the `LICENSE` file for complete details.

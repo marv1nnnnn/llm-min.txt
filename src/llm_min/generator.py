@@ -25,12 +25,13 @@ class LLMMinGenerator:
         self.output_folder_name_override = output_folder_name_override
         self.llm_config = llm_config or {}  # Use empty dict if None
 
-    def generate_from_package(self, package_name: str):
+    def generate_from_package(self, package_name: str, library_version: str | None = None):
         """
         Generates llm_min.txt for a given Python package name.
 
         Args:
             package_name (str): The name of the Python package.
+            library_version (str): The version of the library.
 
         Raises:
             Exception: If no documentation URL is found or if any step fails.
@@ -47,14 +48,15 @@ class LLMMinGenerator:
             raise Exception(f"No documentation URL found for package: {package_name}")
 
         print(f"Found documentation URL: {doc_url}")
-        self._crawl_and_compact(doc_url, package_name)
+        self._crawl_and_compact(doc_url, package_name, library_version)
 
-    def generate_from_url(self, doc_url: str):
+    def generate_from_url(self, doc_url: str, library_version: str | None = None):
         """
         Generates llm_min.txt from a direct documentation URL.
 
         Args:
             doc_url (str): The direct URL to the documentation.
+            library_version (str): The version of the library.
 
         Raises:
             Exception: If crawling or compaction fails.
@@ -62,9 +64,9 @@ class LLMMinGenerator:
         print(f"Generating from URL: {doc_url}")
         # Derive a directory name from the URL
         url_identifier = doc_url.replace("https://", "").replace("http://", "").replace("/", "_").replace(".", "_")
-        self._crawl_and_compact(doc_url, url_identifier)
+        self._crawl_and_compact(doc_url, url_identifier, library_version)
 
-    def _crawl_and_compact(self, url: str, identifier: str):
+    def _crawl_and_compact(self, url: str, identifier: str, library_version: str | None = None):
         """
         Handles the crawling and compaction steps.
 
@@ -86,10 +88,11 @@ class LLMMinGenerator:
         min_content = asyncio.run(
             compact_content_to_structured_text(
                 full_content,
+                library_name_param=identifier,
+                library_version_param=library_version,
                 chunk_size=self.llm_config.get("chunk_size", 1000000),  # Default from compacter.py
                 api_key=self.llm_config.get("api_key"),
                 model_name=self.llm_config.get("model_name"),
-                subject=identifier,  # Use identifier as subject
             )
         )
 

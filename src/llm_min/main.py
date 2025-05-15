@@ -51,6 +51,12 @@ def main(
         "-u",
         help="A single direct documentation URL to crawl.",
     ),
+    library_version: str | None = typer.Option(
+        None,
+        "--library-version",
+        "-V",
+        help="The version of the library when using --doc-url or --input-folder. Optional.",
+    ),
     output_folder_name_override: str | None = typer.Option(
         None,
         "--output-name",
@@ -77,7 +83,7 @@ def main(
         help="Maximum depth to crawl from the starting URL. Default: 2.",
     ),
     chunk_size: int = typer.Option(
-        1_000_000,
+        600_000,
         "--chunk-size",
         "-c",
         help="Chunk size (in characters) for LLM compaction. Default: 600,000.",
@@ -173,14 +179,14 @@ def main(
     elif package_name_input:  # Only process package if no input_folder is provided and package_name is provided
         logger.info(f"Processing package: {package_name_input}")
         try:
-            generator.generate_from_package(package_name_input)
+            generator.generate_from_package(package_name_input, library_version)
         except Exception as e:
             logger.error(f"Failed to generate documentation for package {package_name_input}: {e}")
 
     elif doc_url:  # Only process doc_url if no input_folder or package_name is provided and doc_url is provided
         logger.info(f"Processing URL: {doc_url}")
         try:
-            generator.generate_from_url(doc_url)
+            generator.generate_from_url(doc_url, library_version)
         except Exception as e:
             logger.error(f"Failed to generate documentation from URL {doc_url}: {e}")
 

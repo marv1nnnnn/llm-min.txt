@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 # Import genai again
 from google import genai
-from google.genai.types import GenerateContentResponse, GenerationConfig
+from google.genai.types import GenerateContentResponse, GenerateContentConfig, ThinkingConfig
 
 load_dotenv()  # Load environment variables from .env file
 
@@ -96,6 +96,7 @@ async def generate_text_response(
     model_name: str,
     api_key: str | None = None,
     max_output_tokens: int | None = None,  # Optional: Add parameter to control max tokens
+    temperature: float = 0.1,  # Added temperature
 ) -> str:
     """
     Generates a text response using the Google Gemini API (Async - though the call itself is sync).
@@ -107,6 +108,7 @@ async def generate_text_response(
             model_name: The name of the Gemini model to use.
             api_key: Optional Gemini API Key. If not provided, tries GEMINI_API_KEY env var.
             max_output_tokens: Optional maximum number of tokens for the response.
+            temperature: The sampling temperature for generation (e.g., 0.0 for deterministic, higher for more random). Defaults to 0.1.
     Returns:
         The response string, or an error message string if failed or incomplete in certain ways.
         Logs warnings if truncated due to MAX_TOKENS.
@@ -120,16 +122,8 @@ async def generate_text_response(
     # Instantiate the client with the API key
     client = genai.Client(api_key=effective_api_key)
 
-    # Prepare generation config if max_output_tokens is specified
-    if max_output_tokens is not None:
-        # Ensure you are using the correct GenerationConfig object
-        # Check the library's documentation for the exact import and structure
-        # Assuming google.generativeai.types.GenerationConfig
-        # generation_config = GenerationConfig( # Removed this block
-        # max_output_tokens=max_output_tokens,
-        # # You can add other config here like temperature, top_p etc.
-        # )
-        pass # Added pass to avoid SyntaxError
+    # Prepare generation config
+    generation_config_obj = GenerateContentConfig(temperature=temperature)
 
     logger.info(f"Attempting to generate content with Gemini model: {model_name}")  # Log the model name
 
@@ -144,6 +138,7 @@ async def generate_text_response(
             response = client.models.generate_content(
                 model=model_name,  # Use the specific model you intend
                 contents=prompt,
+                config=generation_config_obj,
             )
 
             # 1. Check for blocking first (often indicated in prompt_feedback)

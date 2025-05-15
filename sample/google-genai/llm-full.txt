@@ -38,12 +38,16 @@ fromgoogle.genaiimport types
 ## Create a client¶
 Please run one of the following code blocks to create a client for different services (Gemini Developer API or Vertex AI). Feel free to switch the client and run all the examples to see how it behaves under different APIs.
 ```
+fromgoogleimport genai
+
 # Only run this block for Gemini Developer API
 client = genai.Client(api_key='GEMINI_API_KEY')
 
 ```
 
 ```
+fromgoogleimport genai
+
 # Only run this block for Vertex AI API
 client = genai.Client(
     vertexai=True, project='your-project-id', location='us-central1'
@@ -68,6 +72,8 @@ exportGOOGLE_CLOUD_LOCATION='us-central1'
 ```
 
 ```
+fromgoogleimport genai
+
 client = genai.Client()
 
 ```
@@ -76,6 +82,9 @@ client = genai.Client()
 By default, the SDK uses the beta API endpoints provided by Google to support preview features in the APIs. The stable API endpoints can be selected by setting the API version to v1.
 To set the API version use `http_options`. For example, to set the API version to `v1` for Vertex AI:
 ```
+fromgoogleimport genai
+fromgoogle.genaiimport types
+
 client = genai.Client(
     vertexai=True,
     project='your-project-id',
@@ -87,6 +96,9 @@ client = genai.Client(
 
 To set the API version to v1alpha for the Gemini Developer API:
 ```
+fromgoogleimport genai
+fromgoogle.genaiimport types
+
 # Only run this block for Gemini Developer API
 client = genai.Client(
     api_key='GEMINI_API_KEY',
@@ -98,7 +110,7 @@ client = genai.Client(
 ## Types¶
 Parameter types can be specified as either dictionaries(`TypedDict`) or Pydantic Models. Pydantic model types are available in the `types` module.
 # Models¶
-The `client.models` modules exposes model inferencing and model getters.
+The `client.models` modules exposes model inferencing and model getters. See the ‘Create a client’ section above to initialize a client.
 ## Generate Content¶
 ### with text content¶
 ```
@@ -133,6 +145,8 @@ The SDK always converts the inputs to the contents argument into list[types.Cont
 This is the canonical way to provide contents, SDK will not do any conversion.
 #### Provide a types.Content instance¶
 ```
+fromgoogle.genaiimport types
+
 contents = types.Content(
 role='user',
 parts=[types.Part.from_text(text='Why is the sky blue?')]
@@ -187,6 +201,8 @@ types.UserContent(
 Where a types.UserContent is a subclass of types.Content, the role field in types.UserContent is fixed to be user.
 #### Provide a function call part¶
 ```
+fromgoogle.genaiimport types
+
 contents = types.Part.from_function_call(
 name='get_weather_by_location',
 args={'location': 'Boston'}
@@ -212,6 +228,8 @@ types.ModelContent(
 Where a types.ModelContent is a subclass of types.Content, the role field in types.ModelContent is fixed to be model.
 #### Provide a list of function call parts¶
 ```
+fromgoogle.genaiimport types
+
 contents = [
 types.Part.from_function_call(
     name='get_weather_by_location',
@@ -247,6 +265,8 @@ types.ModelContent(
 Where a types.ModelContent is a subclass of types.Content, the role field in types.ModelContent is fixed to be model.
 #### Provide a non function call part¶
 ```
+fromgoogle.genaiimport types
+
 contents = types.Part.from_uri(
 file_uri: 'gs://generativeai-downloads/images/scones.jpg',
 mime_type: 'image/jpeg',
@@ -269,6 +289,8 @@ types.UserContent(parts=[
 
 #### Provide a list of non function call parts¶
 ```
+fromgoogle.genaiimport types
+
 contents = [
 types.Part.from_text('What is this image about?'),
 types.Part.from_uri(
@@ -299,8 +321,10 @@ types.UserContent(
 You can also provide a list of types.ContentUnion. The SDK leaves items of types.Content as is, it groups consecutive non function call parts into a single types.UserContent, and it groups consecutive function call parts into a single types.ModelContent.
 If you put a list within a list, the inner list can only contain types.PartUnion items. The SDK will convert the inner list into a single types.UserContent.
 ## System Instructions and Other Configs¶
-The output of the model can be influenced by several optional settings available in generate_content’s config parameter. For example, the variability and length of the output can be influenced by the temperature and max_output_tokens respectively.
+The output of the model can be influenced by several optional settings available in generate_content’s config parameter. For example, increasing max_output_tokens is essential for longer model responses. To make a model more deterministic, lowering the temperature parameter reduces randomness, with values near 0 minimizing variability. Capabilities and parameter defaults for each model is shown in the [Vertex AI docs](https://cloud.google.com/vertex-ai/generative-ai/docs/models/gemini/2-5-flash) and [Gemini API docs](https://ai.google.dev/gemini-api/docs/models) respectively.
 ```
+fromgoogle.genaiimport types
+
 response = client.models.generate_content(
     model='gemini-2.0-flash-001',
     contents='high',
@@ -317,6 +341,8 @@ print(response.text)
 ## Typed Config¶
 All API methods support Pydantic types for parameters as well as dictionaries. You can get the type from `google.genai.types`.
 ```
+fromgoogle.genaiimport types
+
 response = client.models.generate_content(
     model='gemini-2.0-flash-001',
     contents=types.Part.from_text(text='Why is the sky blue?'),
@@ -354,6 +380,7 @@ print(pager[0])
 
 ```
 
+### List Base Models (Asynchronous)¶
 ```
 async for job in await client.aio.models.list():
     print(job)
@@ -371,6 +398,8 @@ print(async_pager[0])
 
 ## Safety Settings¶
 ```
+fromgoogle.genaiimport types
+
 response = client.models.generate_content(
     model='gemini-2.0-flash-001',
     contents='Say something bad.',
@@ -388,8 +417,11 @@ print(response.text)
 ```
 
 ## Function Calling¶
+Automatic Python function Support:
 You can pass a Python function directly and it will be automatically called and responded.
 ```
+fromgoogle.genaiimport types
+
 defget_current_weather(location: str) -> str:
 """Returns the current weather.
 
@@ -411,11 +443,31 @@ print(response.text)
 
 ```
 
+### Disabling automatic function calling¶
 If you pass in a python function as a tool directly, and do not want automatic function calling, you can disable automatic function calling as follows:
+```
+fromgoogle.genaiimport types
+
+response = client.models.generate_content(
+    model='gemini-2.0-flash-001',
+    contents='What is the weather like in Boston?',
+    config=types.GenerateContentConfig(
+        tools=[get_current_weather],
+        automatic_function_calling=types.AutomaticFunctionCallingConfig(
+            disable=True
+        ),
+    ),
+)
+
+```
+
 With automatic function calling disabled, you will get a list of function call parts in the response:
+### Manually declare and invoke a function for function calling¶
 If you don’t want to use the automatic function support, you can manually declare the function and invoke it.
 The following example shows how to declare a function and pass it as a tool. Then you will receive a function call part in the response.
 ```
+fromgoogle.genaiimport types
+
 function = types.FunctionDeclaration(
     name='get_current_weather',
     description='Get the current weather in a given location',
@@ -446,6 +498,8 @@ print(response.function_calls[0])
 
 After you receive the function call part from the model, you can invoke the function and get the function response. And then you can pass the function response to the model. The following example shows how to do it for a simple function invocation.
 ```
+fromgoogle.genaiimport types
+
 user_prompt_content = types.Content(
     role='user',
     parts=[types.Part.from_text(text='What is the weather like in Boston?')],
@@ -489,9 +543,12 @@ print(response.text)
 
 ```
 
+### Function calling with `ANY` tools config mode¶
 If you configure function calling mode to be ANY, then the model will always return function call parts. If you also pass a python function as a tool, by default the SDK will perform automatic function calling until the remote calls exceed the maximum remote call for automatic function calling (default to 10 times).
 If you’d like to disable automatic function calling in ANY mode:
 ```
+fromgoogle.genaiimport types
+
 defget_current_weather(location: str) -> str:
 """Returns the current weather.
 
@@ -518,6 +575,8 @@ response = client.models.generate_content(
 
 If you’d like to set `x` number of automatic function call turns, you can configure the maximum remote calls to be `x + 1`. Assuming you prefer `1` turn for automatic function calling:
 ```
+fromgoogle.genaiimport types
+
 defget_current_weather(location: str) -> str:
 """Returns the current weather.
 
@@ -543,9 +602,11 @@ response = client.models.generate_content(
 ```
 
 ## JSON Response Schema¶
+### Pydantic Model Schema support¶
 Schemas can be provided as Pydantic Models.
 ```
 frompydanticimport BaseModel
+fromgoogle.genaiimport types
 
 
 classCountryInfo(BaseModel):
@@ -571,6 +632,8 @@ print(response.text)
 ```
 
 ```
+fromgoogle.genaiimport types
+
 response = client.models.generate_content(
     model='gemini-2.0-flash-001',
     contents='Give me information for the United States.',
@@ -604,6 +667,7 @@ print(response.text)
 ```
 
 ## Enum Response Schema¶
+### Text Response¶
 You can set response_mime_type to ‘text/x.enum’ to return one of those enum values as the response.
 ```
 fromenumimport Enum
@@ -627,6 +691,7 @@ print(response.text)
 
 ```
 
+### JSON Response¶
 You can also set response_mime_type to ‘application/json’, the response will be identical but in quotes.
 ```
 classInstrumentEnum(Enum):
@@ -648,7 +713,9 @@ print(response.text)
 
 ```
 
-## Streaming¶
+## Generate Content (Synchronous Streaming)¶
+Generate content in a streaming format so that the model outputs streams back to you, rather than being returned as one chunk.
+### Streaming for text content¶
 ```
 for chunk in client.models.generate_content_stream(
     model='gemini-2.0-flash-001', contents='Tell me a story in 300 words.'
@@ -657,8 +724,11 @@ for chunk in client.models.generate_content_stream(
 
 ```
 
+### Streaming for image content¶
 If your image is stored in Google Cloud Storage, you can use the from_uri class method to create a Part object.
 ```
+fromgoogle.genaiimport types
+
 for chunk in client.models.generate_content_stream(
     model='gemini-2.0-flash-001',
     contents=[
@@ -675,6 +745,8 @@ for chunk in client.models.generate_content_stream(
 
 If your image is stored in your local file system, you can read it in as bytes data and use the `from_bytes` class method to create a `Part` object.
 ```
+fromgoogle.genaiimport types
+
 YOUR_IMAGE_PATH = 'your_image_path'
 YOUR_IMAGE_MIME_TYPE = 'your_image_mime_type'
 with open(YOUR_IMAGE_PATH, 'rb') as f:
@@ -691,8 +763,8 @@ for chunk in client.models.generate_content_stream(
 
 ```
 
-## Async¶
-`client.aio` exposes all the analogous async methods that are available on `client`
+## Generate Content (Asynchronous Non-Streaming)¶
+`client.aio` exposes all the analogous async methods that are available on `client`. Note that it applies to all the modules.
 For example, `client.aio.models.generate_content` is the `async` version of `client.models.generate_content`
 ```
 response = await client.aio.models.generate_content(
@@ -703,7 +775,7 @@ print(response.text)
 
 ```
 
-## Streaming¶
+## Generate Content (Asynchronous Streaming)¶
 ```
 async for chunk in await client.aio.models.generate_content_stream(
     model='gemini-2.0-flash-001', contents='Tell me a story in 300 words.'
@@ -722,6 +794,7 @@ print(response)
 
 ```
 
+### Compute Tokens¶
 Compute tokens is only supported in Vertex AI.
 ```
 response = client.models.compute_tokens(
@@ -732,7 +805,7 @@ print(response)
 
 ```
 
-### Async¶
+### Count Tokens (Asynchronous)¶
 ```
 response = await client.aio.models.count_tokens(
     model='gemini-2.0-flash-001',
@@ -753,6 +826,8 @@ print(response)
 ```
 
 ```
+fromgoogle.genaiimport types
+
 # multiple contents with config
 response = client.models.embed_content(
     model='text-embedding-004',
@@ -765,8 +840,11 @@ print(response)
 ```
 
 ## Imagen¶
+### Generate Image¶
 Support for generate image in Gemini Developer API is behind an allowlist
 ```
+fromgoogle.genaiimport types
+
 # Generate Image
 response1 = client.models.generate_images(
     model='imagen-3.0-generate-002',
@@ -783,6 +861,8 @@ response1.generated_images[0].image.show()
 
 Upscale image is only supported in Vertex AI.
 ```
+fromgoogle.genaiimport types
+
 # Upscale the generated image from above
 response2 = client.models.upscale_image(
     model='imagen-3.0-generate-002',
@@ -797,10 +877,12 @@ response2.generated_images[0].image.show()
 
 ```
 
+### Edit Image¶
 Edit image uses a separate model from generate and upscale.
 Edit image is only supported in Vertex AI.
 ```
 # Edit the generated image from above
+fromgoogle.genaiimport types
 fromgoogle.genai.typesimport RawReferenceImage, MaskReferenceImage
 
 raw_ref_image = RawReferenceImage(
@@ -833,8 +915,11 @@ response3.generated_images[0].image.show()
 ```
 
 ## Veo¶
+### Generate Videos¶
 Support for generate videos in Vertex and Gemini Developer API is behind an allowlist
 ```
+fromgoogle.genaiimport types
+
 # Create operation
 operation = client.models.generate_videos(
     model='veo-2.0-generate-001',
@@ -858,24 +943,26 @@ video.show()
 ```
 
 # Chats¶
-Create a chat session to start a multi-turn conversations with the model.
-## Send Message¶
+Create a chat session to start a multi-turn conversations with the model. Then, use chat.send_message function multiple times within the same chat session so that it can reflect on its previous responses (i.e., engage in an ongoing conversation). See the ‘Create a client’ section above to initialize a client.
+## Send Message (Synchronous Non-Streaming)¶
 ```
 chat = client.chats.create(model='gemini-2.0-flash-001')
 response = chat.send_message('tell me a story')
 print(response.text)
+response = chat.send_message('summarize the story you told me in 1 sentence')
+print(response.text)
 
 ```
 
-## Streaming¶
+## Send Message (Synchronous Streaming)¶
 ```
 chat = client.chats.create(model='gemini-2.0-flash-001')
 for chunk in chat.send_message_stream('tell me a story'):
-    print(chunk.text, end='')
+    print(chunk.text, end='')  # end='' is optional, for demo purposes.
 
 ```
 
-## Async¶
+## Send Message (Asynchronous Non-Streaming)¶
 ```
 chat = client.aio.chats.create(model='gemini-2.0-flash-001')
 response = await chat.send_message('tell me a story')
@@ -883,16 +970,16 @@ print(response.text)
 
 ```
 
-## Async Streaming¶
+## Send Message (Asynchronous Streaming)¶
 ```
 chat = client.aio.chats.create(model='gemini-2.0-flash-001')
 async for chunk in await chat.send_message_stream('tell me a story'):
-    print(chunk.text, end='')
+    print(chunk.text, end='') # end='' is optional, for demo purposes.
 
 ```
 
 # Files¶
-Files are only supported in Gemini Developer API.
+Files are only supported in Gemini Developer API. See the ‘Create a client’ section above to initialize a client.
 ```
 gsutil cp gs://cloud-samples-data/generative-ai/pdf/2312.11805v3.pdf .
 gsutil cp gs://cloud-samples-data/generative-ai/pdf/2403.05530.pdf .
@@ -924,10 +1011,15 @@ client.files.delete(name=file3.name)
 
 ```
 
-# Caches¶
-`client.caches` contains the control plane APIs for cached content
+# Caches¶ 
+
+`client.caches` contains the control plane APIs for cached content.
+    
+See the ‘Create a client’ section above to initialize a client.
 ## Create¶
 ```
+fromgoogle.genaiimport types
+
 if client.vertexai:
     file_uris = [
         'gs://cloud-samples-data/generative-ai/pdf/2312.11805v3.pdf',
@@ -967,8 +1059,10 @@ cached_content = client.caches.get(name=cached_content.name)
 
 ```
 
-## Generate Content¶
+## Generate Content with Caches¶
 ```
+fromgoogle.genaiimport types
+
 response = client.models.generate_content(
     model='gemini-2.0-flash-001',
     contents='Summarize the pdfs',
@@ -981,13 +1075,15 @@ print(response.text)
 ```
 
 # Tunings¶
-`client.tunings` contains tuning job APIs and supports supervised fine tuning through `tune`.
+`client.tunings` contains tuning job APIs and supports supervised fine tuning through `tune`. See the ‘Create a client’ section above to initialize a client.
 ## Tune¶
   * Vertex AI supports tuning from GCS source
   * Gemini Developer API supports tuning from inline examples
 
 
 ```
+fromgoogle.genaiimport types
+
 if client.vertexai:
     model = 'gemini-2.0-flash-001'
     training_dataset = types.TuningDataset(
@@ -1008,6 +1104,8 @@ else:
 ```
 
 ```
+fromgoogle.genaiimport types
+
 tuning_job = client.tunings.tune(
     base_model=model,
     training_dataset=training_dataset,
@@ -1043,6 +1141,7 @@ while tuning_job.state in running_states:
 
 ```
 
+## Use Tuned Model¶
 ```
 response = client.models.generate_content(
     model=tuning_job.tuned_model.endpoint,
@@ -1056,6 +1155,20 @@ print(response.text)
 ## Get Tuned Model¶
 ```
 tuned_model = client.models.get(model=tuning_job.tuned_model.model)
+print(tuned_model)
+
+```
+
+## Update Tuned Model¶
+```
+fromgoogle.genaiimport types
+
+tuned_model = client.models.update(
+    model=tuning_job.tuned_model.model,
+    config=types.UpdateModelConfig(
+        display_name='my tuned model', description='my tuned model description'
+    ),
+)
 print(tuned_model)
 
 ```
@@ -1077,6 +1190,7 @@ print(pager[0])
 
 ```
 
+### List Tuned Models (Asynchronous)¶
 ```
 async for job in await client.aio.models.list(config={'page_size': 10, 'query_base': False}}):
     print(job)
@@ -1123,6 +1237,7 @@ print(pager[0])
 
 ```
 
+List Tuning Jobs (Asynchronous):
 ```
 async for job in await client.aio.tunings.list(config={'page_size': 10}):
     print(job)
@@ -1139,7 +1254,7 @@ print(async_pager[0])
 ```
 
 # Batch Prediction¶
-Only supported in Vertex AI.
+Only supported in Vertex AI. See the ‘Create a client’ section above to initialize a client.
 ## Create¶
 ```
 # Specify model and source file only, destination and job display name will be auto-populated
@@ -1181,12 +1296,17 @@ job
 
 ## List¶
 ```
+fromgoogle.genaiimport types
+
 for job in client.batches.list(config=types.ListBatchJobsConfig(page_size=10)):
     print(job)
 
 ```
 
+### List Batch Jobs with Pager¶
 ```
+fromgoogle.genaiimport types
+
 pager = client.batches.list(config=types.ListBatchJobsConfig(page_size=10))
 print(pager.page_size)
 print(pager[0])
@@ -1195,7 +1315,10 @@ print(pager[0])
 
 ```
 
+### List Batch Jobs (Asynchronous)¶
 ```
+fromgoogle.genaiimport types
+
 async for job in await client.aio.batches.list(
     config=types.ListBatchJobsConfig(page_size=10)
 ):
@@ -1203,7 +1326,10 @@ async for job in await client.aio.batches.list(
 
 ```
 
+### List Batch Jobs with Pager (Asynchronous)¶
 ```
+fromgoogle.genaiimport types
+
 async_pager = await client.aio.batches.list(
     config=types.ListBatchJobsConfig(page_size=10)
 )
@@ -1496,9 +1622,11 @@ except errors.APIError as e:
       * `BatchJobSourceDict.gcs_uri`
     * `Blob`
       * `Blob.data`
+      * `Blob.display_name`
       * `Blob.mime_type`
     * `BlobDict`
       * `BlobDict.data`
+      * `BlobDict.display_name`
       * `BlobDict.mime_type`
     * `BlockedReason`
       * `BlockedReason.BLOCKED_REASON_UNSPECIFIED`
@@ -1560,6 +1688,14 @@ except errors.APIError as e:
       * `CandidateDict.logprobs_result`
       * `CandidateDict.safety_ratings`
       * `CandidateDict.token_count`
+    * `Checkpoint`
+      * `Checkpoint.checkpoint_id`
+      * `Checkpoint.epoch`
+      * `Checkpoint.step`
+    * `CheckpointDict`
+      * `CheckpointDict.checkpoint_id`
+      * `CheckpointDict.epoch`
+      * `CheckpointDict.step`
     * `Citation`
       * `Citation.end_index`
       * `Citation.license`
@@ -1692,6 +1828,7 @@ except errors.APIError as e:
       * `CreateTuningJobConfig.batch_size`
       * `CreateTuningJobConfig.description`
       * `CreateTuningJobConfig.epoch_count`
+      * `CreateTuningJobConfig.export_last_checkpoint_only`
       * `CreateTuningJobConfig.http_options`
       * `CreateTuningJobConfig.learning_rate`
       * `CreateTuningJobConfig.learning_rate_multiplier`
@@ -1702,6 +1839,7 @@ except errors.APIError as e:
       * `CreateTuningJobConfigDict.batch_size`
       * `CreateTuningJobConfigDict.description`
       * `CreateTuningJobConfigDict.epoch_count`
+      * `CreateTuningJobConfigDict.export_last_checkpoint_only`
       * `CreateTuningJobConfigDict.http_options`
       * `CreateTuningJobConfigDict.learning_rate`
       * `CreateTuningJobConfigDict.learning_rate_multiplier`
@@ -2817,6 +2955,8 @@ except errors.APIError as e:
       * `Mode.MODE_DYNAMIC`
       * `Mode.MODE_UNSPECIFIED`
     * `Model`
+      * `Model.checkpoints`
+      * `Model.default_checkpoint_id`
       * `Model.description`
       * `Model.display_name`
       * `Model.endpoints`
@@ -2831,6 +2971,8 @@ except errors.APIError as e:
       * `ModelContent.parts`
       * `ModelContent.role`
     * `ModelDict`
+      * `ModelDict.checkpoints`
+      * `ModelDict.default_checkpoint_id`
       * `ModelDict.description`
       * `ModelDict.display_name`
       * `ModelDict.endpoints`
@@ -3219,10 +3361,12 @@ except errors.APIError as e:
       * `SupervisedTuningDatasetDistributionDict.p95`
       * `SupervisedTuningDatasetDistributionDict.sum`
     * `SupervisedTuningSpec`
+      * `SupervisedTuningSpec.export_last_checkpoint_only`
       * `SupervisedTuningSpec.hyper_parameters`
       * `SupervisedTuningSpec.training_dataset_uri`
       * `SupervisedTuningSpec.validation_dataset_uri`
     * `SupervisedTuningSpecDict`
+      * `SupervisedTuningSpecDict.export_last_checkpoint_only`
       * `SupervisedTuningSpecDict.hyper_parameters`
       * `SupervisedTuningSpecDict.training_dataset_uri`
       * `SupervisedTuningSpecDict.validation_dataset_uri`
@@ -3303,9 +3447,21 @@ except errors.APIError as e:
       * `TranscriptionDict.finished`
       * `TranscriptionDict.text`
     * `TunedModel`
+      * `TunedModel.checkpoints`
       * `TunedModel.endpoint`
       * `TunedModel.model`
+    * `TunedModelCheckpoint`
+      * `TunedModelCheckpoint.checkpoint_id`
+      * `TunedModelCheckpoint.endpoint`
+      * `TunedModelCheckpoint.epoch`
+      * `TunedModelCheckpoint.step`
+    * `TunedModelCheckpointDict`
+      * `TunedModelCheckpointDict.checkpoint_id`
+      * `TunedModelCheckpointDict.endpoint`
+      * `TunedModelCheckpointDict.epoch`
+      * `TunedModelCheckpointDict.step`
     * `TunedModelDict`
+      * `TunedModelDict.checkpoints`
       * `TunedModelDict.endpoint`
       * `TunedModelDict.model`
     * `TunedModelInfo`
@@ -3401,10 +3557,12 @@ except errors.APIError as e:
       * `UpdateCachedContentConfigDict.http_options`
       * `UpdateCachedContentConfigDict.ttl`
     * `UpdateModelConfig`
+      * `UpdateModelConfig.default_checkpoint_id`
       * `UpdateModelConfig.description`
       * `UpdateModelConfig.display_name`
       * `UpdateModelConfig.http_options`
     * `UpdateModelConfigDict`
+      * `UpdateModelConfigDict.default_checkpoint_id`
       * `UpdateModelConfigDict.description`
       * `UpdateModelConfigDict.display_name`
       * `UpdateModelConfigDict.http_options`
@@ -3543,23 +3701,36 @@ On this page
     * System Instructions and Other Configs
     * Typed Config
     * List Base Models
+      * List Base Models (Asynchronous)
     * Safety Settings
     * Function Calling
+      * Disabling automatic function calling
+      * Manually declare and invoke a function for function calling
+      * Function calling with `ANY` tools config mode
     * JSON Response Schema
+      * Pydantic Model Schema support
     * Enum Response Schema
-    * Streaming
-    * Async
-    * Streaming
+      * Text Response
+      * JSON Response
+    * Generate Content (Synchronous Streaming)
+      * Streaming for text content
+      * Streaming for image content
+    * Generate Content (Asynchronous Non-Streaming)
+    * Generate Content (Asynchronous Streaming)
     * Count Tokens and Compute Tokens
-      * Async
+      * Compute Tokens
+      * Count Tokens (Asynchronous)
     * Embed Content
     * Imagen
+      * Generate Image
+      * Edit Image
     * Veo
+      * Generate Videos
   * Chats
-    * Send Message
-    * Streaming
-    * Async
-    * Async Streaming
+    * Send Message (Synchronous Non-Streaming)
+    * Send Message (Synchronous Streaming)
+    * Send Message (Asynchronous Non-Streaming)
+    * Send Message (Asynchronous Streaming)
   * Files
     * Upload
     * Get
@@ -3567,17 +3738,23 @@ On this page
   * Caches
     * Create
     * Get
-    * Generate Content
+    * Generate Content with Caches
   * Tunings
     * Tune
     * Get Tuning Job
+    * Use Tuned Model
     * Get Tuned Model
+    * Update Tuned Model
     * List Tuned Models
+      * List Tuned Models (Asynchronous)
     * Update Tuned Model
     * List Tuning Jobs
   * Batch Prediction
     * Create
     * List
+      * List Batch Jobs with Pager
+      * List Batch Jobs (Asynchronous)
+      * List Batch Jobs with Pager (Asynchronous)
     * Delete
   * Error Handling
   * Reference
@@ -3627,10 +3804,14 @@ run all the examples to see how it behaves under different APIs.
 
 .. code:: python
 
+    from google import genai
+
     # Only run this block for Gemini Developer API
     client = genai.Client(api_key='GEMINI_API_KEY')
 
 .. code:: python
+
+    from google import genai
 
     # Only run this block for Vertex AI API
     client = genai.Client(
@@ -3663,6 +3844,8 @@ and `GOOGLE_CLOUD_LOCATION`, as shown below:
 
 .. code:: python
 
+    from google import genai
+
     client = genai.Client()
 
 
@@ -3675,6 +3858,9 @@ To set the API version use ``http_options``. For example, to set the API version
 
 .. code:: python
 
+    from google import genai
+    from google.genai import types
+
     client = genai.Client(
         vertexai=True,
         project='your-project-id',
@@ -3685,6 +3871,9 @@ To set the API version use ``http_options``. For example, to set the API version
 To set the API version to `v1alpha` for the Gemini Developer API:
 
 .. code:: python
+
+    from google import genai
+    from google.genai import types
 
     # Only run this block for Gemini Developer API
     client = genai.Client(
@@ -3703,7 +3892,7 @@ Models
 ======
 
 The ``client.models`` modules exposes model inferencing and model
-getters.
+getters. See the 'Create a client' section above to initialize a client.
 
 Generate Content
 ----------------
@@ -3753,6 +3942,8 @@ Provide a `types.Content` instance
 """"""""""""""""""""""""""""""
 
 .. code:: python
+
+    from google.genai import types
 
     contents = types.Content(
     role='user',
@@ -3820,6 +4011,8 @@ Provide a function call part
 
 .. code:: python
 
+    from google.genai import types
+
     contents = types.Part.from_function_call(
     name='get_weather_by_location',
     args={'location': 'Boston'}
@@ -3847,6 +4040,8 @@ Provide a list of function call parts
 """"""""""""""""""""""""""""""
 
 .. code:: python
+
+    from google.genai import types
 
     contents = [
     types.Part.from_function_call(
@@ -3886,6 +4081,8 @@ Provide a non function call part
 
 .. code:: python
 
+    from google.genai import types
+
     contents = types.Part.from_uri(
     file_uri: 'gs://generativeai-downloads/images/scones.jpg',
     mime_type: 'image/jpeg',
@@ -3908,6 +4105,8 @@ Provide a list of non function call parts
 """"""""""""""""""""
 
 .. code:: python
+
+    from google.genai import types
 
     contents = [
     types.Part.from_text('What is this image about?'),
@@ -3949,11 +4148,17 @@ System Instructions and Other Configs
 -------------------------------------
 
 The output of the model can be influenced by several optional settings
-available in generate_content's config parameter. For example, the
-variability and length of the output can be influenced by the temperature
-and max_output_tokens respectively.
+available in generate_content's config parameter. For example, increasing
+`max_output_tokens` is essential for longer model responses. To make a model more
+deterministic, lowering the `temperature` parameter reduces randomness, with
+values near 0 minimizing variability. Capabilities and parameter defaults for
+each model is shown in the
+[Vertex AI docs](https://cloud.google.com/vertex-ai/generative-ai/docs/models/gemini/2-5-flash)
+and [Gemini API docs](https://ai.google.dev/gemini-api/docs/models) respectively.
 
 .. code:: python
+
+    from google.genai import types
 
     response = client.models.generate_content(
         model='gemini-2.0-flash-001',
@@ -3973,6 +4178,8 @@ All API methods support Pydantic types for parameters as well as
 dictionaries. You can get the type from ``google.genai.types``.
 
 .. code:: python
+
+    from google.genai import types
 
     response = client.models.generate_content(
         model='gemini-2.0-flash-001',
@@ -4010,8 +4217,8 @@ To retrieve tuned models, see: :ref:`List Tuned Models`
     pager.next_page()
     print(pager[0])
 
-Async
-~~~~~
+List Base Models (Asynchronous)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code:: python
 
@@ -4031,6 +4238,8 @@ Safety Settings
 
 .. code:: python
 
+    from google.genai import types
+
     response = client.models.generate_content(
         model='gemini-2.0-flash-001',
         contents='Say something bad.',
@@ -4048,13 +4257,14 @@ Safety Settings
 Function Calling
 ----------------
 
-Automatic Python function Support
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Automatic Python function Support:
 
 You can pass a Python function directly and it will be automatically
 called and responded.
 
 .. code:: python
+
+    from google.genai import types
 
     def get_current_weather(location: str) -> str:
         """Returns the current weather.
@@ -4076,12 +4286,16 @@ called and responded.
     print(response.text)
 
 Disabling automatic function calling
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 If you pass in a python function as a tool directly, and do not want
 automatic function calling, you can disable automatic function calling
 as follows:
 
 .. code:: python
+
+    from google.genai import types
+
     response = client.models.generate_content(
         model='gemini-2.0-flash-001',
         contents='What is the weather like in Boston?',
@@ -4101,7 +4315,7 @@ parts in the response:
 
 
 Manually declare and invoke a function for function calling
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you don't want to use the automatic function support, you can manually
 declare the function and invoke it.
@@ -4110,6 +4324,8 @@ The following example shows how to declare a function and pass it as a tool.
 Then you will receive a function call part in the response.
 
 .. code:: python
+
+    from google.genai import types
 
     function = types.FunctionDeclaration(
         name='get_current_weather',
@@ -4143,6 +4359,8 @@ the model.
 The following example shows how to do it for a simple function invocation.
 
 .. code:: python
+
+    from google.genai import types
 
     user_prompt_content = types.Content(
         role='user',
@@ -4187,7 +4405,7 @@ The following example shows how to do it for a simple function invocation.
 
 
 Function calling with ``ANY`` tools config mode
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you configure function calling mode to be `ANY`, then the model will always
 return function call parts. If you also pass a python function as a tool, by
@@ -4197,6 +4415,8 @@ exceed the maximum remote call for automatic function calling (default to 10 tim
 If you'd like to disable automatic function calling in `ANY` mode:
 
 .. code-block:: python
+
+    from google.genai import types
 
     def get_current_weather(location: str) -> str:
         """Returns the current weather.
@@ -4226,6 +4446,8 @@ Assuming you prefer ``1`` turn for automatic function calling:
 
 .. code-block:: python
 
+    from google.genai import types
+
     def get_current_weather(location: str) -> str:
         """Returns the current weather.
 
@@ -4252,13 +4474,14 @@ JSON Response Schema
 --------------------
 
 Pydantic Model Schema support
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Schemas can be provided as Pydantic Models.
 
 .. code:: python
 
     from pydantic import BaseModel
+    from google.genai import types
 
 
     class CountryInfo(BaseModel):
@@ -4282,6 +4505,8 @@ Schemas can be provided as Pydantic Models.
     print(response.text)
 
 .. code:: python
+
+    from google.genai import types
 
     response = client.models.generate_content(
         model='gemini-2.0-flash-001',
@@ -4317,7 +4542,7 @@ Enum Response Schema
 --------------------
 
 Text Response
-~~~~~~~~~~~~~
+^^^^^^^^^^^^^^
 
 You can set response_mime_type to 'text/x.enum' to return one of those enum 
 values as the response.
@@ -4344,7 +4569,7 @@ values as the response.
     print(response.text)
 
 JSON Response
-~~~~~~~~~~~~~
+^^^^^^^^^^^^^^
 
 You can also set response_mime_type to 'application/json', the response will be 
 identical but in quotes.
@@ -4368,11 +4593,14 @@ identical but in quotes.
     )
     print(response.text)
 
-Streaming
+Generate Content (Synchronous Streaming)
 ---------
 
+Generate content in a streaming format so that the model outputs streams back
+to you, rather than being returned as one chunk.
+
 Streaming for text content
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code:: python
 
@@ -4382,11 +4610,13 @@ Streaming for text content
         print(chunk.text, end='')
 
 Streaming for image content
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If your image is stored in `Google Cloud Storage <https://cloud.google.com/storage>`_, you can use the `from_uri` class method to create a `Part` object.
 
 .. code:: python
+
+    from google.genai import types
 
     for chunk in client.models.generate_content_stream(
         model='gemini-2.0-flash-001',
@@ -4406,6 +4636,8 @@ data and use the ``from_bytes`` class method to create a ``Part`` object.
 
 .. code:: python
 
+    from google.genai import types
+
     YOUR_IMAGE_PATH = 'your_image_path'
     YOUR_IMAGE_MIME_TYPE = 'your_image_mime_type'
     with open(YOUR_IMAGE_PATH, 'rb') as f:
@@ -4420,10 +4652,11 @@ data and use the ``from_bytes`` class method to create a ``Part`` object.
     ):
         print(chunk.text, end='')
 
-Async
------
+Generate Content (Asynchronous Non-Streaming)
+---------------------------------------------
 
-``client.aio`` exposes all the analogous `async methods <https://docs.python.org/3/library/asyncio.html>`_ that are available on ``client``
+``client.aio`` exposes all the analogous `async methods <https://docs.python.org/3/library/asyncio.html>`_ that are available on ``client``.
+Note that it applies to all the modules.
 
 For example, ``client.aio.models.generate_content`` is the ``async`` version of ``client.models.generate_content``
 
@@ -4435,8 +4668,8 @@ For example, ``client.aio.models.generate_content`` is the ``async`` version of 
 
     print(response.text)
 
-Streaming
----------
+Generate Content (Asynchronous Streaming)
+-----------------------------------------
 
 .. code:: python
 
@@ -4457,7 +4690,7 @@ Count Tokens and Compute Tokens
     print(response)
 
 Compute Tokens
-~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^
 
 Compute tokens is only supported in Vertex AI.
 
@@ -4469,8 +4702,8 @@ Compute tokens is only supported in Vertex AI.
     )
     print(response)
 
-Async
-^^^^^
+Count Tokens (Asynchronous)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code:: python
 
@@ -4493,6 +4726,8 @@ Embed Content
 
 .. code:: python
 
+    from google.genai import types
+
     # multiple contents with config
     response = client.models.embed_content(
         model='text-embedding-004',
@@ -4506,11 +4741,13 @@ Imagen
 ------
 
 Generate Image
-~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^
 
 Support for generate image in Gemini Developer API is behind an allowlist
 
 .. code:: python
+
+    from google.genai import types
 
     # Generate Image
     response1 = client.models.generate_images(
@@ -4531,6 +4768,8 @@ Upscale image is only supported in Vertex AI.
 
 .. code:: python
 
+    from google.genai import types
+
     # Upscale the generated image from above
     response2 = client.models.upscale_image(
         model='imagen-3.0-generate-002',
@@ -4544,7 +4783,7 @@ Upscale image is only supported in Vertex AI.
     response2.generated_images[0].image.show()
 
 Edit Image
-~~~~~~~~~~
+^^^^^^^^^^^
 
 Edit image uses a separate model from generate and upscale.
 
@@ -4553,6 +4792,7 @@ Edit image is only supported in Vertex AI.
 .. code:: python
 
     # Edit the generated image from above
+    from google.genai import types
     from google.genai.types import RawReferenceImage, MaskReferenceImage
 
     raw_ref_image = RawReferenceImage(
@@ -4586,11 +4826,13 @@ Veo
 ------
 
 Generate Videos
-~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^
 
 Support for generate videos in Vertex and Gemini Developer API is behind an allowlist
 
 .. code:: python
+
+    from google.genai import types
 
     # Create operation
     operation = client.models.generate_videos(
@@ -4615,9 +4857,12 @@ Support for generate videos in Vertex and Gemini Developer API is behind an allo
 Chats
 =====
 
-Create a chat session to start a multi-turn conversations with the model.
+Create a chat session to start a multi-turn conversations with the model. Then,
+use `chat.send_message` function multiple times within the same chat session so
+that it can reflect on its previous responses (i.e., engage in an ongoing
+conversation). See the 'Create a client' section above to initialize a client.
 
-Send Message
+Send Message (Synchronous Non-Streaming)
 ------------
 
 .. code:: python
@@ -4625,18 +4870,20 @@ Send Message
     chat = client.chats.create(model='gemini-2.0-flash-001')
     response = chat.send_message('tell me a story')
     print(response.text)
+    response = chat.send_message('summarize the story you told me in 1 sentence')
+    print(response.text)
 
-Streaming
----------
+Send Message (Synchronous Streaming)
+------------------------------------
 
 .. code:: python
 
     chat = client.chats.create(model='gemini-2.0-flash-001')
     for chunk in chat.send_message_stream('tell me a story'):
-        print(chunk.text, end='')
+        print(chunk.text, end='')  # end='' is optional, for demo purposes.
 
-Async
------
+Send Message (Asynchronous Non-Streaming)
+-----------------------------------------
 
 .. code:: python
 
@@ -4644,19 +4891,20 @@ Async
     response = await chat.send_message('tell me a story')
     print(response.text)
 
-Async Streaming
-----------------
+Send Message (Asynchronous Streaming)
+-------------------------------------
 
 .. code:: python
 
     chat = client.aio.chats.create(model='gemini-2.0-flash-001')
     async for chunk in await chat.send_message_stream('tell me a story'):
-        print(chunk.text, end='')
+        print(chunk.text, end='') # end='' is optional, for demo purposes.
 
 Files
 ======================
 
-Files are only supported in Gemini Developer API.
+Files are only supported in Gemini Developer API.  See the 'Create a client'
+section above to initialize a client.
 
 .. code:: console
 
@@ -4695,12 +4943,15 @@ Delete
 Caches
 ======
 
-``client.caches`` contains the control plane APIs for cached content
+``client.caches`` contains the control plane APIs for cached content.
+ See the 'Create a client' section above to initialize a client.
 
 Create
 ------
 
 .. code:: python
+
+    from google.genai import types
 
     if client.vertexai:
         file_uris = [
@@ -4740,10 +4991,12 @@ Get
 
     cached_content = client.caches.get(name=cached_content.name)
 
-Generate Content
-----------------
+Generate Content with Caches
+-----------------------------
 
 .. code:: python
+
+    from google.genai import types
 
     response = client.models.generate_content(
         model='gemini-2.0-flash-001',
@@ -4758,7 +5011,8 @@ Tunings
 =======
 
 ``client.tunings`` contains tuning job APIs and supports supervised fine
-tuning through ``tune``.
+tuning through ``tune``. See the 'Create a client' section above to initialize a
+client.
 
 Tune
 ----
@@ -4767,6 +5021,8 @@ Tune
 -   Gemini Developer API supports tuning from inline examples
 
 .. code:: python
+
+    from google.genai import types
 
     if client.vertexai:
         model = 'gemini-2.0-flash-001'
@@ -4786,6 +5042,8 @@ Tune
         )
 
 .. code:: python
+
+    from google.genai import types
 
     tuning_job = client.tunings.tune(
         base_model=model,
@@ -4821,7 +5079,7 @@ Get Tuning Job
         time.sleep(10)
 
 Use Tuned Model
-~~~~~~~~~~~~~~~
+---------------
 
 .. code:: python
 
@@ -4838,6 +5096,21 @@ Get Tuned Model
 .. code:: python
 
     tuned_model = client.models.get(model=tuning_job.tuned_model.model)
+    print(tuned_model)
+
+Update Tuned Model
+---------------
+
+.. code:: python
+
+    from google.genai import types
+
+    tuned_model = client.models.update(
+        model=tuning_job.tuned_model.model,
+        config=types.UpdateModelConfig(
+            display_name='my tuned model', description='my tuned model description'
+        ),
+    )
     print(tuned_model)
 
 List Tuned Models
@@ -4858,8 +5131,8 @@ To retrieve base models, see: :ref:`List Base Models`
     pager.next_page()
     print(pager[0])
 
-Async
-~~~~~
+List Tuned Models (Asynchronous)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code:: python
 
@@ -4907,8 +5180,7 @@ List Tuning Jobs
     pager.next_page()
     print(pager[0])
 
-Async
-~~~~~
+List Tuning Jobs (Asynchronous):
 
 .. code:: python
 
@@ -4926,7 +5198,8 @@ Async
 Batch Prediction
 ================
 
-Only supported in Vertex AI.
+Only supported in Vertex AI. See the 'Create a client' section above to
+initialize a client.
 
 Create
 ------
@@ -4971,10 +5244,17 @@ List
 
 .. code:: python
 
+    from google.genai import types
+
     for job in client.batches.list(config=types.ListBatchJobsConfig(page_size=10)):
         print(job)
 
+List Batch Jobs with Pager
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
 .. code:: python
+
+    from google.genai import types
 
     pager = client.batches.list(config=types.ListBatchJobsConfig(page_size=10))
     print(pager.page_size)
@@ -4982,17 +5262,24 @@ List
     pager.next_page()
     print(pager[0])
 
-Async
-~~~~~
+List Batch Jobs (Asynchronous)
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code:: python
+
+    from google.genai import types
 
     async for job in await client.aio.batches.list(
         config=types.ListBatchJobsConfig(page_size=10)
     ):
         print(job)
 
+List Batch Jobs with Pager (Asynchronous)
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
 .. code:: python
+
+    from google.genai import types
 
     async_pager = await client.aio.batches.list(
         config=types.ListBatchJobsConfig(page_size=10)
@@ -8860,6 +9147,19 @@ Show JSON schema
 "description":"Content blob.",
 "type":"object",
 "properties":{
+"displayName":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is not currently used in the Gemini GenerateContent calls.",
+"title":"Displayname"
+},
 "data":{
 "anyOf":[
 {
@@ -8897,6 +9197,7 @@ Show JSON schema
 Fields: 
     
   * `data (bytes | None)`
+  * `display_name (str | None)`
   * `mime_type (str | None)`
 
 
@@ -8904,6 +9205,10 @@ Fields:
 _field_ data _:`Optional`[`bytes`]__= None_¶ 
     
 Required. Raw bytes. 
+
+_field_ display_name _:`Optional`[`str`]__= None_ _(alias 'displayName')_¶ 
+    
+Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is not currently used in the Gemini GenerateContent calls. 
 
 _field_ mime_type _:`Optional`[`str`]__= None_ _(alias 'mimeType')_¶ 
     
@@ -8917,6 +9222,10 @@ Content blob.
 data _:`Optional`[`bytes`]_¶ 
     
 Required. Raw bytes. 
+
+display_name _:`Optional`[`str`]_¶ 
+    
+Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is not currently used in the Gemini GenerateContent calls. 
 
 mime_type _:`Optional`[`str`]_¶ 
     
@@ -9636,6 +9945,19 @@ Show JSON schema
 "additionalProperties":false,
 "description":"Content blob.",
 "properties":{
+"displayName":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is not currently used in the Gemini GenerateContent calls.",
+"title":"Displayname"
+},
 "data":{
 "anyOf":[
 {
@@ -10544,6 +10866,18 @@ Show JSON schema
 "description":"Indicates if the part is thought from the model.",
 "title":"Thought"
 },
+"inlineData":{
+"anyOf":[
+{
+"$ref":"#/$defs/Blob"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Inlined bytes data."
+},
 "codeExecutionResult":{
 "anyOf":[
 {
@@ -10603,18 +10937,6 @@ Show JSON schema
 ],
 "default":null,
 "description":"Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model."
-},
-"inlineData":{
-"anyOf":[
-{
-"$ref":"#/$defs/Blob"
-},
-{
-"type":"null"
-}
-],
-"default":null,
-"description":"Optional. Inlined bytes data."
 },
 "text":{
 "anyOf":[
@@ -10972,6 +11294,103 @@ Output only. List of ratings for the safety of a response candidate. There is at
 token_count _:`Optional`[`int`]_¶ 
     
 Number of tokens for this candidate. 
+
+_pydantic model_genai.types.Checkpoint¶ 
+    
+Bases: `BaseModel`
+Describes the machine learning model version checkpoint.
+Create a new model by parsing and validating input data from keyword arguments.
+Raises [ValidationError][pydantic_core.ValidationError] if the input data cannot be validated to form a valid model.
+self is explicitly positional-only to allow self as a field name.
+Show JSON schema
+```
+{
+"title":"Checkpoint",
+"description":"Describes the machine learning model version checkpoint.",
+"type":"object",
+"properties":{
+"checkpointId":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The ID of the checkpoint.\n      ",
+"title":"Checkpointid"
+},
+"epoch":{
+"anyOf":[
+{
+"type":"integer"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The epoch of the checkpoint.\n      ",
+"title":"Epoch"
+},
+"step":{
+"anyOf":[
+{
+"type":"integer"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The step of the checkpoint.\n      ",
+"title":"Step"
+}
+},
+"additionalProperties":false
+}
+
+```
+
+
+Fields: 
+    
+  * `checkpoint_id (str | None)`
+  * `epoch (int | None)`
+  * `step (int | None)`
+
+
+
+_field_ checkpoint_id _:`Optional`[`str`]__= None_ _(alias 'checkpointId')_¶ 
+    
+The ID of the checkpoint. 
+
+_field_ epoch _:`Optional`[`int`]__= None_¶ 
+    
+The epoch of the checkpoint. 
+
+_field_ step _:`Optional`[`int`]__= None_¶ 
+    
+The step of the checkpoint. 
+
+_class_ genai.types.CheckpointDict¶ 
+    
+Bases: `TypedDict`
+Describes the machine learning model version checkpoint. 
+
+checkpoint_id _:`Optional`[`str`]_¶ 
+    
+The ID of the checkpoint. 
+
+epoch _:`Optional`[`int`]_¶ 
+    
+The epoch of the checkpoint. 
+
+step _:`Optional`[`int`]_¶ 
+    
+The step of the checkpoint. 
 
 _pydantic model_genai.types.Citation¶ 
     
@@ -11767,6 +12186,19 @@ Show JSON schema
 "additionalProperties":false,
 "description":"Content blob.",
 "properties":{
+"displayName":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is not currently used in the Gemini GenerateContent calls.",
+"title":"Displayname"
+},
 "data":{
 "anyOf":[
 {
@@ -12041,6 +12473,18 @@ Show JSON schema
 "description":"Indicates if the part is thought from the model.",
 "title":"Thought"
 },
+"inlineData":{
+"anyOf":[
+{
+"$ref":"#/$defs/Blob"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Inlined bytes data."
+},
 "codeExecutionResult":{
 "anyOf":[
 {
@@ -12100,18 +12544,6 @@ Show JSON schema
 ],
 "default":null,
 "description":"Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model."
-},
-"inlineData":{
-"anyOf":[
-{
-"$ref":"#/$defs/Blob"
-},
-{
-"type":"null"
-}
-],
-"default":null,
-"description":"Optional. Inlined bytes data."
 },
 "text":{
 "anyOf":[
@@ -13175,6 +13607,19 @@ Show JSON schema
 "additionalProperties":false,
 "description":"Content blob.",
 "properties":{
+"displayName":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is not currently used in the Gemini GenerateContent calls.",
+"title":"Displayname"
+},
 "data":{
 "anyOf":[
 {
@@ -14297,6 +14742,18 @@ Show JSON schema
 "description":"Indicates if the part is thought from the model.",
 "title":"Thought"
 },
+"inlineData":{
+"anyOf":[
+{
+"$ref":"#/$defs/Blob"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Inlined bytes data."
+},
 "codeExecutionResult":{
 "anyOf":[
 {
@@ -14356,18 +14813,6 @@ Show JSON schema
 ],
 "default":null,
 "description":"Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model."
-},
-"inlineData":{
-"anyOf":[
-{
-"$ref":"#/$defs/Blob"
-},
-{
-"type":"null"
-}
-],
-"default":null,
-"description":"Optional. Inlined bytes data."
 },
 "text":{
 "anyOf":[
@@ -15984,6 +16429,19 @@ Show JSON schema
 "additionalProperties":false,
 "description":"Content blob.",
 "properties":{
+"displayName":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is not currently used in the Gemini GenerateContent calls.",
+"title":"Displayname"
+},
 "data":{
 "anyOf":[
 {
@@ -16880,6 +17338,18 @@ Show JSON schema
 "description":"Indicates if the part is thought from the model.",
 "title":"Thought"
 },
+"inlineData":{
+"anyOf":[
+{
+"$ref":"#/$defs/Blob"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Inlined bytes data."
+},
 "codeExecutionResult":{
 "anyOf":[
 {
@@ -16939,18 +17409,6 @@ Show JSON schema
 ],
 "default":null,
 "description":"Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model."
-},
-"inlineData":{
-"anyOf":[
-{
-"$ref":"#/$defs/Blob"
-},
-{
-"type":"null"
-}
-],
-"default":null,
-"description":"Optional. Inlined bytes data."
 },
 "text":{
 "anyOf":[
@@ -18262,6 +18720,19 @@ Show JSON schema
 "description":"Multiplier for adjusting the default learning rate.",
 "title":"Learningratemultiplier"
 },
+"exportLastCheckpointOnly":{
+"anyOf":[
+{
+"type":"boolean"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"If set to true, disable intermediate checkpoints for SFT and only the last checkpoint will be exported. Otherwise, enable intermediate checkpoints for SFT.",
+"title":"Exportlastcheckpointonly"
+},
 "adapterSize":{
 "anyOf":[
 {
@@ -18438,6 +18909,7 @@ Fields:
   * `batch_size (int | None)`
   * `description (str | None)`
   * `epoch_count (int | None)`
+  * `export_last_checkpoint_only (bool | None)`
   * `http_options (genai.types.HttpOptions | None)`
   * `learning_rate (float | None)`
   * `learning_rate_multiplier (float | None)`
@@ -18461,6 +18933,10 @@ The description of the TuningJob
 _field_ epoch_count _:`Optional`[`int`]__= None_ _(alias 'epochCount')_¶ 
     
 Number of complete passes the model makes over the entire training dataset during training. 
+
+_field_ export_last_checkpoint_only _:`Optional`[`bool`]__= None_ _(alias 'exportLastCheckpointOnly')_¶ 
+    
+If set to true, disable intermediate checkpoints for SFT and only the last checkpoint will be exported. Otherwise, enable intermediate checkpoints for SFT. 
 
 _field_ http_options _:`Optional`[`HttpOptions`]__= None_ _(alias 'httpOptions')_¶ 
     
@@ -18502,6 +18978,10 @@ The description of the TuningJob
 epoch_count _:`Optional`[`int`]_¶ 
     
 Number of complete passes the model makes over the entire training dataset during training. 
+
+export_last_checkpoint_only _:`Optional`[`bool`]_¶ 
+    
+If set to true, disable intermediate checkpoints for SFT and only the last checkpoint will be exported. Otherwise, enable intermediate checkpoints for SFT. 
 
 http_options _:`Optional`[`HttpOptionsDict`]_¶ 
     
@@ -19003,6 +19483,19 @@ Show JSON schema
 "additionalProperties":false,
 "description":"Content blob.",
 "properties":{
+"displayName":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is not currently used in the Gemini GenerateContent calls.",
+"title":"Displayname"
+},
 "data":{
 "anyOf":[
 {
@@ -19476,6 +19969,18 @@ Show JSON schema
 "description":"Indicates if the part is thought from the model.",
 "title":"Thought"
 },
+"inlineData":{
+"anyOf":[
+{
+"$ref":"#/$defs/Blob"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Inlined bytes data."
+},
 "codeExecutionResult":{
 "anyOf":[
 {
@@ -19535,18 +20040,6 @@ Show JSON schema
 ],
 "default":null,
 "description":"Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model."
-},
-"inlineData":{
-"anyOf":[
-{
-"$ref":"#/$defs/Blob"
-},
-{
-"type":"null"
-}
-],
-"default":null,
-"description":"Optional. Inlined bytes data."
 },
 "text":{
 "anyOf":[
@@ -20506,6 +20999,19 @@ Show JSON schema
 "additionalProperties":false,
 "description":"Content blob.",
 "properties":{
+"displayName":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is not currently used in the Gemini GenerateContent calls.",
+"title":"Displayname"
+},
 "data":{
 "anyOf":[
 {
@@ -21091,6 +21597,18 @@ Show JSON schema
 "description":"Indicates if the part is thought from the model.",
 "title":"Thought"
 },
+"inlineData":{
+"anyOf":[
+{
+"$ref":"#/$defs/Blob"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Inlined bytes data."
+},
 "codeExecutionResult":{
 "anyOf":[
 {
@@ -21150,18 +21668,6 @@ Show JSON schema
 ],
 "default":null,
 "description":"Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model."
-},
-"inlineData":{
-"anyOf":[
-{
-"$ref":"#/$defs/Blob"
-},
-{
-"type":"null"
-}
-],
-"default":null,
-"description":"Optional. Inlined bytes data."
 },
 "text":{
 "anyOf":[
@@ -25148,7 +25654,7 @@ Show JSON schema
 }
 ],
 "default":null,
-"description":"Output response media type of the generated candidate text.\n      ",
+"description":"Output response mimetype of the generated candidate text.\n      Supported mimetype:\n        - `text/plain`: (default) Text output.\n        - `application/json`: JSON response in the candidates.\n      The model needs to be prompted to output the appropriate response type,\n      otherwise the behavior is undefined.\n      This is a preview feature.\n      ",
 "title":"Responsemimetype"
 },
 "responseSchema":{
@@ -25164,7 +25670,7 @@ Show JSON schema
 }
 ],
 "default":null,
-"description":"Schema that the generated candidate text must adhere to.\n      ",
+"description":"The `Schema` object allows the definition of input and output data types.\n      These types can be objects, but also primitives and arrays.\n      Represents a select subset of an [OpenAPI 3.0 schema\n      object](https://spec.openapis.org/oas/v3.0.3#schema).\n      If set, a compatible response_mime_type must also be set.\n      Compatible mimetypes: `application/json`: Schema for JSON response.\n      ",
 "title":"Responseschema"
 },
 "routingConfig":{
@@ -25623,6 +26129,19 @@ Show JSON schema
 "additionalProperties":false,
 "description":"Content blob.",
 "properties":{
+"displayName":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is not currently used in the Gemini GenerateContent calls.",
+"title":"Displayname"
+},
 "data":{
 "anyOf":[
 {
@@ -26677,6 +27196,18 @@ Show JSON schema
 "description":"Indicates if the part is thought from the model.",
 "title":"Thought"
 },
+"inlineData":{
+"anyOf":[
+{
+"$ref":"#/$defs/Blob"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Inlined bytes data."
+},
 "codeExecutionResult":{
 "anyOf":[
 {
@@ -26736,18 +27267,6 @@ Show JSON schema
 ],
 "default":null,
 "description":"Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model."
-},
-"inlineData":{
-"anyOf":[
-{
-"$ref":"#/$defs/Blob"
-},
-{
-"type":"null"
-}
-],
-"default":null,
-"description":"Optional. Inlined bytes data."
 },
 "text":{
 "anyOf":[
@@ -27917,7 +28436,12 @@ Whether to return the log probabilities of the tokens that were chosen by the mo
 
 _field_ response_mime_type _:`Optional`[`str`]__= None_ _(alias 'responseMimeType')_¶ 
     
-Output response media type of the generated candidate text. 
+Output response mimetype of the generated candidate text. Supported mimetype:
+>   * text/plain: (default) Text output.
+>   * application/json: JSON response in the candidates.
+> 
+
+The model needs to be prompted to output the appropriate response type, otherwise the behavior is undefined. This is a preview feature. 
 
 _field_ response_modalities _:`Optional`[`list`[`str`]]__= None_ _(alias 'responseModalities')_¶ 
     
@@ -27925,7 +28449,7 @@ The requested modalities of the response. Represents the set of modalities that 
 
 _field_ response_schema _:`Union`[`dict`[`Any`, `Any`], `type`, `Schema`, `GenericAlias`, , `_UnionGenericAlias`, `None`]__= None_ _(alias 'responseSchema')_¶ 
     
-Schema that the generated candidate text must adhere to. 
+The Schema object allows the definition of input and output data types. These types can be objects, but also primitives and arrays. Represents a select subset of an [OpenAPI 3.0 schema object](https://spec.openapis.org/oas/v3.0.3#schema). If set, a compatible response_mime_type must also be set. Compatible mimetypes: application/json: Schema for JSON response. 
 
 Validated by: 
     
@@ -28041,7 +28565,12 @@ Whether to return the log probabilities of the tokens that were chosen by the mo
 
 response_mime_type _:`Optional`[`str`]_¶ 
     
-Output response media type of the generated candidate text. 
+Output response mimetype of the generated candidate text. Supported mimetype:
+>   * text/plain: (default) Text output.
+>   * application/json: JSON response in the candidates.
+> 
+
+The model needs to be prompted to output the appropriate response type, otherwise the behavior is undefined. This is a preview feature. 
 
 response_modalities _:`Optional`[`list`[`str`]]_¶ 
     
@@ -28049,7 +28578,7 @@ The requested modalities of the response. Represents the set of modalities that 
 
 response_schema _:`Union`[`dict`[`Any`, `Any`], `type`, `Schema`, `GenericAlias`, , `_UnionGenericAlias`, `SchemaDict`, `None`]_¶ 
     
-Schema that the generated candidate text must adhere to. 
+The Schema object allows the definition of input and output data types. These types can be objects, but also primitives and arrays. Represents a select subset of an [OpenAPI 3.0 schema object](https://spec.openapis.org/oas/v3.0.3#schema). If set, a compatible response_mime_type must also be set. Compatible mimetypes: application/json: Schema for JSON response. 
 
 routing_config _:`Optional`[`GenerationConfigRoutingConfigDict`]_¶ 
     
@@ -28240,6 +28769,19 @@ Show JSON schema
 "additionalProperties":false,
 "description":"Content blob.",
 "properties":{
+"displayName":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is not currently used in the Gemini GenerateContent calls.",
+"title":"Displayname"
+},
 "data":{
 "anyOf":[
 {
@@ -29553,6 +30095,18 @@ Show JSON schema
 "description":"Indicates if the part is thought from the model.",
 "title":"Thought"
 },
+"inlineData":{
+"anyOf":[
+{
+"$ref":"#/$defs/Blob"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Inlined bytes data."
+},
 "codeExecutionResult":{
 "anyOf":[
 {
@@ -29612,18 +30166,6 @@ Show JSON schema
 ],
 "default":null,
 "description":"Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model."
-},
-"inlineData":{
-"anyOf":[
-{
-"$ref":"#/$defs/Blob"
-},
-{
-"type":"null"
-}
-],
-"default":null,
-"description":"Optional. Inlined bytes data."
 },
 "text":{
 "anyOf":[
@@ -38889,6 +39431,53 @@ Show JSON schema
 }
 },
 "$defs":{
+"Checkpoint":{
+"additionalProperties":false,
+"description":"Describes the machine learning model version checkpoint.",
+"properties":{
+"checkpointId":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The ID of the checkpoint.\n      ",
+"title":"Checkpointid"
+},
+"epoch":{
+"anyOf":[
+{
+"type":"integer"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The epoch of the checkpoint.\n      ",
+"title":"Epoch"
+},
+"step":{
+"anyOf":[
+{
+"type":"integer"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The step of the checkpoint.\n      ",
+"title":"Step"
+}
+},
+"title":"Checkpoint",
+"type":"object"
+},
 "Endpoint":{
 "additionalProperties":false,
 "description":"An endpoint where you deploy models.",
@@ -39064,6 +39653,35 @@ Show JSON schema
 "default":null,
 "description":"List of actions that are supported by the model.",
 "title":"Supportedactions"
+},
+"defaultCheckpointId":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The default checkpoint id of a model version.\n      ",
+"title":"Defaultcheckpointid"
+},
+"checkpoints":{
+"anyOf":[
+{
+"items":{
+"$ref":"#/$defs/Checkpoint"
+},
+"type":"array"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The checkpoints of the model.",
+"title":"Checkpoints"
 }
 },
 "title":"Model",
@@ -39414,6 +40032,19 @@ Show JSON schema
 "additionalProperties":false,
 "description":"Content blob.",
 "properties":{
+"displayName":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is not currently used in the Gemini GenerateContent calls.",
+"title":"Displayname"
+},
 "data":{
 "anyOf":[
 {
@@ -40253,6 +40884,18 @@ Show JSON schema
 "description":"Indicates if the part is thought from the model.",
 "title":"Thought"
 },
+"inlineData":{
+"anyOf":[
+{
+"$ref":"#/$defs/Blob"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Inlined bytes data."
+},
 "codeExecutionResult":{
 "anyOf":[
 {
@@ -40312,18 +40955,6 @@ Show JSON schema
 ],
 "default":null,
 "description":"Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model."
-},
-"inlineData":{
-"anyOf":[
-{
-"$ref":"#/$defs/Blob"
-},
-{
-"type":"null"
-}
-],
-"default":null,
-"description":"Optional. Inlined bytes data."
 },
 "text":{
 "anyOf":[
@@ -40805,6 +41436,19 @@ Show JSON schema
 "default":null,
 "description":"Optional. Cloud Storage path to file containing validation dataset for tuning. The dataset must be formatted as a JSONL file.",
 "title":"Validationdataseturi"
+},
+"exportLastCheckpointOnly":{
+"anyOf":[
+{
+"type":"boolean"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. If set to true, disable intermediate checkpoints for SFT and only the last checkpoint will be exported.",
+"title":"Exportlastcheckpointonly"
 }
 },
 "title":"SupervisedTuningSpec",
@@ -40838,9 +41482,85 @@ Show JSON schema
 "default":null,
 "description":"Output only. A resource name of an Endpoint. Format: `projects/{project}/locations/{location}/endpoints/{endpoint}`.",
 "title":"Endpoint"
+},
+"checkpoints":{
+"anyOf":[
+{
+"items":{
+"$ref":"#/$defs/TunedModelCheckpoint"
+},
+"type":"array"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The checkpoints associated with this TunedModel.\n      This field is only populated for tuning jobs that enable intermediate\n      checkpoints.",
+"title":"Checkpoints"
 }
 },
 "title":"TunedModel",
+"type":"object"
+},
+"TunedModelCheckpoint":{
+"additionalProperties":false,
+"description":"TunedModelCheckpoint for the Tuned Model of a Tuning Job.",
+"properties":{
+"checkpointId":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The ID of the checkpoint.\n      ",
+"title":"Checkpointid"
+},
+"epoch":{
+"anyOf":[
+{
+"type":"integer"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The epoch of the checkpoint.\n      ",
+"title":"Epoch"
+},
+"step":{
+"anyOf":[
+{
+"type":"integer"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The step of the checkpoint.\n      ",
+"title":"Step"
+},
+"endpoint":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The Endpoint resource name that the checkpoint is deployed to.\n      Format: `projects/{project}/locations/{location}/endpoints/{endpoint}`.\n      ",
+"title":"Endpoint"
+}
+},
+"title":"TunedModelCheckpoint",
 "type":"object"
 },
 "TuningDataStats":{
@@ -41249,6 +41969,19 @@ Show JSON schema
 "additionalProperties":false,
 "description":"Content blob.",
 "properties":{
+"displayName":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is not currently used in the Gemini GenerateContent calls.",
+"title":"Displayname"
+},
 "data":{
 "anyOf":[
 {
@@ -41560,6 +42293,18 @@ Show JSON schema
 "description":"Indicates if the part is thought from the model.",
 "title":"Thought"
 },
+"inlineData":{
+"anyOf":[
+{
+"$ref":"#/$defs/Blob"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Inlined bytes data."
+},
 "codeExecutionResult":{
 "anyOf":[
 {
@@ -41619,18 +42364,6 @@ Show JSON schema
 ],
 "default":null,
 "description":"Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model."
-},
-"inlineData":{
-"anyOf":[
-{
-"$ref":"#/$defs/Blob"
-},
-{
-"type":"null"
-}
-],
-"default":null,
-"description":"Optional. Inlined bytes data."
 },
 "text":{
 "anyOf":[
@@ -42036,6 +42769,19 @@ Show JSON schema
 "additionalProperties":false,
 "description":"Content blob.",
 "properties":{
+"displayName":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is not currently used in the Gemini GenerateContent calls.",
+"title":"Displayname"
+},
 "data":{
 "anyOf":[
 {
@@ -43396,6 +44142,18 @@ Show JSON schema
 "description":"Indicates if the part is thought from the model.",
 "title":"Thought"
 },
+"inlineData":{
+"anyOf":[
+{
+"$ref":"#/$defs/Blob"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Inlined bytes data."
+},
 "codeExecutionResult":{
 "anyOf":[
 {
@@ -43455,18 +44213,6 @@ Show JSON schema
 ],
 "default":null,
 "description":"Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model."
-},
-"inlineData":{
-"anyOf":[
-{
-"$ref":"#/$defs/Blob"
-},
-{
-"type":"null"
-}
-],
-"default":null,
-"description":"Optional. Inlined bytes data."
 },
 "text":{
 "anyOf":[
@@ -44572,6 +45318,19 @@ Show JSON schema
 "additionalProperties":false,
 "description":"Content blob.",
 "properties":{
+"displayName":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is not currently used in the Gemini GenerateContent calls.",
+"title":"Displayname"
+},
 "data":{
 "anyOf":[
 {
@@ -45074,6 +45833,19 @@ Show JSON schema
 "additionalProperties":false,
 "description":"Content blob.",
 "properties":{
+"displayName":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is not currently used in the Gemini GenerateContent calls.",
+"title":"Displayname"
+},
 "data":{
 "anyOf":[
 {
@@ -46140,6 +46912,18 @@ Show JSON schema
 "description":"Indicates if the part is thought from the model.",
 "title":"Thought"
 },
+"inlineData":{
+"anyOf":[
+{
+"$ref":"#/$defs/Blob"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Inlined bytes data."
+},
 "codeExecutionResult":{
 "anyOf":[
 {
@@ -46199,18 +46983,6 @@ Show JSON schema
 ],
 "default":null,
 "description":"Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model."
-},
-"inlineData":{
-"anyOf":[
-{
-"$ref":"#/$defs/Blob"
-},
-{
-"type":"null"
-}
-],
-"default":null,
-"description":"Optional. Inlined bytes data."
 },
 "text":{
 "anyOf":[
@@ -47899,6 +48671,19 @@ Show JSON schema
 "additionalProperties":false,
 "description":"Content blob.",
 "properties":{
+"displayName":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is not currently used in the Gemini GenerateContent calls.",
+"title":"Displayname"
+},
 "data":{
 "anyOf":[
 {
@@ -48986,6 +49771,18 @@ Show JSON schema
 "description":"Indicates if the part is thought from the model.",
 "title":"Thought"
 },
+"inlineData":{
+"anyOf":[
+{
+"$ref":"#/$defs/Blob"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Inlined bytes data."
+},
 "codeExecutionResult":{
 "anyOf":[
 {
@@ -49045,18 +49842,6 @@ Show JSON schema
 ],
 "default":null,
 "description":"Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model."
-},
-"inlineData":{
-"anyOf":[
-{
-"$ref":"#/$defs/Blob"
-},
-{
-"type":"null"
-}
-],
-"default":null,
-"description":"Optional. Inlined bytes data."
 },
 "text":{
 "anyOf":[
@@ -50640,6 +51425,19 @@ Show JSON schema
 "additionalProperties":false,
 "description":"Content blob.",
 "properties":{
+"displayName":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is not currently used in the Gemini GenerateContent calls.",
+"title":"Displayname"
+},
 "data":{
 "anyOf":[
 {
@@ -51966,6 +52764,18 @@ Show JSON schema
 "description":"Indicates if the part is thought from the model.",
 "title":"Thought"
 },
+"inlineData":{
+"anyOf":[
+{
+"$ref":"#/$defs/Blob"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Inlined bytes data."
+},
 "codeExecutionResult":{
 "anyOf":[
 {
@@ -52025,18 +52835,6 @@ Show JSON schema
 ],
 "default":null,
 "description":"Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model."
-},
-"inlineData":{
-"anyOf":[
-{
-"$ref":"#/$defs/Blob"
-},
-{
-"type":"null"
-}
-],
-"default":null,
-"description":"Optional. Inlined bytes data."
 },
 "text":{
 "anyOf":[
@@ -53252,6 +54050,19 @@ Show JSON schema
 "additionalProperties":false,
 "description":"Content blob.",
 "properties":{
+"displayName":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is not currently used in the Gemini GenerateContent calls.",
+"title":"Displayname"
+},
 "data":{
 "anyOf":[
 {
@@ -53475,6 +54286,19 @@ Show JSON schema
 "additionalProperties":false,
 "description":"Content blob.",
 "properties":{
+"displayName":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is not currently used in the Gemini GenerateContent calls.",
+"title":"Displayname"
+},
 "data":{
 "anyOf":[
 {
@@ -54060,6 +54884,18 @@ Show JSON schema
 "description":"Indicates if the part is thought from the model.",
 "title":"Thought"
 },
+"inlineData":{
+"anyOf":[
+{
+"$ref":"#/$defs/Blob"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Inlined bytes data."
+},
 "codeExecutionResult":{
 "anyOf":[
 {
@@ -54119,18 +54955,6 @@ Show JSON schema
 ],
 "default":null,
 "description":"Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model."
-},
-"inlineData":{
-"anyOf":[
-{
-"$ref":"#/$defs/Blob"
-},
-{
-"type":"null"
-}
-],
-"default":null,
-"description":"Optional. Inlined bytes data."
 },
 "text":{
 "anyOf":[
@@ -54571,6 +55395,19 @@ Show JSON schema
 "additionalProperties":false,
 "description":"Content blob.",
 "properties":{
+"displayName":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is not currently used in the Gemini GenerateContent calls.",
+"title":"Displayname"
+},
 "data":{
 "anyOf":[
 {
@@ -55420,6 +56257,18 @@ Show JSON schema
 "description":"Indicates if the part is thought from the model.",
 "title":"Thought"
 },
+"inlineData":{
+"anyOf":[
+{
+"$ref":"#/$defs/Blob"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Inlined bytes data."
+},
 "codeExecutionResult":{
 "anyOf":[
 {
@@ -55479,18 +56328,6 @@ Show JSON schema
 ],
 "default":null,
 "description":"Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model."
-},
-"inlineData":{
-"anyOf":[
-{
-"$ref":"#/$defs/Blob"
-},
-{
-"type":"null"
-}
-],
-"default":null,
-"description":"Optional. Inlined bytes data."
 },
 "text":{
 "anyOf":[
@@ -57326,9 +58163,85 @@ Show JSON schema
 "default":null,
 "description":"List of actions that are supported by the model.",
 "title":"Supportedactions"
+},
+"defaultCheckpointId":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The default checkpoint id of a model version.\n      ",
+"title":"Defaultcheckpointid"
+},
+"checkpoints":{
+"anyOf":[
+{
+"items":{
+"$ref":"#/$defs/Checkpoint"
+},
+"type":"array"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The checkpoints of the model.",
+"title":"Checkpoints"
 }
 },
 "$defs":{
+"Checkpoint":{
+"additionalProperties":false,
+"description":"Describes the machine learning model version checkpoint.",
+"properties":{
+"checkpointId":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The ID of the checkpoint.\n      ",
+"title":"Checkpointid"
+},
+"epoch":{
+"anyOf":[
+{
+"type":"integer"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The epoch of the checkpoint.\n      ",
+"title":"Epoch"
+},
+"step":{
+"anyOf":[
+{
+"type":"integer"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The step of the checkpoint.\n      ",
+"title":"Step"
+}
+},
+"title":"Checkpoint",
+"type":"object"
+},
 "Endpoint":{
 "additionalProperties":false,
 "description":"An endpoint where you deploy models.",
@@ -57421,6 +58334,8 @@ Show JSON schema
 
 Fields: 
     
+  * `checkpoints (list[genai.types.Checkpoint] | None)`
+  * `default_checkpoint_id (str | None)`
   * `description (str | None)`
   * `display_name (str | None)`
   * `endpoints (list[genai.types.Endpoint] | None)`
@@ -57433,6 +58348,14 @@ Fields:
   * `version (str | None)`
 
 
+
+_field_ checkpoints _:`Optional`[`list`[`Checkpoint`]]__= None_¶ 
+    
+The checkpoints of the model. 
+
+_field_ default_checkpoint_id _:`Optional`[`str`]__= None_ _(alias 'defaultCheckpointId')_¶ 
+    
+The default checkpoint id of a model version. 
 
 _field_ description _:`Optional`[`str`]__= None_¶ 
     
@@ -57517,6 +58440,19 @@ Show JSON schema
 "additionalProperties":false,
 "description":"Content blob.",
 "properties":{
+"displayName":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is not currently used in the Gemini GenerateContent calls.",
+"title":"Displayname"
+},
 "data":{
 "anyOf":[
 {
@@ -57791,6 +58727,18 @@ Show JSON schema
 "description":"Indicates if the part is thought from the model.",
 "title":"Thought"
 },
+"inlineData":{
+"anyOf":[
+{
+"$ref":"#/$defs/Blob"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Inlined bytes data."
+},
 "codeExecutionResult":{
 "anyOf":[
 {
@@ -57850,18 +58798,6 @@ Show JSON schema
 ],
 "default":null,
 "description":"Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model."
-},
-"inlineData":{
-"anyOf":[
-{
-"$ref":"#/$defs/Blob"
-},
-{
-"type":"null"
-}
-],
-"default":null,
-"description":"Optional. Inlined bytes data."
 },
 "text":{
 "anyOf":[
@@ -57941,6 +58877,14 @@ _class_ genai.types.ModelDict¶
     
 Bases: `TypedDict`
 A trained machine learning model. 
+
+checkpoints _:`Optional`[`list`[`CheckpointDict`]]_¶ 
+    
+The checkpoints of the model. 
+
+default_checkpoint_id _:`Optional`[`str`]_¶ 
+    
+The default checkpoint id of a model version. 
 
 description _:`Optional`[`str`]_¶ 
     
@@ -58223,6 +59167,18 @@ Show JSON schema
 "description":"Indicates if the part is thought from the model.",
 "title":"Thought"
 },
+"inlineData":{
+"anyOf":[
+{
+"$ref":"#/$defs/Blob"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Inlined bytes data."
+},
 "codeExecutionResult":{
 "anyOf":[
 {
@@ -58283,18 +59239,6 @@ Show JSON schema
 "default":null,
 "description":"Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model."
 },
-"inlineData":{
-"anyOf":[
-{
-"$ref":"#/$defs/Blob"
-},
-{
-"type":"null"
-}
-],
-"default":null,
-"description":"Optional. Inlined bytes data."
-},
 "text":{
 "anyOf":[
 {
@@ -58314,6 +59258,19 @@ Show JSON schema
 "additionalProperties":false,
 "description":"Content blob.",
 "properties":{
+"displayName":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is not currently used in the Gemini GenerateContent calls.",
+"title":"Displayname"
+},
 "data":{
 "anyOf":[
 {
@@ -63655,6 +64612,19 @@ Show JSON schema
 "additionalProperties":false,
 "description":"Content blob.",
 "properties":{
+"displayName":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is not currently used in the Gemini GenerateContent calls.",
+"title":"Displayname"
+},
 "data":{
 "anyOf":[
 {
@@ -63966,6 +64936,18 @@ Show JSON schema
 "description":"Indicates if the part is thought from the model.",
 "title":"Thought"
 },
+"inlineData":{
+"anyOf":[
+{
+"$ref":"#/$defs/Blob"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Inlined bytes data."
+},
 "codeExecutionResult":{
 "anyOf":[
 {
@@ -64025,18 +65007,6 @@ Show JSON schema
 ],
 "default":null,
 "description":"Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model."
-},
-"inlineData":{
-"anyOf":[
-{
-"$ref":"#/$defs/Blob"
-},
-{
-"type":"null"
-}
-],
-"default":null,
-"description":"Optional. Inlined bytes data."
 },
 "text":{
 "anyOf":[
@@ -64809,6 +65779,19 @@ Show JSON schema
 "default":null,
 "description":"Optional. Cloud Storage path to file containing validation dataset for tuning. The dataset must be formatted as a JSONL file.",
 "title":"Validationdataseturi"
+},
+"exportLastCheckpointOnly":{
+"anyOf":[
+{
+"type":"boolean"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. If set to true, disable intermediate checkpoints for SFT and only the last checkpoint will be exported.",
+"title":"Exportlastcheckpointonly"
 }
 },
 "$defs":{
@@ -64881,11 +65864,16 @@ Show JSON schema
 
 Fields: 
     
+  * `export_last_checkpoint_only (bool | None)`
   * `hyper_parameters (genai.types.SupervisedHyperParameters | None)`
   * `training_dataset_uri (str | None)`
   * `validation_dataset_uri (str | None)`
 
 
+
+_field_ export_last_checkpoint_only _:`Optional`[`bool`]__= None_ _(alias 'exportLastCheckpointOnly')_¶ 
+    
+Optional. If set to true, disable intermediate checkpoints for SFT and only the last checkpoint will be exported. 
 
 _field_ hyper_parameters _:`Optional`[`SupervisedHyperParameters`]__= None_ _(alias 'hyperParameters')_¶ 
     
@@ -64903,6 +65891,10 @@ _class_ genai.types.SupervisedTuningSpecDict¶
     
 Bases: `TypedDict`
 Tuning Spec for Supervised Tuning for first party models. 
+
+export_last_checkpoint_only _:`Optional`[`bool`]_¶ 
+    
+Optional. If set to true, disable intermediate checkpoints for SFT and only the last checkpoint will be exported. 
 
 hyper_parameters _:`Optional`[`SupervisedHyperParametersDict`]_¶ 
     
@@ -67144,6 +68136,84 @@ Show JSON schema
 "default":null,
 "description":"Output only. A resource name of an Endpoint. Format: `projects/{project}/locations/{location}/endpoints/{endpoint}`.",
 "title":"Endpoint"
+},
+"checkpoints":{
+"anyOf":[
+{
+"items":{
+"$ref":"#/$defs/TunedModelCheckpoint"
+},
+"type":"array"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The checkpoints associated with this TunedModel.\n      This field is only populated for tuning jobs that enable intermediate\n      checkpoints.",
+"title":"Checkpoints"
+}
+},
+"$defs":{
+"TunedModelCheckpoint":{
+"additionalProperties":false,
+"description":"TunedModelCheckpoint for the Tuned Model of a Tuning Job.",
+"properties":{
+"checkpointId":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The ID of the checkpoint.\n      ",
+"title":"Checkpointid"
+},
+"epoch":{
+"anyOf":[
+{
+"type":"integer"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The epoch of the checkpoint.\n      ",
+"title":"Epoch"
+},
+"step":{
+"anyOf":[
+{
+"type":"integer"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The step of the checkpoint.\n      ",
+"title":"Step"
+},
+"endpoint":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The Endpoint resource name that the checkpoint is deployed to.\n      Format: `projects/{project}/locations/{location}/endpoints/{endpoint}`.\n      ",
+"title":"Endpoint"
+}
+},
+"title":"TunedModelCheckpoint",
+"type":"object"
 }
 },
 "additionalProperties":false
@@ -67154,10 +68224,15 @@ Show JSON schema
 
 Fields: 
     
+  * `checkpoints (list[genai.types.TunedModelCheckpoint] | None)`
   * `endpoint (str | None)`
   * `model (str | None)`
 
 
+
+_field_ checkpoints _:`Optional`[`list`[`TunedModelCheckpoint`]]__= None_¶ 
+    
+The checkpoints associated with this TunedModel. This field is only populated for tuning jobs that enable intermediate checkpoints. 
 
 _field_ endpoint _:`Optional`[`str`]__= None_¶ 
     
@@ -67167,9 +68242,132 @@ _field_ model _:`Optional`[`str`]__= None_¶
     
 Output only. The resource name of the TunedModel. Format: projects/{project}/locations/{location}/models/{model}. 
 
+_pydantic model_genai.types.TunedModelCheckpoint¶ 
+    
+Bases: `BaseModel`
+TunedModelCheckpoint for the Tuned Model of a Tuning Job.
+Create a new model by parsing and validating input data from keyword arguments.
+Raises [ValidationError][pydantic_core.ValidationError] if the input data cannot be validated to form a valid model.
+self is explicitly positional-only to allow self as a field name.
+Show JSON schema
+```
+{
+"title":"TunedModelCheckpoint",
+"description":"TunedModelCheckpoint for the Tuned Model of a Tuning Job.",
+"type":"object",
+"properties":{
+"checkpointId":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The ID of the checkpoint.\n      ",
+"title":"Checkpointid"
+},
+"epoch":{
+"anyOf":[
+{
+"type":"integer"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The epoch of the checkpoint.\n      ",
+"title":"Epoch"
+},
+"step":{
+"anyOf":[
+{
+"type":"integer"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The step of the checkpoint.\n      ",
+"title":"Step"
+},
+"endpoint":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The Endpoint resource name that the checkpoint is deployed to.\n      Format: `projects/{project}/locations/{location}/endpoints/{endpoint}`.\n      ",
+"title":"Endpoint"
+}
+},
+"additionalProperties":false
+}
+
+```
+
+
+Fields: 
+    
+  * `checkpoint_id (str | None)`
+  * `endpoint (str | None)`
+  * `epoch (int | None)`
+  * `step (int | None)`
+
+
+
+_field_ checkpoint_id _:`Optional`[`str`]__= None_ _(alias 'checkpointId')_¶ 
+    
+The ID of the checkpoint. 
+
+_field_ endpoint _:`Optional`[`str`]__= None_¶ 
+    
+The Endpoint resource name that the checkpoint is deployed to. Format: projects/{project}/locations/{location}/endpoints/{endpoint}. 
+
+_field_ epoch _:`Optional`[`int`]__= None_¶ 
+    
+The epoch of the checkpoint. 
+
+_field_ step _:`Optional`[`int`]__= None_¶ 
+    
+The step of the checkpoint. 
+
+_class_ genai.types.TunedModelCheckpointDict¶ 
+    
+Bases: `TypedDict`
+TunedModelCheckpoint for the Tuned Model of a Tuning Job. 
+
+checkpoint_id _:`Optional`[`str`]_¶ 
+    
+The ID of the checkpoint. 
+
+endpoint _:`Optional`[`str`]_¶ 
+    
+The Endpoint resource name that the checkpoint is deployed to. Format: projects/{project}/locations/{location}/endpoints/{endpoint}. 
+
+epoch _:`Optional`[`int`]_¶ 
+    
+The epoch of the checkpoint. 
+
+step _:`Optional`[`int`]_¶ 
+    
+The step of the checkpoint. 
+
 _class_ genai.types.TunedModelDict¶ 
     
 Bases: `TypedDict` 
+
+checkpoints _:`Optional`[`list`[`TunedModelCheckpointDict`]]_¶ 
+    
+The checkpoints associated with this TunedModel. This field is only populated for tuning jobs that enable intermediate checkpoints. 
 
 endpoint _:`Optional`[`str`]_¶ 
     
@@ -67330,6 +68528,19 @@ Show JSON schema
 "additionalProperties":false,
 "description":"Content blob.",
 "properties":{
+"displayName":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is not currently used in the Gemini GenerateContent calls.",
+"title":"Displayname"
+},
 "data":{
 "anyOf":[
 {
@@ -67935,6 +69146,18 @@ Show JSON schema
 "description":"Indicates if the part is thought from the model.",
 "title":"Thought"
 },
+"inlineData":{
+"anyOf":[
+{
+"$ref":"#/$defs/Blob"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Inlined bytes data."
+},
 "codeExecutionResult":{
 "anyOf":[
 {
@@ -67994,18 +69217,6 @@ Show JSON schema
 ],
 "default":null,
 "description":"Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model."
-},
-"inlineData":{
-"anyOf":[
-{
-"$ref":"#/$defs/Blob"
-},
-{
-"type":"null"
-}
-],
-"default":null,
-"description":"Optional. Inlined bytes data."
 },
 "text":{
 "anyOf":[
@@ -68887,6 +70098,19 @@ Show JSON schema
 "additionalProperties":false,
 "description":"Content blob.",
 "properties":{
+"displayName":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is not currently used in the Gemini GenerateContent calls.",
+"title":"Displayname"
+},
 "data":{
 "anyOf":[
 {
@@ -69726,6 +70950,18 @@ Show JSON schema
 "description":"Indicates if the part is thought from the model.",
 "title":"Thought"
 },
+"inlineData":{
+"anyOf":[
+{
+"$ref":"#/$defs/Blob"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Inlined bytes data."
+},
 "codeExecutionResult":{
 "anyOf":[
 {
@@ -69785,18 +71021,6 @@ Show JSON schema
 ],
 "default":null,
 "description":"Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model."
-},
-"inlineData":{
-"anyOf":[
-{
-"$ref":"#/$defs/Blob"
-},
-{
-"type":"null"
-}
-],
-"default":null,
-"description":"Optional. Inlined bytes data."
 },
 "text":{
 "anyOf":[
@@ -70278,6 +71502,19 @@ Show JSON schema
 "default":null,
 "description":"Optional. Cloud Storage path to file containing validation dataset for tuning. The dataset must be formatted as a JSONL file.",
 "title":"Validationdataseturi"
+},
+"exportLastCheckpointOnly":{
+"anyOf":[
+{
+"type":"boolean"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. If set to true, disable intermediate checkpoints for SFT and only the last checkpoint will be exported.",
+"title":"Exportlastcheckpointonly"
 }
 },
 "title":"SupervisedTuningSpec",
@@ -70311,9 +71548,85 @@ Show JSON schema
 "default":null,
 "description":"Output only. A resource name of an Endpoint. Format: `projects/{project}/locations/{location}/endpoints/{endpoint}`.",
 "title":"Endpoint"
+},
+"checkpoints":{
+"anyOf":[
+{
+"items":{
+"$ref":"#/$defs/TunedModelCheckpoint"
+},
+"type":"array"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The checkpoints associated with this TunedModel.\n      This field is only populated for tuning jobs that enable intermediate\n      checkpoints.",
+"title":"Checkpoints"
 }
 },
 "title":"TunedModel",
+"type":"object"
+},
+"TunedModelCheckpoint":{
+"additionalProperties":false,
+"description":"TunedModelCheckpoint for the Tuned Model of a Tuning Job.",
+"properties":{
+"checkpointId":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The ID of the checkpoint.\n      ",
+"title":"Checkpointid"
+},
+"epoch":{
+"anyOf":[
+{
+"type":"integer"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The epoch of the checkpoint.\n      ",
+"title":"Epoch"
+},
+"step":{
+"anyOf":[
+{
+"type":"integer"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The step of the checkpoint.\n      ",
+"title":"Step"
+},
+"endpoint":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"The Endpoint resource name that the checkpoint is deployed to.\n      Format: `projects/{project}/locations/{location}/endpoints/{endpoint}`.\n      ",
+"title":"Endpoint"
+}
+},
+"title":"TunedModelCheckpoint",
 "type":"object"
 },
 "TuningDataStats":{
@@ -70939,6 +72252,19 @@ Show JSON schema
 "default":null,
 "description":"",
 "title":"Description"
+},
+"defaultCheckpointId":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"",
+"title":"Defaultcheckpointid"
 }
 },
 "$defs":{
@@ -71040,10 +72366,14 @@ Show JSON schema
 
 Fields: 
     
+  * `default_checkpoint_id (str | None)`
   * `description (str | None)`
   * `display_name (str | None)`
   * `http_options (genai.types.HttpOptions | None)`
 
+
+
+_field_ default_checkpoint_id _:`Optional`[`str`]__= None_ _(alias 'defaultCheckpointId')_¶ 
 
 
 _field_ description _:`Optional`[`str`]__= None_¶ 
@@ -71060,6 +72390,9 @@ _class_ genai.types.UpdateModelConfigDict¶
     
 Bases: `TypedDict`
 Configuration for updating a tuned model. 
+
+default_checkpoint_id _:`Optional`[`str`]_¶ 
+
 
 description _:`Optional`[`str`]_¶ 
 
@@ -72409,6 +73742,19 @@ Show JSON schema
 "additionalProperties":false,
 "description":"Content blob.",
 "properties":{
+"displayName":{
+"anyOf":[
+{
+"type":"string"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is not currently used in the Gemini GenerateContent calls.",
+"title":"Displayname"
+},
 "data":{
 "anyOf":[
 {
@@ -72683,6 +74029,18 @@ Show JSON schema
 "description":"Indicates if the part is thought from the model.",
 "title":"Thought"
 },
+"inlineData":{
+"anyOf":[
+{
+"$ref":"#/$defs/Blob"
+},
+{
+"type":"null"
+}
+],
+"default":null,
+"description":"Optional. Inlined bytes data."
+},
 "codeExecutionResult":{
 "anyOf":[
 {
@@ -72742,18 +74100,6 @@ Show JSON schema
 ],
 "default":null,
 "description":"Optional. The result output of a [FunctionCall] that contains a string representing the [FunctionDeclaration.name] and a structured JSON object containing any output from the function call. It is used as context to the model."
-},
-"inlineData":{
-"anyOf":[
-{
-"$ref":"#/$defs/Blob"
-},
-{
-"type":"null"
-}
-],
-"default":null,
-"description":"Optional. Inlined bytes data."
 },
 "text":{
 "anyOf":[
