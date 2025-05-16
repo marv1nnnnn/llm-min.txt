@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.2.2 - 2025-05-16
+- Fixed titoken import error
+
 ## v0.2.1 - 2025-05-16
 
 - Moved `count_tokens` utility function to `src/llm_min/utils.py`.

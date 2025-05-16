@@ -1,6 +1,6 @@
 [project]
 name = "llm-min"
-version = "0.2.1"
+version = "0.2.2"
 description = "Generates LLM context by scraping and summarizing documentation for Python libraries listed in a requirements.txt file."
 readme = "README.md"
 requires-python = ">=3.10"
