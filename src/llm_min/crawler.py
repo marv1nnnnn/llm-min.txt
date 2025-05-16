@@ -1,10 +1,10 @@
-import tiktoken
 import logging
+
 # Deduplicate pages with identical or extremely similar raw_markdown
 from difflib import SequenceMatcher
 from urllib.parse import urlparse  # Import urlparse
 
-from crawl4ai import AsyncWebCrawler, CrawlerRunConfig, BrowserConfig
+from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig
 from crawl4ai.content_filter_strategy import PruningContentFilter
 from crawl4ai.content_scraping_strategy import LXMLWebScrapingStrategy
 from crawl4ai.deep_crawling import (
@@ -16,8 +16,6 @@ from crawl4ai.markdown_generation_strategy import (
 )  # Import DefaultMarkdownGenerator
 
 logger = logging.getLogger(__name__)
-
-
 
 
 def _get_base_path(url: str) -> str:
@@ -56,11 +54,11 @@ async def crawl_documentation(url: str, max_pages: int | None = 200, max_depth: 
     try:
         browser_config = BrowserConfig(
             text_mode=True,  # Potentially faster by not rendering visual elements
-            headless=True, # Keep headless
-            java_script_enabled=True # Keep JS enabled for now, doc sites often need it
+            headless=True,  # Keep headless
+            java_script_enabled=True,  # Keep JS enabled for now, doc sites often need it
         )
         logger.debug(f"Attempting crawl process for initial URL: {url}")
-        async with AsyncWebCrawler(config=browser_config) as crawler: # Pass browser_config
+        async with AsyncWebCrawler(config=browser_config) as crawler:  # Pass browser_config
             # --- Path Restriction Logic (Based on initial url) ---
             base_path_url = _get_base_path(url)  # Calculate base path from the initial URL
             # The pattern ensures we stay within the directory structure of the final URL.
@@ -71,7 +69,7 @@ async def crawl_documentation(url: str, max_pages: int | None = 200, max_depth: 
             # --- End Path Restriction Logic ---
 
             # 1. Configure the Content Filter
-            prune_filter = PruningContentFilter(min_word_threshold=50) # Re-enable and configure filter
+            prune_filter = PruningContentFilter(min_word_threshold=50)  # Re-enable and configure filter
             # 2. Configure the Markdown Generator with the filter
             md_generator = DefaultMarkdownGenerator(
                 content_filter=prune_filter,  # Use the pruning filter
@@ -95,11 +93,17 @@ async def crawl_documentation(url: str, max_pages: int | None = 200, max_depth: 
                 scraping_strategy=LXMLWebScrapingStrategy(),
                 verbose=True,
                 # Relevance and Speed Optimizations:
-                target_elements=["article", "main", "[role=main]", ".content", "#content"], # Focus on main content areas
-                excluded_selector="nav, footer, header, aside, .sidebar, .menu, #navigation, #footer, .hero, .banner, .header, .footer, .nav, .toc, .table-of-contents, [role=navigation], [role=banner], [role=complementary]", # Exclude common irrelevant sections
+                target_elements=[
+                    "article",
+                    "main",
+                    "[role=main]",
+                    ".content",
+                    "#content",
+                ],  # Focus on main content areas
+                excluded_selector="nav, footer, header, aside, .sidebar, .menu, #navigation, #footer, .hero, .banner, .header, .footer, .nav, .toc, .table-of-contents, [role=navigation], [role=banner], [role=complementary]",  # Exclude common irrelevant sections
                 wait_until="load",  # Potentially faster than "domcontentloaded"
                 semaphore_count=10,  # Increase concurrency
-                page_timeout=45000, # Slightly reduced page timeout (default 60000)
+                page_timeout=45000,  # Slightly reduced page timeout (default 60000)
             )
 
             # 4. Run the deep crawl using the final URL and the configured run_config

@@ -1,14 +1,13 @@
 import logging
-import asyncio
 import re
-import tiktoken # Added for token counting
-from string import Template # We will use $variable for substitution in prompts
 from datetime import datetime, timezone
-from typing import List, Dict, Tuple, Optional, Set
+from string import Template  # We will use $variable for substitution in prompts
+
+from llm_min.utils import count_tokens
+
 # Assuming .llm.generate_text_response is your async function to call the LLM
 # Assuming .llm.chunk_content is your utility for chunking large text
 from .llm import chunk_content, generate_text_response
-from llm_min.utils import count_tokens
 
 logger = logging.getLogger(__name__)
 
@@ -341,36 +340,41 @@ Begin generating ONLY THE NEW Usage Patterns or new steps for existing patterns 
 """
 SKF_PROMPT_CALL3_USAGE_ITERATIVE_TEMPLATE = Template(SKF_PROMPT_CALL3_USAGE_ITERATIVE_STR)
 
-def get_next_id(prefix: str, existing_ids: Set[str]) -> str:
+
+def get_next_id(prefix: str, existing_ids: set[str]) -> str:
     """Generates the next sequential ID (e.g., G001, D010)."""
     max_num = 0
     for eid in existing_ids:
         if eid.startswith(prefix):
             try:
-                num = int(eid[len(prefix):])
+                num = int(eid[len(prefix) :])
                 if num > max_num:
                     max_num = num
             except ValueError:
-                continue # Should not happen with valid IDs
+                continue  # Should not happen with valid IDs
     return f"{prefix}{max_num + 1:03d}"
 
-def parse_skf_lines(text: str, section_prefix: str) -> List[str]:
+
+def parse_skf_lines(text: str, section_prefix: str) -> list[str]:
     """Parses SKF content and returns lines belonging to a specific prefix (G, D, I)."""
     if not text or not text.strip():
         return []
     return [line.strip() for line in text.splitlines() if line.strip().startswith(section_prefix)]
 
-def extract_entity_from_g_line(g_line: str) -> Optional[str]:
+
+def extract_entity_from_g_line(g_line: str) -> str | None:
     """Extracts EntityName from a Gxxx line. Gxxx:[TYP] EntityName - ..."""
     match = re.match(r"G\d{3,}:\s*\[[^\]]+\]\s*([^-\s]+)", g_line)
     return match.group(1) if match else None
 
-def extract_gxxx_from_d_line(d_line: str) -> Optional[str]:
+
+def extract_gxxx_from_d_line(d_line: str) -> str | None:
     """Extracts Gxxx from a Dxxx primary definition line. Dxxx:Gxxx_Entity ..."""
     match = re.match(r"D\d{3,}:\s*(G\d{3,})", d_line)
     return match.group(1) if match else None
 
-def re_id_glossary_items(glossary_text: str) -> Tuple[str, Dict[str, str]]:
+
+def re_id_glossary_items(glossary_text: str) -> tuple[str, dict[str, str]]:
     """
     Re-numbers Gxxx IDs in a glossary text to be globally sequential.
     Returns the new glossary text and a mapping from old GIDs to new GIDs.
@@ -381,24 +385,23 @@ def re_id_glossary_items(glossary_text: str) -> Tuple[str, Dict[str, str]]:
 
     lines = glossary_text.splitlines()
     new_lines = []
-    old_to_new_gid_map: Dict[str, str] = {}
+    old_to_new_gid_map: dict[str, str] = {}
     current_g_id_val = 0
 
     # First pass: map old GIDs to new GIDs
-    temp_gid_map: Dict[str, str] = {} # Stores original GID string to new GID string
-
-    processed_entities_for_new_gids: Set[str] = set() # To ensure unique new GIDs per unique entity
+    processed_entities_for_new_gids: set[str] = set()  # To ensure unique new GIDs per unique entity
 
     for line in lines:
         line = line.strip()
-        if not line or not line.startswith("G"): # Skip empty or non-glossary lines
-            if line: new_lines.append(line) # Keep other lines like comments or ---
+        if not line or not line.startswith("G"):  # Skip empty or non-glossary lines
+            if line:
+                new_lines.append(line)  # Keep other lines like comments or ---
             continue
 
-        match = re.match(r"(G\w+):(\s*\[.*?\]\s*.*)", line) # Gxxx:, G1:, G_temp:
+        match = re.match(r"(G\w+):(\s*\[.*?\]\s*.*)", line)  # Gxxx:, G1:, G_temp:
         if match:
             old_gid_str = match.group(1)
-            entity_part = match.group(2).strip() # [TYP] EntityName - "Keywords" @DocRef
+            entity_part = match.group(2).strip()  # [TYP] EntityName - "Keywords" @DocRef
 
             # Create a canonical key for the entity to handle semantic duplicates if LLM didn't
             # This is a simple heuristic; more complex merging might be needed
@@ -418,21 +421,19 @@ def re_id_glossary_items(glossary_text: str) -> Tuple[str, Dict[str, str]]:
                 # For robust merging, the LLM call 1.5 is critical.
                 # This re-ID mainly ensures Gxxx are sequential AFTER LLM consolidation.
                 # If LLM consolidates properly, this branch for duplicates is less likely.
-                first_occurrence_new_gid = ""
                 # Find the new_gid associated with this entity_name
                 # This is a bit tricky here, this re_id function assumes LLM did the merge
                 # and is mostly about making Gxxx sequential. If LLM produces G1, G2 for the same thing,
                 # this re-ID won't merge them, only re-ID G1 to G001, G2 to G002.
                 # The prompt for Call 1.5 is key for actual merging.
                 # This function is now simplified to just re-number whatever distinct lines it gets.
-                current_g_id_val +=1
+                current_g_id_val += 1
                 new_gid = f"G{current_g_id_val:03d}"
                 old_to_new_gid_map[old_gid_str] = new_gid
                 new_lines.append(f"{new_gid}:{entity_part}")
 
-        elif line: # Non-matching lines (e.g. format lines, comments)
-             new_lines.append(line)
-
+        elif line:  # Non-matching lines (e.g. format lines, comments)
+            new_lines.append(line)
 
     # Second pass: update Gxxx references within the new glossary items (e.g. in @DocRef or keywords if they were GIDs)
     # This is less common for glossary but good practice. For D/I/U this is crucial.
@@ -447,37 +448,39 @@ def re_id_glossary_items(glossary_text: str) -> Tuple[str, Dict[str, str]]:
     return "\n".join(new_lines), old_to_new_gid_map
 
 
-def update_gxxx_references(text_content: str, gid_map: Dict[str, str]) -> str:
+def update_gxxx_references(text_content: str, gid_map: dict[str, str]) -> str:
     """Updates all Gxxx references in a given text based on the old_to_new_gid_map."""
     if not text_content or not gid_map:
         return text_content
-    
+
     updated_text = text_content
     # Sort keys by length descending to replace longer GIDs first (e.g., G10 before G1)
     sorted_old_gids = sorted(gid_map.keys(), key=len, reverse=True)
     for old_gid in sorted_old_gids:
         new_gid = gid_map[old_gid]
         # Use regex to ensure replacement of Gxxx as a whole word/identifier
-        updated_text = re.sub(r'\b' + re.escape(old_gid) + r'\b', new_gid, updated_text)
+        updated_text = re.sub(r"\b" + re.escape(old_gid) + r"\b", new_gid, updated_text)
     return updated_text
+
 
 # --- Main Pipeline Function ---
 
+
 async def _generate_global_glossary(
-    document_chunks: List[str],
+    document_chunks: list[str],
     api_key: str | None = None,
     model_name: str | None = None,
-) -> Tuple[str, Dict[str, str]]:
+) -> tuple[str, dict[str, str]]:
     logger.info("SKF Pipeline - Step 1: Generating Global Glossary...")
-    partial_glossary_outputs: List[str] = []
+    partial_glossary_outputs: list[str] = []
     num_doc_chunks = len(document_chunks)
     for i, doc_chunk_text in enumerate(document_chunks):
-        logger.debug(f"Step 1: Processing glossary for document chunk {i+1}/{num_doc_chunks}")
+        logger.debug(f"Step 1: Processing glossary for document chunk {i + 1}/{num_doc_chunks}")
         prompt_c1 = SKF_PROMPT_CALL1_GLOSSARY_TEMPLATE.substitute(input_document_text=doc_chunk_text)
         glossary_chunk_output = await generate_text_response(prompt_c1, api_key=api_key, model_name=model_name)
         if glossary_chunk_output and isinstance(glossary_chunk_output, str) and glossary_chunk_output.strip():
             partial_glossary_outputs.append(glossary_chunk_output.strip())
-    
+
     if not partial_glossary_outputs:
         logger.warning("Step 1: No glossary fragments generated from chunks. Final glossary will be empty.")
         raw_consolidated_glossary = ""
@@ -495,65 +498,78 @@ async def _generate_global_glossary(
 
     final_skf_glossary_content, gid_map = re_id_glossary_items(raw_consolidated_glossary)
     if not final_skf_glossary_content.strip() and partial_glossary_outputs:
-        logger.warning("Post re-ID, glossary content is empty. This might indicate issues in re_id_glossary_items or LLM output for consolidation.")
-    
-    logger.info(f"SKF Pipeline - Step 1 Complete: Global Glossary generated ({count_tokens(final_skf_glossary_content)} tokens, {len(gid_map)} map items). Kept in memory.")
+        logger.warning(
+            "Post re-ID, glossary content is empty. This might indicate issues in re_id_glossary_items or LLM output for consolidation."
+        )
+
+    logger.info(
+        f"SKF Pipeline - Step 1 Complete: Global Glossary generated ({count_tokens(final_skf_glossary_content)} tokens, {len(gid_map)} map items). Kept in memory."
+    )
     return final_skf_glossary_content, gid_map
 
+
 async def _generate_definitions_and_interactions(
-    document_chunks: List[str],
+    document_chunks: list[str],
     final_skf_glossary_content: str,
     library_name_param: str,
-    gid_map: Dict[str, str],
+    gid_map: dict[str, str],
     api_key: str | None = None,
     model_name: str | None = None,
 ) -> str:
     logger.info("SKF Pipeline - Step 2: Generating Definitions & Interactions...")
-    cumulative_definitions_items: List[str] = []
-    cumulative_interactions_items: List[str] = []
+    cumulative_definitions_items: list[str] = []
+    cumulative_interactions_items: list[str] = []
     num_doc_chunks = len(document_chunks)
-    
+
     definitions_header_block = (
         "# SECTION: DEFINITIONS (Prefix: D)\n"
-        "# Format_PrimaryDef: Dxxx:Gxxx_Entity [DEF_TYP] [NAMESPACE \"relative.path\"] [OPERATIONS {op1:RetT(p1N:p1T); op2_static:RetT()}] [ATTRIBUTES {attr1:AttrT1(\"Def:Val\",\"RO\")}] [CONSTANTS {c1:ValT1(\"Val\")}] (\"Note\")\n"
-        "# ---\""
+        '# Format_PrimaryDef: Dxxx:Gxxx_Entity [DEF_TYP] [NAMESPACE "relative.path"] [OPERATIONS {op1:RetT(p1N:p1T); op2_static:RetT()}] [ATTRIBUTES {attr1:AttrT1("Def:Val","RO")}] [CONSTANTS {c1:ValT1("Val")}] ("Note")\n'
+        '# ---"'
     )
     interactions_header_block = (
         "# SECTION: INTERACTIONS (Prefix: I)\n"
-        "# Format: Ixxx:Source_Ref INT_VERB Target_Ref_Or_Literal (\"Note_Conditions_Error(Gxxx_ErrorType)\")\n"
-        "# ---\""
+        '# Format: Ixxx:Source_Ref INT_VERB Target_Ref_Or_Literal ("Note_Conditions_Error(Gxxx_ErrorType)")\n'
+        '# ---"'
     )
 
-    def assemble_di_text(definitions: List[str], interactions: List[str]) -> str:
-        d_text = f"{definitions_header_block}\n" + "\n".join(definitions) if definitions else definitions_header_block + "\n# No definitions identified."
-        i_text = f"{interactions_header_block}\n" + "\n".join(interactions) if interactions else interactions_header_block + "\n# No interactions identified."
+    def assemble_di_text(definitions: list[str], interactions: list[str]) -> str:
+        d_text = (
+            f"{definitions_header_block}\n" + "\n".join(definitions)
+            if definitions
+            else definitions_header_block + "\n# No definitions identified."
+        )
+        i_text = (
+            f"{interactions_header_block}\n" + "\n".join(interactions)
+            if interactions
+            else interactions_header_block + "\n# No interactions identified."
+        )
         return f"{d_text}\n\n{i_text}"
 
     current_d_id = 0
     current_i_id = 0
 
     for i, doc_chunk_text in enumerate(document_chunks):
-        logger.debug(f"Step 2: Processing D&I for document chunk {i+1}/{num_doc_chunks}")
+        logger.debug(f"Step 2: Processing D&I for document chunk {i + 1}/{num_doc_chunks}")
         previous_di_content_for_context = assemble_di_text(cumulative_definitions_items, cumulative_interactions_items)
 
         if i == 0:
             prompt_c2_chunk = SKF_PROMPT_CALL2_DETAILS_SINGLE_CHUNK_TEMPLATE.substitute(
                 skf_glossary_content=final_skf_glossary_content,
                 document_chunk=doc_chunk_text,
-                primary_namespace=library_name_param
+                primary_namespace=library_name_param,
             )
         else:
             prompt_c2_chunk = SKF_PROMPT_CALL2_DETAILS_ITERATIVE_TEMPLATE.substitute(
                 skf_glossary_content=final_skf_glossary_content,
                 previous_chunk_skf_details_content=previous_di_content_for_context,
                 current_document_chunk=doc_chunk_text,
-                primary_namespace=library_name_param
+                primary_namespace=library_name_param,
             )
 
         chunk_di_output_raw = await generate_text_response(prompt_c2_chunk, api_key=api_key, model_name=model_name)
-        
+
         if chunk_di_output_raw and isinstance(chunk_di_output_raw, str):
-            chunk_di_output = chunk_di_output_raw # update_gxxx_references(chunk_di_output_raw, gid_map) # Safety net
+            chunk_di_output = chunk_di_output_raw  # update_gxxx_references(chunk_di_output_raw, gid_map) # Safety net
 
             raw_d_items_from_chunk = parse_skf_lines(chunk_di_output, "D")
             raw_i_items_from_chunk = parse_skf_lines(chunk_di_output, "I")
@@ -563,7 +579,7 @@ async def _generate_definitions_and_interactions(
                 if not any(cleaned_d_item in cdi for cdi in cumulative_definitions_items):
                     current_d_id += 1
                     cumulative_definitions_items.append(f"D{current_d_id:03d}:{cleaned_d_item}")
-            
+
             for i_item_text_from_chunk in raw_i_items_from_chunk:
                 cleaned_i_item = re.sub(r"^I\d{3,}:\s*", "", i_item_text_from_chunk)
                 if not any(cleaned_i_item in cii for cii in cumulative_interactions_items):
@@ -573,14 +589,17 @@ async def _generate_definitions_and_interactions(
     final_skf_definitions_interactions_content = assemble_di_text(
         cumulative_definitions_items, cumulative_interactions_items
     )
-    logger.info(f"SKF Pipeline - Step 2 Complete: D&I ({count_tokens(final_skf_definitions_interactions_content)} tokens).")
+    logger.info(
+        f"SKF Pipeline - Step 2 Complete: D&I ({count_tokens(final_skf_definitions_interactions_content)} tokens)."
+    )
     return final_skf_definitions_interactions_content
 
+
 async def _generate_usage_patterns(
-    document_chunks: List[str],
+    document_chunks: list[str],
     final_skf_glossary_content: str,
     final_skf_definitions_interactions_content: str,
-    gid_map: Dict[str, str],
+    gid_map: dict[str, str],
     api_key: str | None = None,
     model_name: str | None = None,
 ) -> str:
@@ -590,46 +609,64 @@ async def _generate_usage_patterns(
         "# SECTION: USAGE_PATTERNS (Prefix: U)\n"
         "# Format: U_Name:PatternTitleKeyword\n"
         "#         U_Name.N:[Actor_Or_Ref] ACTION_KEYWORD (Target_Or_Data_Involving_Ref) -> [Result_Or_State_Change_Involving_Ref]\n"
-        "# ---\""
+        '# ---"'
     )
-    
+
     cumulative_usage_patterns_text = f"""{usage_patterns_header_block}
 # No distinct critical usage patterns identified.
 # ---"""
 
     for i, doc_chunk_text_for_usage in enumerate(document_chunks):
-        logger.debug(f"Step 3: Processing Usage for document chunk {i+1}/{num_doc_chunks}")
+        logger.debug(f"Step 3: Processing Usage for document chunk {i + 1}/{num_doc_chunks}")
         chunk_usage_output = None
         if i == 0:
             prompt_c3_chunk = SKF_PROMPT_CALL3_USAGE_SINGLE_CHUNK_TEMPLATE.substitute(
                 skf_glossary_content=final_skf_glossary_content,
                 final_skf_definitions_interactions_content=final_skf_definitions_interactions_content,
-                document_chunk_for_usage=doc_chunk_text_for_usage
+                document_chunk_for_usage=doc_chunk_text_for_usage,
             )
-            chunk_usage_output_raw = await generate_text_response(prompt_c3_chunk, api_key=api_key, model_name=model_name)
-            chunk_usage_output = update_gxxx_references(chunk_usage_output_raw, gid_map) if chunk_usage_output_raw else ""
-            if chunk_usage_output and isinstance(chunk_usage_output, str) and \
-               "# No distinct critical usage patterns identified" not in chunk_usage_output and \
-               chunk_usage_output.strip().startswith("# SECTION: USAGE_PATTERNS"):
+            chunk_usage_output_raw = await generate_text_response(
+                prompt_c3_chunk, api_key=api_key, model_name=model_name
+            )
+            chunk_usage_output = (
+                update_gxxx_references(chunk_usage_output_raw, gid_map) if chunk_usage_output_raw else ""
+            )
+            if (
+                chunk_usage_output
+                and isinstance(chunk_usage_output, str)
+                and "# No distinct critical usage patterns identified" not in chunk_usage_output
+                and chunk_usage_output.strip().startswith("# SECTION: USAGE_PATTERNS")
+            ):
                 cumulative_usage_patterns_text = chunk_usage_output.strip()
         else:
             prompt_c3_iterative = SKF_PROMPT_CALL3_USAGE_ITERATIVE_TEMPLATE.substitute(
                 skf_glossary_content=final_skf_glossary_content,
                 cumulative_skf_details_content=final_skf_definitions_interactions_content,
                 previous_chunk_skf_usage_content=cumulative_usage_patterns_text,
-                current_document_chunk_for_usage=doc_chunk_text_for_usage
+                current_document_chunk_for_usage=doc_chunk_text_for_usage,
             )
-            chunk_usage_output_raw = await generate_text_response(prompt_c3_iterative, api_key=api_key, model_name=model_name)
-            chunk_usage_output = update_gxxx_references(chunk_usage_output_raw, gid_map) if chunk_usage_output_raw else ""
-            if chunk_usage_output and isinstance(chunk_usage_output, str) and \
-               chunk_usage_output.strip().startswith("# SECTION: USAGE_PATTERNS"):
+            chunk_usage_output_raw = await generate_text_response(
+                prompt_c3_iterative, api_key=api_key, model_name=model_name
+            )
+            chunk_usage_output = (
+                update_gxxx_references(chunk_usage_output_raw, gid_map) if chunk_usage_output_raw else ""
+            )
+            if (
+                chunk_usage_output
+                and isinstance(chunk_usage_output, str)
+                and chunk_usage_output.strip().startswith("# SECTION: USAGE_PATTERNS")
+            ):
                 cumulative_usage_patterns_text = chunk_usage_output.strip()
 
     final_skf_usage_patterns_content = cumulative_usage_patterns_text
-    logger.info(f"SKF Pipeline - Step 3 Complete: Usage Patterns ({count_tokens(final_skf_usage_patterns_content)} tokens).")
+    logger.info(
+        f"SKF Pipeline - Step 3 Complete: Usage Patterns ({count_tokens(final_skf_usage_patterns_content)} tokens)."
+    )
     return final_skf_usage_patterns_content
 
+
 # --- Main Pipeline Function ---
+
 
 async def compact_content_to_structured_text(
     full_content: str,
@@ -638,22 +675,24 @@ async def compact_content_to_structured_text(
     chunk_size: int,
     api_key: str | None = None,
     model_name: str | None = None,
-) -> str: # This will now return D, I, U only
-    logger.info(f"Starting SKF LA manifest generation for '{library_name_param}' (v{library_version_param}). V2 Pipeline.")
-    current_utc_timestamp = datetime.now(timezone.utc).isoformat(timespec='seconds')
+) -> str:  # This will now return D, I, U only
+    logger.info(
+        f"Starting SKF LA manifest generation for '{library_name_param}' (v{library_version_param}). V2 Pipeline."
+    )
+    current_utc_timestamp = datetime.now(timezone.utc).isoformat(timespec="seconds")
     source_doc_identifiers = [f"{library_name_param}-{library_version_param}"]
 
     document_chunks = chunk_content(full_content, chunk_size)
     if not document_chunks:
         logger.error("Full content resulted in no document chunks. Aborting.")
         return ""
-    num_doc_chunks = len(document_chunks) # Used by helpers now
-    logger.info(f"Initial content split into {num_doc_chunks} document chunk(s). Total length: {count_tokens(full_content)} tokens.")
+    num_doc_chunks = len(document_chunks)  # Used by helpers now
+    logger.info(
+        f"Initial content split into {num_doc_chunks} document chunk(s). Total length: {count_tokens(full_content)} tokens."
+    )
 
     # Step 1: Generate Global Glossary
-    final_skf_glossary_content, gid_map = await _generate_global_glossary(
-        document_chunks, api_key, model_name
-    )
+    final_skf_glossary_content, gid_map = await _generate_global_glossary(document_chunks, api_key, model_name)
 
     # Step 2: Generate Definitions & Interactions
     final_skf_definitions_interactions_content = await _generate_definitions_and_interactions(
@@ -662,24 +701,31 @@ async def compact_content_to_structured_text(
 
     # Step 3: Generate Usage Patterns
     final_skf_usage_patterns_content = await _generate_usage_patterns(
-        document_chunks, final_skf_glossary_content, final_skf_definitions_interactions_content, gid_map, api_key, model_name
+        document_chunks,
+        final_skf_glossary_content,
+        final_skf_definitions_interactions_content,
+        gid_map,
+        api_key,
+        model_name,
     )
 
     # --- Final Assembly (D, I, U only) ---
     final_skf_manifest_parts = [
-        f"# IntegratedKnowledgeManifest_SKF/1.4 LA",
+        "# IntegratedKnowledgeManifest_SKF/1.4 LA",
         f"# SourceDocs: [{', '.join(source_doc_identifiers)}]",
         f"# GenerationTimestamp: {current_utc_timestamp}",
         f"# PrimaryNamespace: {library_name_param}",
         "",
         # Glossary is NOT included in the file output
-        final_skf_definitions_interactions_content, # Contains D and I sections
+        final_skf_definitions_interactions_content,  # Contains D and I sections
         "",
         final_skf_usage_patterns_content,
         "",
-        "# END_OF_MANIFEST"
+        "# END_OF_MANIFEST",
     ]
     final_skf_manifest = "\n".join(final_skf_manifest_parts)
 
-    logger.info(f"Successfully assembled final SKF manifest (D, I, U) for '{library_name_param}'. Total length: {count_tokens(final_skf_manifest)} tokens.")
+    logger.info(
+        f"Successfully assembled final SKF manifest (D, I, U) for '{library_name_param}'. Total length: {count_tokens(final_skf_manifest)} tokens."
+    )
     return final_skf_manifest.strip()

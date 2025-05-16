@@ -11,7 +11,6 @@
   - [What is `llm-min.txt` and Why is it Important?](#what-is-llm-mintxt-and-why-is-it-important)
   - [Understanding `llm-min.txt`: A Machine-Optimized Format 🧩](#understanding-llm-mintxt-a-machine-optimized-format-)
   - [Does it Really Work? Visualizing the Impact](#does-it-really-work-visualizing-the-impact)
-  - [It's necessary to make a benchmark but incredibly hard. LLM code generation is stochastic and the quality of the generated code depends on many factors. crawl4ai / google-genai / svelte are all packages current LLM failed to generate correct code for. Using `llm-min` will largely improve the success rate of code generation.](#its-necessary-to-make-a-benchmark-but-incredibly-hard-llm-code-generation-is-stochastic-and-the-quality-of-the-generated-code-depends-on-many-factors-crawl4ai--google-genai--svelte-are-all-packages-current-llm-failed-to-generate-correct-code-for-using-llm-min-will-largely-improve-the-success-rate-of-code-generation)
   - [Quick Start 🚀](#quick-start-)
   - [Output Directory Structure 📂](#output-directory-structure-)
   - [Choosing the Right AI Model (Why Gemini) 🧠](#choosing-the-right-ai-model-why-gemini-)
@@ -146,6 +145,7 @@ Simply reference the files in your AI-powered IDE's conversation, and watch your
 **How does it perform?**
 
 It's necessary to make a benchmark but incredibly hard. LLM code generation is stochastic and the quality of the generated code depends on many factors. crawl4ai / google-genai / svelte are all packages current LLM failed to generate correct code for. Using `llm-min` will largely improve the success rate of code generation.
+
 ---
 
 ## Quick Start 🚀

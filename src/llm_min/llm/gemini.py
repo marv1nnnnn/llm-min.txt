@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 # Import genai again
 from google import genai
-from google.genai.types import GenerateContentResponse, GenerateContentConfig, ThinkingConfig
+from google.genai.types import GenerateContentConfig, GenerateContentResponse
 
 load_dotenv()  # Load environment variables from .env file
 
@@ -130,7 +130,7 @@ async def generate_text_response(
     response: GenerateContentResponse | None = None
     finish_reason: str | None = None
     retries = 0
-    max_retries = 1 # Retry once
+    max_retries = 1  # Retry once
 
     while retries <= max_retries:
         try:
@@ -165,16 +165,18 @@ async def generate_text_response(
             if finish_reason == "STOP":
                 logger.info("Gemini generation finished naturally (STOP).")
                 # Proceed to extract text - likely complete
-                break # Exit retry loop on success
+                break  # Exit retry loop on success
             elif finish_reason == "MAX_TOKENS":
-                logger.warning(f"Gemini generation stopped due to MAX_TOKENS limit (Attempt {retries + 1}/{max_retries + 1}).")
+                logger.warning(
+                    f"Gemini generation stopped due to MAX_TOKENS limit (Attempt {retries + 1}/{max_retries + 1})."
+                )
                 if retries < max_retries:
                     retries += 1
-                    logger.info(f"Retrying Gemini generation...")
-                    continue # Retry
+                    logger.info("Retrying Gemini generation...")
+                    continue  # Retry
                 else:
                     logger.warning("Max retries reached for MAX_TOKENS. Output may be truncated.")
-                    break # Exit loop after max retries
+                    break  # Exit loop after max retries
             elif finish_reason == "SAFETY":
                 logger.warning("Gemini generation stopped due to SAFETY filters on the output.")
                 return "ERROR: Gemini generation stopped due to SAFETY filters on the output."
@@ -184,14 +186,16 @@ async def generate_text_response(
             else:  # OTHER or unexpected reasons
                 logger.warning(f"Gemini generation finished with reason: {finish_reason}")
                 # Treat as potentially problematic or incomplete.
-                break # Exit loop for other reasons
+                break  # Exit loop for other reasons
 
         except Exception as e:
-            logger.error(f"Error during Gemini API text generation (Attempt {retries + 1}/{max_retries + 1}): {e}", exc_info=True)
+            logger.error(
+                f"Error during Gemini API text generation (Attempt {retries + 1}/{max_retries + 1}): {e}", exc_info=True
+            )
             if retries < max_retries:
                 retries += 1
-                logger.info(f"Retrying Gemini generation after error...")
-                continue # Retry on exception
+                logger.info("Retrying Gemini generation after error...")
+                continue  # Retry on exception
             else:
                 logger.error("Max retries reached after error.")
                 return f"ERROR: Gemini API call failed after multiple retries: {e}"
@@ -201,7 +205,7 @@ async def generate_text_response(
         return "ERROR: Gemini generation failed after retries."
 
     # 4. Extract text (handle potential lack of text even if not blocked)
-    candidate = response.candidates[0] # Get the candidate from the last attempt
+    candidate = response.candidates[0]  # Get the candidate from the last attempt
     try:
         # Access text via parts is generally safer if structure is complex
         # but response.text often works for simple text responses.
@@ -227,4 +231,3 @@ async def generate_text_response(
             return "ERROR: Gemini response contained no valid text content."
 
     return response_text.strip()
-

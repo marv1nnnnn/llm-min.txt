@@ -12,7 +12,9 @@ class LLMMinGenerator:
     Generates llm_min.txt from a Python package name or a documentation URL.
     """
 
-    def __init__(self, output_dir: str = ".", output_folder_name_override: str | None = None, llm_config: dict | None = None):
+    def __init__(
+        self, output_dir: str = ".", output_folder_name_override: str | None = None, llm_config: dict | None = None
+    ):
         """
         Initializes the LLMMinGenerator instance.
 
@@ -77,7 +79,6 @@ class LLMMinGenerator:
             self._write_output_files(source_name, input_content, min_content)
         except Exception as e:
             raise Exception(f"Compaction failed for source '{source_name}': {e}") from e
-
 
     def generate_from_url(self, doc_url: str, library_version: str | None = None):
         """
@@ -164,7 +165,6 @@ class LLMMinGenerator:
         except FileNotFoundError:
             # Try a path relative to this file's directory if the first fails
             # This makes it more robust if the script is run from different working directories
-            current_dir = os.path.dirname(os.path.abspath(__file__))
             # project_root_assets = os.path.join(
             # current_dir, "..", "..", "assets", "llm_min_guideline.md"
             # ) # Adjust based on actual structure

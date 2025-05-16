@@ -1,7 +1,9 @@
-import tiktoken
 import logging
 
+import tiktoken
+
 logger = logging.getLogger(__name__)
+
 
 def count_tokens(text: str, model_name: str = "gpt-4o") -> int:
     """Counts the number of tokens in a text string using tiktoken."""

@@ -1,18 +1,20 @@
-import tiktoken
-import sys
 import os
 import re
+import sys
+
+import tiktoken
+
 
 def count_tokens(filepath, encoding_name="cl100k_base"):
     """Reads a file and counts tokens using tiktoken."""
     # Check if the filepath looks like a python executable path
-    if re.search(r'/?bin/python\d?(\.\d+)?$', filepath):
+    if re.search(r"/?bin/python\d?(\.\d+)?$", filepath):
         print(f"Error: Argument '{filepath}' looks like a Python executable path, not a file path.", file=sys.stderr)
         sys.exit(1)
     try:
         # Assuming tiktoken is installed in the venv
         encoding = tiktoken.get_encoding(encoding_name)
-        with open(filepath, 'r', encoding='utf-8') as f:
+        with open(filepath, encoding="utf-8") as f:
             content = f.read()
         num_tokens = len(encoding.encode(content))
         return num_tokens
@@ -22,10 +24,14 @@ def count_tokens(filepath, encoding_name="cl100k_base"):
     except Exception as e:
         # Print tiktoken import errors clearly
         if isinstance(e, ModuleNotFoundError):
-             print(f"Error: 'tiktoken' module not found. Ensure it's installed in the venv: .venv/bin/python -m pip install tiktoken", file=sys.stderr)
+            print(
+                "Error: 'tiktoken' module not found. Ensure it's installed in the venv: .venv/bin/python -m pip install tiktoken",
+                file=sys.stderr,
+            )
         else:
             print(f"An error occurred processing {filepath}: {e}", file=sys.stderr)
         sys.exit(1)
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
@@ -49,4 +55,4 @@ if __name__ == "__main__":
         print(f"Tokens in {os.path.basename(original_file_path)}: {tokens_original}")
         print(f"Tokens in {os.path.basename(reduced_file_path)}: {tokens_reduced}")
         print(f"Token Reduction: {reduction}")
-        print(f"Percentage Reduction: {percentage_reduction:.2f}%") 
+        print(f"Percentage Reduction: {percentage_reduction:.2f}%")

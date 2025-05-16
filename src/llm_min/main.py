@@ -136,9 +136,13 @@ def main(
     }
 
     # Determine the actual output directory name
-    final_output_dir = os.path.join(output_dir, output_folder_name_override) if output_folder_name_override else output_dir
+    final_output_dir = (
+        os.path.join(output_dir, output_folder_name_override) if output_folder_name_override else output_dir
+    )
 
-    generator = LLMMinGenerator(output_dir=output_dir, output_folder_name_override=output_folder_name_override, llm_config=llm_config)
+    generator = LLMMinGenerator(
+        output_dir=output_dir, output_folder_name_override=output_folder_name_override, llm_config=llm_config
+    )
 
     # Validate input options: Exactly one of input_folder, package_name, or doc_url must be provided
     # Validate input options: Exactly one of input_folder, package_name_input, or doc_url must be provided
