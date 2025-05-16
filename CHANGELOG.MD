@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.2.3 - 2025-05-16
+- Fix version issue
+  
 ## v0.2.2 - 2025-05-16
 - Fixed titoken import error
 
