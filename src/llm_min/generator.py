@@ -50,6 +50,35 @@ class LLMMinGenerator:
         print(f"Found documentation URL: {doc_url}")
         self._crawl_and_compact(doc_url, package_name, library_version)
 
+    def generate_from_text(self, input_content: str, source_name: str, library_version: str | None = None):
+        """
+        Generates llm_min.txt from provided text content.
+
+        Args:
+            input_content (str): The text content to process.
+            source_name (str): Identifier for the output directory.
+            library_version (str): The version of the library.
+
+        Raises:
+            Exception: If compaction fails.
+        """
+        print("Compacting provided text content...")
+        try:
+            min_content = asyncio.run(
+                compact_content_to_structured_text(
+                    input_content,
+                    library_name_param=source_name,
+                    library_version_param=library_version,
+                    chunk_size=self.llm_config.get("chunk_size", 1000000),
+                    api_key=self.llm_config.get("api_key"),
+                    model_name=self.llm_config.get("model_name"),
+                )
+            )
+            self._write_output_files(source_name, input_content, min_content)
+        except Exception as e:
+            raise Exception(f"Compaction failed for source '{source_name}': {e}") from e
+
+
     def generate_from_url(self, doc_url: str, library_version: str | None = None):
         """
         Generates llm_min.txt from a direct documentation URL.

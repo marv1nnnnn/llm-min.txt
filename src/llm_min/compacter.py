@@ -8,6 +8,7 @@ from typing import List, Dict, Tuple, Optional, Set
 # Assuming .llm.generate_text_response is your async function to call the LLM
 # Assuming .llm.chunk_content is your utility for chunking large text
 from .llm import chunk_content, generate_text_response
+from llm_min.utils import count_tokens
 
 logger = logging.getLogger(__name__)
 
@@ -460,17 +461,6 @@ def update_gxxx_references(text_content: str, gid_map: Dict[str, str]) -> str:
         updated_text = re.sub(r'\b' + re.escape(old_gid) + r'\b', new_gid, updated_text)
     return updated_text
 
-def count_tokens(text: str, model_name: str = "gpt-4o") -> int:
-    """Counts the number of tokens in a text string using tiktoken."""
-    if not text:
-        return 0
-    try:
-        encoding = tiktoken.encoding_for_model(model_name)
-    except KeyError:
-        logger.warning(f"Warning: model {model_name} not found. Using cl100k_base encoding.")
-        encoding = tiktoken.get_encoding("cl100k_base")
-    return len(encoding.encode(text))
-
 # --- Main Pipeline Function ---
 
 async def _generate_global_glossary(
@@ -649,7 +639,7 @@ async def compact_content_to_structured_text(
     api_key: str | None = None,
     model_name: str | None = None,
 ) -> str: # This will now return D, I, U only
-    logger.info(f"Starting SKF/1.4 LA manifest generation for '{library_name_param}' (v{library_version_param}). V2 Pipeline.")
+    logger.info(f"Starting SKF LA manifest generation for '{library_name_param}' (v{library_version_param}). V2 Pipeline.")
     current_utc_timestamp = datetime.now(timezone.utc).isoformat(timespec='seconds')
     source_doc_identifiers = [f"{library_name_param}-{library_version_param}"]
 
@@ -658,7 +648,7 @@ async def compact_content_to_structured_text(
         logger.error("Full content resulted in no document chunks. Aborting.")
         return ""
     num_doc_chunks = len(document_chunks) # Used by helpers now
-    logger.info(f"Initial content split into {num_doc_chunks} document chunk(s).")
+    logger.info(f"Initial content split into {num_doc_chunks} document chunk(s). Total length: {count_tokens(full_content)} tokens.")
 
     # Step 1: Generate Global Glossary
     final_skf_glossary_content, gid_map = await _generate_global_glossary(

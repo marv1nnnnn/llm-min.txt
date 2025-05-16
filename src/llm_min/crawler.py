@@ -2,7 +2,6 @@ import tiktoken
 import logging
 # Deduplicate pages with identical or extremely similar raw_markdown
 from difflib import SequenceMatcher
-
 from urllib.parse import urlparse  # Import urlparse
 
 from crawl4ai import AsyncWebCrawler, CrawlerRunConfig, BrowserConfig
@@ -19,16 +18,7 @@ from crawl4ai.markdown_generation_strategy import (
 logger = logging.getLogger(__name__)
 
 
-def count_tokens(text: str, model_name: str = "gpt-4o") -> int:
-    """Counts the number of tokens in a text string using tiktoken."""
-    if not text:
-        return 0
-    try:
-        encoding = tiktoken.encoding_for_model(model_name)
-    except KeyError:
-        logger.warning(f"Warning: model {model_name} not found. Using cl100k_base encoding.")
-        encoding = tiktoken.get_encoding("cl100k_base")
-    return len(encoding.encode(text))
+
 
 def _get_base_path(url: str) -> str:
     """Extracts the base path (directory) from a URL."""
@@ -149,7 +139,6 @@ async def crawl_documentation(url: str, max_pages: int | None = 200, max_depth: 
 
         logger.info(
             f"Successfully deep crawled {len(results)} pages starting from {url} "
-            f"(original: {url}). Aggregated content token count after pruning: {count_tokens(aggregated_content)}"
             f"token characters: {len(aggregated_content)}"
         )
         return aggregated_content
