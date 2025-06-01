@@ -132,7 +132,7 @@ These results demonstrate token reductions typically ranging from 90-95%, with s
 In our samples directory, you can examine these impressive results firsthand:
 *   `sample/crawl4ai/llm-full.txt`: Original documentation (uncompressed)
 *   `sample/crawl4ai/llm-min.txt`: The compressed SKF representation
-*   `sample/crawl4ai/llm-min-guideline.md`: The format decoder companion file, also seen in [llm-min-guideline.md](assets/llm-min-guideline.md)
+*   `sample/crawl4ai/llm-min-guideline.md`: The format decoder companion file, also seen in [llm-min-guideline.md](src/llm_min/assets/llm_min_guideline.md)
 
 Most compressed files contain around 10,000 tokens – well within the processing capacity of modern AI assistants.
 

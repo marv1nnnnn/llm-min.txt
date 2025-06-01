@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.2.4 - 2025-06-01
+- Refactored asset handling for `llm_min_guideline.md`:
+    - Moved guideline to `src/llm_min/assets/llm_min_guideline.md`.
+    - Updated `src/llm_min/generator.py` to use `importlib.resources` to load the guideline.
+    - Updated `pyproject.toml` to correctly package the assets.
 ## v0.2.3 - 2025-05-16
 - Fix version issue
   

@@ -1,6 +1,7 @@
 import asyncio  # Added for running async functions
 import os
 import shutil
+import importlib.resources
 
 from llm_min.compacter import compact_content_to_structured_text
 from llm_min.crawler import crawl_documentation
@@ -155,31 +156,15 @@ class LLMMinGenerator:
             f.write(min_content)
 
         print(f"Copying guideline to: {guideline_file_path}")
-        # Ensure the assets directory is correctly referenced.
-        # Assuming 'assets/llm_min_guideline.md' is relative to the project root
-        # or where the script is executed from.
-        # If generator.py is in a subdirectory, this path might need adjustment
-        # or be made absolute. For now, assuming it's correct.
         try:
-            shutil.copy("assets/llm_min_guideline.md", guideline_file_path)
+            # Use importlib.resources to access the packaged guideline file
+            # Use importlib.resources.files() for Python 3.9+
+            guideline_source_resource = importlib.resources.files('llm_min.assets') / 'llm_min_guideline.md'
+            with importlib.resources.as_file(guideline_source_resource) as guideline_source_path:
+                shutil.copy(guideline_source_path, guideline_file_path)
         except FileNotFoundError:
-            # Try a path relative to this file's directory if the first fails
-            # This makes it more robust if the script is run from different working directories
-            # project_root_assets = os.path.join(
-            # current_dir, "..", "..", "assets", "llm_min_guideline.md"
-            # ) # Adjust based on actual structure
-            # A more robust way would be to pass the assets path or determine it globally
-            # For now, let's assume the original path or a simple relative one.
-            # If assets is at the same level as src:
-            assets_path_alt = os.path.join(
-                os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", "llm_min_guideline.md"
-            )
-
-            try:
-                shutil.copy(assets_path_alt, guideline_file_path)
-            except FileNotFoundError:
-                print(
-                    f"Warning: Could not find llm_min_guideline.md at 'assets/llm_min_guideline.md' or '{assets_path_alt}'. Guideline file not copied."
-                )
+            print(f"Warning: Could not find packaged llm_min_guideline.md. Guideline file not copied.")
+        except Exception as e:
+            print(f"Warning: An unexpected error occurred while copying guideline: {e}. Guideline file not copied.")
 
         print("Output files written successfully.")
