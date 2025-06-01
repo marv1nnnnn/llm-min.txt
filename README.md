@@ -205,36 +205,57 @@ You can obtain a Gemini API key from the [Google AI Studio](https://aistudio.goo
 
 Choose one of the following input sources:
 
-| Option              | Short | Type      | What it does                                                                 |
+| Input Source Options | Short | Type      | What it does                                                                 |
 |---------------------|-------|-----------|------------------------------------------------------------------------------|
-| `--output-dir`      | `-o`  | `DIRECTORY` | Where to save the generated files (default is a folder named `llm_min_docs`).|
+| `--input-folder`    | `-i`  | `DIRECTORY` | **📁 Process local documentation files.** Recursively scans a directory for `.md`, `.txt`, and `.rst` files. Web crawling is skipped when using this option. |
+| `--package`         | `-pkg`| `TEXT`    | **📦 Process a Python package.** Automatically finds and crawls the package's documentation website. |
+| `--doc-url`         | `-u`  | `TEXT`    | **🌐 Process a documentation website.** Directly crawls the specified URL. |
+
+| Configuration Options | Short | Type      | What it does                                                                 |
+|---------------------|-------|-----------|------------------------------------------------------------------------------|
+| `--output-dir`      | `-o`  | `DIRECTORY` | Where to save the generated files (default: `llm_min_docs`).                |
 | `--output-name`     | `-n`  | `TEXT`    | Give a custom name for the subfolder inside `output-dir`.                    |
-| `--max-crawl-pages` | `-p`  | `INTEGER` | Max web pages to read (default: 200; 0 means no limit).                      |
-| `--max-crawl-depth` | `-D`  | `INTEGER` | How many links deep to follow on a website (default: 3).                     |
+| `--library-version` | `-V`  | `TEXT`    | Specify the library version (useful when using `--input-folder` or `--doc-url`). |
+| `--max-crawl-pages` | `-p`  | `INTEGER` | Max web pages to read (default: 200; 0 means no limit). Only applies to web crawling. |
+| `--max-crawl-depth` | `-D`  | `INTEGER` | How many links deep to follow on a website (default: 3). Only applies to web crawling. |
 | `--chunk-size`      | `-c`  | `INTEGER` | How much text to give the AI at once (default: 600,000 characters).          |
 | `--gemini-api-key`  | `-k`  | `TEXT`    | Your Gemini API Key (if not set as an environment variable).                 |
 | `--gemini-model`    | `-m`  | `TEXT`    | Which Gemini model to use (default: `gemini-2.5-flash-preview-04-17`).       |
 | `--verbose`         | `-v`  |           | Show more detailed messages while it's working.                              |
 
-**Key Command-Line Options:**
-
-*   Process the Python package `typer`, read up to 50 web pages, and save to a folder called `my_docs`:
-    ```bash
-    llm-min -pkg "typer" -o my_docs -p 50 --gemini-api-key YOUR_API_KEY_HERE
-    ```
-
 **Example Commands:**
 
 ```bash
-# Process the "typer" package, save to "my_docs" folder
+# 📦 Process the "typer" Python package, save to "my_docs" folder
 llm-min -pkg "typer" -o my_docs -p 50
 
-# Process the FastAPI documentation website
+# 🌐 Process the FastAPI documentation website
 llm-min -u "https://fastapi.tiangolo.com/" -o my_docs -p 50
 
-# Process documentation files in a local folder
+# 📁 Process documentation files in a local folder
 llm-min -i "./docs" -o my_docs
+
+# 📁 Process local files with custom output name and version
+llm-min -i "./my-project-docs" -o my_docs -n "my-project" -V "1.2.3"
+
+# 📁 Process a project's entire documentation directory structure
+llm-min -i "/path/to/project/documentation" -o project_docs --verbose
 ```
+
+**Local Folder Processing Details:** 📁
+
+When using `--input-folder`, `llm-min` will:
+- Recursively scan the specified directory for documentation files
+- Process files with extensions: `.md` (Markdown), `.txt` (Plain text), `.rst` (reStructuredText)
+- Combine all found files into a single content stream
+- Skip web crawling entirely (making it faster and not requiring internet connectivity)
+- Preserve the original combined content in `llm-full.txt` and generate the compressed `llm-min.txt`
+
+This is particularly useful for:
+- **Internal/proprietary documentation** that isn't available online
+- **Local project documentation** that you're developing
+- **Offline processing** when internet access is limited
+- **Custom documentation** in various formats
 
 **4. Programmatic Usage in Python:** 🐍
 
@@ -249,32 +270,57 @@ llm_config = {
     "api_key": os.environ.get("GEMINI_API_KEY"),  # Use environment variable
     "model_name": "gemini-2.5-flash-preview-04-17",  # Recommended model
     "chunk_size": 600000,  # Characters per AI processing batch
-    "max_crawl_pages": 200,  # Maximum pages to crawl
-    "max_crawl_depth": 3,  # Link following depth
+    "max_crawl_pages": 200,  # Maximum pages to crawl (only for web crawling)
+    "max_crawl_depth": 3,  # Link following depth (only for web crawling)
 }
 
-# Initialize the generator (output files will go to ./my_output_docs/[package_name]/)
+# Initialize the generator (output files will go to ./my_output_docs/[source_name]/)
 generator = LLMMinGenerator(output_dir="./my_output_docs", llm_config=llm_config)
 
-# Generate llm-min.txt for the 'requests' package
+# 📦 Generate llm-min.txt for a Python package
 try:
     generator.generate_from_package("requests")
     print("✅ Successfully created documentation for 'requests'!")
 except Exception as e:
     print(f"❌ Error processing 'requests': {e}")
 
-# Generate llm-min.txt from a documentation URL
+# 🌐 Generate llm-min.txt from a documentation URL
 try:
-    generator.generate_from_url("https://bun.sh/llms-full.txt")
-    print("✅ Successfully processed 'https://bun.sh/llms-full.txt'!")
+    generator.generate_from_url("https://fastapi.tiangolo.com/")
+    print("✅ Successfully processed FastAPI documentation!")
 except Exception as e:
     print(f"❌ Error processing URL: {e}")
+
+# 📁 Generate llm-min.txt from local documentation files
+try:
+    # Read and combine all documentation files from a local folder
+    import pathlib
+    docs_folder = pathlib.Path("./my-project-docs")
+    
+    # Collect content from supported file types
+    content = ""
+    for ext in [".md", ".txt", ".rst"]:
+        for file_path in docs_folder.rglob(f"*{ext}"):
+            with open(file_path, encoding="utf-8") as f:
+                content += f"# File: {file_path.name}\n\n"
+                content += f.read() + "\n\n---\n\n"
+    
+    # Process the combined content
+    generator.generate_from_text(
+        input_content=content, 
+        source_name="my-project",
+        library_version="1.0.0"  # Optional
+    )
+    print("✅ Successfully processed local documentation!")
+except Exception as e:
+    print(f"❌ Error processing local files: {e}")
 ```
 
 For a complete list of command-line options, run:
 ```bash
 llm-min --help
 ```
+
 ---
 
 ## Output Directory Structure 📂
@@ -323,7 +369,10 @@ The default model has been carefully selected to deliver the best results for th
 
 The `llm-min` tool employs a sophisticated multi-stage process to transform verbose documentation into a compact, machine-optimized SKF manifest:
 
-1.  **Input Processing:** Based on your command-line options (e.g., `--package "requests"`), `llm-min` gathers documentation from the appropriate source (PyPI, web crawling, or local files).
+1.  **Input Processing:** Based on your command-line options, `llm-min` gathers documentation from the appropriate source:
+    - **Package (`--package "requests"`)**: Automatically discovers and crawls the package's documentation website
+    - **URL (`--doc-url "https://..."`)**: Directly crawls the specified documentation website  
+    - **Local Folder (`--input-folder "./docs"`)**: Recursively scans for `.md`, `.txt`, and `.rst` files and combines their content
 
 2.  **Text Preparation:** The collected documentation is cleaned and segmented into manageable chunks for processing. The original text is preserved as `llm-full.txt`.
 
@@ -419,6 +468,16 @@ A: Processing costs vary based on documentation size and complexity, but for a m
 - Selected Gemini model
 
 For current pricing details, refer to the [Google Cloud AI pricing page](https://cloud.google.com/vertex-ai/pricing#gemini).
+
+**Q: Can I process local documentation files without internet access?** 📁
+
+A: Yes! The `--input-folder` option is perfect for offline processing. When using this option, `llm-min` will:
+- Skip web crawling entirely (no internet required for content gathering)
+- Only need internet access for the Gemini API calls during compression
+- Support `.md`, `.txt`, and `.rst` files recursively in any directory structure
+- Work with internal/proprietary documentation that isn't publicly available online
+
+This makes it ideal for processing private documentation, local development docs, or when working with limited internet connectivity.
 
 **Q: Did you vibe code this project** 🤖
 
