@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.3.0 - 2025-06-05
+- **Enhanced Local Documentation Processing:**
+    - Introduced `--input-folder` option for recursively scanning local directories (`.md`, `.txt`, `.rst` files).
+    - Added file name headers when combining local content for better context.
+- **Improved LLM Interaction and Robustness:**
+    - Implemented dynamic chunk size calculation (`_calculate_optimal_chunk_size`) to adapt to content length, preventing `MAX_TOKENS` errors and improving reliability for large documents.
+    - Set default `chunk_size` to `0` in CLI, which triggers optimal calculation.
+    - Added conditional logic to use optimal chunk size when `0` is provided, otherwise use the specified value.
+    - Introduced resume capabilities for definition generation, allowing processing to continue from existing intermediate files.
+    - Added options to force reprocessing (`--force-reprocess`) and save intermediate fragments (`--save-fragments`).
+    - Made Gemini API response handling more robust.
+- **Documentation Updates:**
+    - Updated `README.md` to reflect new input source options, configuration options, and detailed local folder processing.
 ## v0.2.4 - 2025-06-01
 - Refactored asset handling for `llm_min_guideline.md`:
     - Moved guideline to `src/llm_min/assets/llm_min_guideline.md`.

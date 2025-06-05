@@ -206,12 +206,14 @@ async def generate_text_response(
 
     # 4. Extract text (handle potential lack of text even if not blocked)
     candidate = response.candidates[0]  # Get the candidate from the last attempt
+    response_text = None
     try:
         # Access text via parts is generally safer if structure is complex
         # but response.text often works for simple text responses.
         # Check if content and parts exist before accessing text
         if candidate.content and candidate.content.parts:
-            response_text = "".join(part.text for part in candidate.content.parts if hasattr(part, "text"))
+            text_parts = [part.text for part in candidate.content.parts if hasattr(part, "text") and part.text is not None]
+            response_text = "".join(text_parts) if text_parts else None
         else:
             # Fallback or if .text shortcut is preferred and reliable for your model/use case
             response_text = response.text  # This might raise ValueError if no text part exists
@@ -230,4 +232,9 @@ async def generate_text_response(
         else:
             return "ERROR: Gemini response contained no valid text content."
 
+    # Ensure response_text is never None before calling strip()
+    if response_text is None:
+        logger.warning(f"Gemini response text was None despite finish_reason '{finish_reason}'. Returning error.")
+        return "ERROR: Gemini response contained no valid text content."
+    
     return response_text.strip()

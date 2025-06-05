@@ -1,6 +1,7 @@
 import logging
 import os
 from pathlib import Path
+import argparse
 
 import typer  # Import typer
 from dotenv import load_dotenv  # Added dotenv import
@@ -83,7 +84,7 @@ def main(
         help="Maximum depth to crawl from the starting URL. Default: 2.",
     ),
     chunk_size: int = typer.Option(
-        600_000,
+        0,
         "--chunk-size",
         "-c",
         help="Chunk size (in characters) for LLM compaction. Default: 600,000.",
@@ -107,6 +108,17 @@ def main(
         "--gemini-model",
         "-m",
         help="The Gemini model to use for compaction and search.",
+    ),
+    force_reprocess: bool = typer.Option(
+        False,
+        "--force-reprocess",
+        help="Force reprocessing even if llm-full.txt exists and ignore intermediate files",
+        is_flag=True,
+    ),
+    save_fragments: bool = typer.Option(
+        True,
+        "--save-fragments/--no-save-fragments",
+        help="Save intermediate fragments for debugging and retry capability. Default: True.",
     ),
 ):
     """
@@ -133,6 +145,8 @@ def main(
         "chunk_size": chunk_size,  # Pass chunk_size as part of llm_config
         "max_crawl_pages": max_crawl_pages,  # Pass crawl limits as part of llm_config
         "max_crawl_depth": max_crawl_depth,
+        "save_fragments": save_fragments,  # Pass fragment saving option
+        "force_reprocess": force_reprocess,  # Pass force reprocess option
     }
 
     # Determine the actual output directory name
@@ -140,8 +154,12 @@ def main(
         os.path.join(output_dir, output_folder_name_override) if output_folder_name_override else output_dir
     )
 
+    # Initialize the generator with updated configuration
     generator = LLMMinGenerator(
-        output_dir=output_dir, output_folder_name_override=output_folder_name_override, llm_config=llm_config
+        output_dir=output_dir,
+        output_folder_name_override=output_folder_name_override,
+        llm_config=llm_config,
+        force_reprocess=force_reprocess,
     )
 
     # Validate input options: Exactly one of input_folder, package_name, or doc_url must be provided
@@ -156,29 +174,41 @@ def main(
         # Collect content from specified file types recursively
         input_content = ""
         allowed_extensions = [".md", ".txt", ".rst"]
+        files_found = 0
         for ext in allowed_extensions:
             for file_path in input_folder.rglob(f"*{ext}"):
                 try:
                     with open(file_path, encoding="utf-8") as f:
-                        input_content += f.read() + "\n\n---\n\n"  # Separator between files
+                        file_content = f.read()
+                        if file_content.strip():  # Only add non-empty files
+                            input_content += f"# File: {file_path.name}\n\n{file_content}\n\n---\n\n"
+                            files_found += 1
                     logger.debug(f"Read content from {file_path}")
                 except Exception as e:
                     logger.warning(f"Could not read file {file_path}: {e}")
 
-        if not input_content:
-            logger.warning(f"No files found matching {allowed_extensions} in {input_folder}")
+        if not input_content or files_found == 0:
+            logger.warning(f"No valid content found in files matching {allowed_extensions} in {input_folder}")
             raise typer.Exit(code=1)
+
+        logger.info(f"Successfully collected content from {files_found} files")
 
         # Use the collected content for generation
         try:
-            # Assuming LLMMinGenerator has a method to process raw text
-            # This might need adjustment based on the actual generator implementation
-            # For now, let's assume it can take a single string of content
+            # Generate a meaningful source name from the input folder
+            # Use the folder name or a default if it's just a path
+            source_name = output_folder_name_override or input_folder.name or "local_docs"
+            
+            logger.info(f"Starting processing with source name: '{source_name}'")
             generator.generate_from_text(
-                input_content, source_name=final_output_dir
-            )  # Use package_name for source_name if available
+                input_content, 
+                source_name=source_name,
+                library_version=library_version
+            )
+            logger.info(f"Successfully generated documentation from input folder {input_folder}")
         except Exception as e:
             logger.error(f"Failed to generate documentation from input folder {input_folder}: {e}")
+            raise typer.Exit(code=1)
 
     elif package_name_input:  # Only process package if no input_folder is provided and package_name is provided
         logger.info(f"Processing package: {package_name_input}")
