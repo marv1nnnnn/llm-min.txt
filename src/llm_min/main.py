@@ -84,7 +84,7 @@ def main(
         help="Maximum depth to crawl from the starting URL. Default: 2.",
     ),
     chunk_size: int = typer.Option(
-        600_000,
+        0,
         "--chunk-size",
         "-c",
         help="Chunk size (in characters) for LLM compaction. Default: 600,000.",

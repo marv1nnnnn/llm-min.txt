@@ -114,7 +114,7 @@ class LLMMinGenerator:
                     input_content,
                     library_name_param=source_name,
                     library_version_param=library_version,
-                    chunk_size=optimal_chunk_size,
+                    chunk_size=self.llm_config.get("chunk_size", 0) if self.llm_config.get("chunk_size", 0) != 0 else optimal_chunk_size,
                     api_key=self.llm_config.get("api_key"),
                     model_name=self.llm_config.get("model_name"),
                     output_path=output_path,  # Pass output path for intermediate saving
@@ -207,7 +207,7 @@ class LLMMinGenerator:
                 full_content,
                 library_name_param=identifier,
                 library_version_param=library_version,
-                chunk_size=self.llm_config.get("chunk_size", 1000000),  # Default from compacter.py
+                chunk_size=self.llm_config.get("chunk_size", 0) if self.llm_config.get("chunk_size", 0) != 0 else self._calculate_optimal_chunk_size(len(full_content)),
                 api_key=self.llm_config.get("api_key"),
                 model_name=self.llm_config.get("model_name"),
                 output_path=output_path,  # Pass output path for intermediate saving
