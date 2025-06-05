@@ -218,9 +218,11 @@ Choose one of the following input sources:
 | `--library-version` | `-V`  | `TEXT`    | Specify the library version (useful when using `--input-folder` or `--doc-url`). |
 | `--max-crawl-pages` | `-p`  | `INTEGER` | Max web pages to read (default: 200; 0 means no limit). Only applies to web crawling. |
 | `--max-crawl-depth` | `-D`  | `INTEGER` | How many links deep to follow on a website (default: 3). Only applies to web crawling. |
-| `--chunk-size`      | `-c`  | `INTEGER` | How much text to give the AI at once (default: 600,000 characters).          |
+| `--chunk-size`      | `-c`  | `INTEGER` | How much text to give the AI at once (default: 0, which enables adaptive chunking). If 0, `llm-min` automatically determines an optimal size. |
 | `--gemini-api-key`  | `-k`  | `TEXT`    | Your Gemini API Key (if not set as an environment variable).                 |
 | `--gemini-model`    | `-m`  | `TEXT`    | Which Gemini model to use (default: `gemini-2.5-flash-preview-04-17`).       |
+| `--force-reprocess` |       |           | Force reprocessing even if `llm-full.txt` exists and ignore intermediate files. |
+| `--save-fragments`  |       | `BOOLEAN` | Save intermediate fragments for debugging and retry capability (default: True). |
 | `--verbose`         | `-v`  |           | Show more detailed messages while it's working.                              |
 
 **Example Commands:**
