@@ -104,9 +104,8 @@ class LLMMinGenerator:
         
         # Calculate optimal chunk size based on content length
         content_length = len(input_content)
-        optimal_chunk_size = self._calculate_optimal_chunk_size(content_length)
         print(f"Content length: {content_length:,} characters")
-        print(f"Using chunk size: {optimal_chunk_size:,} characters")
+
         
         try:
             min_content = asyncio.run(
@@ -114,7 +113,7 @@ class LLMMinGenerator:
                     input_content,
                     library_name_param=source_name,
                     library_version_param=library_version,
-                    chunk_size=self.llm_config.get("chunk_size", 0) if self.llm_config.get("chunk_size", 0) != 0 else optimal_chunk_size,
+                    chunk_size=self.llm_config.get("chunk_size", 0) if self.llm_config.get("chunk_size", 0) != 0 else self._calculate_optimal_chunk_size(content_length),
                     api_key=self.llm_config.get("api_key"),
                     model_name=self.llm_config.get("model_name"),
                     output_path=output_path,  # Pass output path for intermediate saving

@@ -104,7 +104,7 @@ def main(
         is_flag=True,
     ),
     gemini_model: str = typer.Option(
-        "gemini-2.5-flash-preview-04-17",
+        "gemini-2.5-flash-lite-preview-06-17",
         "--gemini-model",
         "-m",
         help="The Gemini model to use for compaction and search.",

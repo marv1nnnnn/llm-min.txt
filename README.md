@@ -220,7 +220,7 @@ Choose one of the following input sources:
 | `--max-crawl-depth` | `-D`  | `INTEGER` | How many links deep to follow on a website (default: 3). Only applies to web crawling. |
 | `--chunk-size`      | `-c`  | `INTEGER` | How much text to give the AI at once (default: 0, which enables adaptive chunking). If 0, `llm-min` automatically determines an optimal size. |
 | `--gemini-api-key`  | `-k`  | `TEXT`    | Your Gemini API Key (if not set as an environment variable).                 |
-| `--gemini-model`    | `-m`  | `TEXT`    | Which Gemini model to use (default: `gemini-2.5-flash-preview-04-17`).       |
+| `--gemini-model`    | `-m`  | `TEXT`    | Which Gemini model to use (default: `gemini-2.5-flash-lite-preview-06-17`).       |
 | `--force-reprocess` |       |           | Force reprocessing even if `llm-full.txt` exists and ignore intermediate files. |
 | `--save-fragments`  |       | `BOOLEAN` | Save intermediate fragments for debugging and retry capability (default: True). |
 | `--verbose`         | `-v`  |           | Show more detailed messages while it's working.                              |
@@ -270,7 +270,7 @@ import os
 # Configuration for the AI processing
 llm_config = {
     "api_key": os.environ.get("GEMINI_API_KEY"),  # Use environment variable
-    "model_name": "gemini-2.5-flash-preview-04-17",  # Recommended model
+    "model_name": "gemini-2.5-flash-lite-preview-06-17",  # Recommended model
     "chunk_size": 600000,  # Characters per AI processing batch
     "max_crawl_pages": 200,  # Maximum pages to crawl (only for web crawling)
     "max_crawl_depth": 3,  # Link following depth (only for web crawling)
@@ -353,7 +353,7 @@ my_llm_docs/
 
 ## Choosing the Right AI Model (Why Gemini) 🧠
 
-`llm-min` utilizes Google's Gemini family of AI models for document processing. While you can select a specific Gemini model via the `--gemini-model` option, we strongly recommend using the default: `gemini-2.5-flash-preview-04-17`.
+`llm-min` utilizes Google's Gemini family of AI models for document processing. While you can select a specific Gemini model via the `--gemini-model` option, we strongly recommend using the default: `gemini-2.5-flash-lite-preview-06-17`.
 
 This particular model offers an optimal combination of capabilities for documentation compression:
 

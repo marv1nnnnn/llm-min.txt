@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.3.1 - 2025-06-18
+- Use `gemini-2.5-flash-lite-preview-06-17` as default model, for cheaper cost and faster response time.
+- Optimize the chunk size calculation, to avoid `MAX_TOKENS` errors.
+  
 ## v0.3.0 - 2025-06-05
 - **Enhanced Local Documentation Processing:**
     - Introduced `--input-folder` option for recursively scanning local directories (`.md`, `.txt`, `.rst` files).
