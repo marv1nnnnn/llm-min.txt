@@ -1,7 +1,7 @@
 import asyncio  # Added for running async functions
+import importlib.resources
 import os
 import shutil
-import importlib.resources
 
 from .compacter import compact_content_to_structured_text
 from .crawler import crawl_documentation
@@ -14,7 +14,11 @@ class LLMMinGenerator:
     """
 
     def __init__(
-        self, output_dir: str = ".", output_folder_name_override: str | None = None, llm_config: dict | None = None, force_reprocess: bool = False
+        self,
+        output_dir: str = ".",
+        output_folder_name_override: str | None = None,
+        llm_config: dict | None = None,
+        force_reprocess: bool = False,
     ):
         """
         Initializes the LLMMinGenerator instance.
@@ -71,15 +75,15 @@ class LLMMinGenerator:
         final_folder_name = self.output_folder_name_override if self.output_folder_name_override else source_name
         output_path = os.path.join(self.base_output_dir, final_folder_name)
         os.makedirs(output_path, exist_ok=True)
-        
+
         full_file_path = os.path.join(output_path, "llm-full.txt")
-        
+
         # Check if llm-full.txt already exists and reuse it (unless force_reprocess is True)
         if not self.force_reprocess and os.path.exists(full_file_path):
             print(f"Found existing llm-full.txt at {full_file_path}, reusing it...")
             print("Use --force-reprocess to regenerate from source files")
             try:
-                with open(full_file_path, 'r', encoding='utf-8') as f:
+                with open(full_file_path, encoding="utf-8") as f:
                     existing_content = f.read()
                 if existing_content.strip():
                     input_content = existing_content
@@ -89,31 +93,33 @@ class LLMMinGenerator:
             except Exception as e:
                 print(f"Could not read existing llm-full.txt: {e}, using provided content")
         elif self.force_reprocess and os.path.exists(full_file_path):
-            print(f"Force reprocessing enabled, ignoring existing llm-full.txt")
+            print("Force reprocessing enabled, ignoring existing llm-full.txt")
             # Also clean up any intermediate files
             intermediate_dir = os.path.join(output_path, ".intermediate")
             if os.path.exists(intermediate_dir):
                 try:
                     import shutil
+
                     shutil.rmtree(intermediate_dir)
                     print("Cleaned up existing intermediate files")
                 except Exception as e:
                     print(f"Could not clean up intermediate files: {e}")
-        
+
         print("Compacting provided text content...")
-        
+
         # Calculate optimal chunk size based on content length
         content_length = len(input_content)
         print(f"Content length: {content_length:,} characters")
 
-        
         try:
             min_content = asyncio.run(
                 compact_content_to_structured_text(
                     input_content,
                     library_name_param=source_name,
                     library_version_param=library_version,
-                    chunk_size=self.llm_config.get("chunk_size", 0) if self.llm_config.get("chunk_size", 0) != 0 else self._calculate_optimal_chunk_size(content_length),
+                    chunk_size=self.llm_config.get("chunk_size", 0)
+                    if self.llm_config.get("chunk_size", 0) != 0
+                    else self._calculate_optimal_chunk_size(content_length),
                     api_key=self.llm_config.get("api_key"),
                     model_name=self.llm_config.get("model_name"),
                     output_path=output_path,  # Pass output path for intermediate saving
@@ -128,25 +134,28 @@ class LLMMinGenerator:
     def _calculate_optimal_chunk_size(self, content_length: int) -> int:
         """
         Calculate optimal chunk size based on content length to avoid MAX_TOKEN issues.
-        
+
+        Note: chunk_size=0 means "auto-calculate" based on content size.
+
         Args:
             content_length (int): Total character count of content
-            
+
         Returns:
             int: Optimal chunk size in characters
         """
-        # Get base chunk size from config, default to 600k
-        base_chunk_size = self.llm_config.get("chunk_size", 600_000)
-        
+        # Get base chunk size from config, handle chunk_size=0 as auto-calculate
+        config_chunk_size = self.llm_config.get("chunk_size", 0)
+        base_chunk_size = 600_000 if config_chunk_size == 0 else config_chunk_size
+
         # Rough estimate: 1 token ≈ 4 characters
         estimated_tokens = content_length // 4
-        
+
         # Use much more conservative chunking to avoid MAX_TOKENS
         # Gemini has ~1M token context, but output is limited to ~8k tokens
         # Large docs like RenPy need very small chunks to avoid timeout/truncation
-        
+
         if estimated_tokens < 25_000:  # < 25k tokens (very small)
-            return min(base_chunk_size, 80_000)   # 80k chars ≈ 20k tokens
+            return min(base_chunk_size, 80_000)  # 80k chars ≈ 20k tokens
         elif estimated_tokens < 50_000:  # < 50k tokens (small)
             return min(base_chunk_size, 100_000)  # 100k chars ≈ 25k tokens
         elif estimated_tokens < 100_000:  # < 100k tokens (medium)
@@ -154,11 +163,11 @@ class LLMMinGenerator:
         elif estimated_tokens < 200_000:  # < 200k tokens (large)
             return min(base_chunk_size, 100_000)  # 100k chars ≈ 25k tokens (back to smaller)
         elif estimated_tokens < 350_000:  # < 350k tokens (very large, like RenPy)
-            return min(base_chunk_size, 80_000)   # 80k chars ≈ 20k tokens (much smaller)
+            return min(base_chunk_size, 80_000)  # 80k chars ≈ 20k tokens (much smaller)
         else:  # Extremely large content
-            return min(base_chunk_size, 60_000)   # 60k chars ≈ 15k tokens (very conservative)
-        
-        # Note: For very large documentation sets, we prioritize avoiding 
+            return min(base_chunk_size, 60_000)  # 60k chars ≈ 15k tokens (very conservative)
+
+        # Note: For very large documentation sets, we prioritize avoiding
         # MAX_TOKENS errors over processing efficiency
 
     def generate_from_url(self, doc_url: str, library_version: str | None = None):
@@ -200,13 +209,15 @@ class LLMMinGenerator:
         final_folder_name = self.output_folder_name_override if self.output_folder_name_override else identifier
         output_path = os.path.join(self.base_output_dir, final_folder_name)
         os.makedirs(output_path, exist_ok=True)
-        
+
         min_content = asyncio.run(
             compact_content_to_structured_text(
                 full_content,
                 library_name_param=identifier,
                 library_version_param=library_version,
-                chunk_size=self.llm_config.get("chunk_size", 0) if self.llm_config.get("chunk_size", 0) != 0 else self._calculate_optimal_chunk_size(len(full_content)),
+                chunk_size=self.llm_config.get("chunk_size", 0)
+                if self.llm_config.get("chunk_size", 0) != 0
+                else self._calculate_optimal_chunk_size(len(full_content)),
                 api_key=self.llm_config.get("api_key"),
                 model_name=self.llm_config.get("model_name"),
                 output_path=output_path,  # Pass output path for intermediate saving
@@ -247,11 +258,11 @@ class LLMMinGenerator:
         try:
             # Use importlib.resources to access the packaged guideline file
             # Use importlib.resources.files() for Python 3.9+
-            guideline_source_resource = importlib.resources.files('llm_min.assets') / 'llm_min_guideline.md'
+            guideline_source_resource = importlib.resources.files("llm_min.assets") / "llm_min_guideline.md"
             with importlib.resources.as_file(guideline_source_resource) as guideline_source_path:
                 shutil.copy(guideline_source_path, guideline_file_path)
         except FileNotFoundError:
-            print(f"Warning: Could not find packaged llm_min_guideline.md. Guideline file not copied.")
+            print("Warning: Could not find packaged llm_min_guideline.md. Guideline file not copied.")
         except Exception as e:
             print(f"Warning: An unexpected error occurred while copying guideline: {e}. Guideline file not copied.")
 

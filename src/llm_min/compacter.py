@@ -1,15 +1,13 @@
 import logging
+import os
 import re
 from datetime import datetime, timezone
 from string import Template  # We will use $variable for substitution in prompts
-import os
-import shutil
-
-from .utils import count_tokens
 
 # Assuming .llm.generate_text_response is your async function to call the LLM
 # Assuming .llm.chunk_content is your utility for chunking large text
 from .llm import chunk_content, generate_text_response
+from .utils import count_tokens
 
 logger = logging.getLogger(__name__)
 
@@ -455,10 +453,10 @@ def update_gxxx_references(text_content: str, gid_map: dict[str, str]) -> str:
     # Ensure we always return a string, never None
     if not text_content:
         return ""
-    
+
     if not isinstance(text_content, str):
         return str(text_content) if text_content is not None else ""
-    
+
     if not gid_map:
         return text_content
 
@@ -491,12 +489,14 @@ async def _generate_global_glossary(
         logger.debug(f"Step 1: Processing glossary for document chunk {i + 1}/{num_doc_chunks}")
         prompt_c1 = SKF_PROMPT_CALL1_GLOSSARY_TEMPLATE.substitute(input_document_text=doc_chunk_text)
         glossary_chunk_output = await generate_text_response(prompt_c1, api_key=api_key, model_name=model_name)
-        
+
         # Handle error responses and None values safely
-        if (glossary_chunk_output 
-            and isinstance(glossary_chunk_output, str) 
+        if (
+            glossary_chunk_output
+            and isinstance(glossary_chunk_output, str)
             and not glossary_chunk_output.startswith("ERROR:")
-            and glossary_chunk_output.strip()):
+            and glossary_chunk_output.strip()
+        ):
             partial_glossary_outputs.append(glossary_chunk_output.strip())
         else:
             error_msg = glossary_chunk_output if glossary_chunk_output else "No response"
@@ -512,11 +512,13 @@ async def _generate_global_glossary(
             concatenated_glossary_fragments=concatenated_fragments
         )
         raw_consolidated_glossary = await generate_text_response(prompt_c1_5, api_key=api_key, model_name=model_name)
-        
+
         # Handle consolidation errors
-        if (not raw_consolidated_glossary 
+        if (
+            not raw_consolidated_glossary
             or not isinstance(raw_consolidated_glossary, str)
-            or raw_consolidated_glossary.startswith("ERROR:")):
+            or raw_consolidated_glossary.startswith("ERROR:")
+        ):
             error_msg = raw_consolidated_glossary if raw_consolidated_glossary else "No response"
             logger.error(f"Step 1.5: Glossary consolidation by LLM failed: {error_msg}. Using raw fragments.")
             raw_consolidated_glossary = concatenated_fragments
@@ -595,9 +597,11 @@ async def _generate_definitions_and_interactions(
         chunk_di_output_raw = await generate_text_response(prompt_c2_chunk, api_key=api_key, model_name=model_name)
 
         # Handle error responses and None values safely
-        if (chunk_di_output_raw 
-            and isinstance(chunk_di_output_raw, str) 
-            and not chunk_di_output_raw.startswith("ERROR:")):
+        if (
+            chunk_di_output_raw
+            and isinstance(chunk_di_output_raw, str)
+            and not chunk_di_output_raw.startswith("ERROR:")
+        ):
             chunk_di_output = chunk_di_output_raw  # update_gxxx_references(chunk_di_output_raw, gid_map) # Safety net
 
             raw_d_items_from_chunk = parse_skf_lines(chunk_di_output, "D")
@@ -660,17 +664,19 @@ async def _generate_usage_patterns(
             chunk_usage_output_raw = await generate_text_response(
                 prompt_c3_chunk, api_key=api_key, model_name=model_name
             )
-            
+
             # Handle error responses and None values safely
-            if (chunk_usage_output_raw 
-                and isinstance(chunk_usage_output_raw, str) 
-                and not chunk_usage_output_raw.startswith("ERROR:")):
+            if (
+                chunk_usage_output_raw
+                and isinstance(chunk_usage_output_raw, str)
+                and not chunk_usage_output_raw.startswith("ERROR:")
+            ):
                 chunk_usage_output = update_gxxx_references(chunk_usage_output_raw, gid_map)
             else:
                 error_msg = chunk_usage_output_raw if chunk_usage_output_raw else "No response"
                 logger.warning(f"Usage patterns generation failed for chunk {i + 1}: {error_msg}")
                 chunk_usage_output = ""
-            
+
             if (
                 chunk_usage_output
                 and isinstance(chunk_usage_output, str)
@@ -688,17 +694,19 @@ async def _generate_usage_patterns(
             chunk_usage_output_raw = await generate_text_response(
                 prompt_c3_iterative, api_key=api_key, model_name=model_name
             )
-            
-            # Handle error responses and None values safely  
-            if (chunk_usage_output_raw 
-                and isinstance(chunk_usage_output_raw, str) 
-                and not chunk_usage_output_raw.startswith("ERROR:")):
+
+            # Handle error responses and None values safely
+            if (
+                chunk_usage_output_raw
+                and isinstance(chunk_usage_output_raw, str)
+                and not chunk_usage_output_raw.startswith("ERROR:")
+            ):
                 chunk_usage_output = update_gxxx_references(chunk_usage_output_raw, gid_map)
             else:
                 error_msg = chunk_usage_output_raw if chunk_usage_output_raw else "No response"
                 logger.warning(f"Usage patterns generation failed for chunk {i + 1}: {error_msg}")
                 chunk_usage_output = ""
-            
+
             if (
                 chunk_usage_output
                 and isinstance(chunk_usage_output, str)
@@ -733,6 +741,10 @@ async def compact_content_to_structured_text(
     current_utc_timestamp = datetime.now(timezone.utc).isoformat(timespec="seconds")
     source_doc_identifiers = [f"{library_name_param}-{library_version_param}"]
 
+    if chunk_size <= 0:
+        logger.error(f"Invalid chunk_size: {chunk_size}. Must be positive.")
+        raise ValueError(f"chunk_size must be positive, got {chunk_size}")
+
     document_chunks = chunk_content(full_content, chunk_size)
     if not document_chunks:
         logger.error("Full content resulted in no document chunks. Aborting.")
@@ -746,7 +758,7 @@ async def compact_content_to_structured_text(
     intermediate_dir = None
     glossary_file = None
     definitions_file = None
-    
+
     if output_path and save_fragments:
         intermediate_dir = os.path.join(output_path, ".intermediate")
         os.makedirs(intermediate_dir, exist_ok=True)
@@ -762,7 +774,14 @@ async def compact_content_to_structured_text(
 
     # Step 2: Generate Definitions & Interactions (with resume capability)
     final_skf_definitions_interactions_content = await _generate_definitions_and_interactions_with_resume(
-        document_chunks, final_skf_glossary_content, library_name_param, gid_map, definitions_file, api_key, model_name, force_reprocess
+        document_chunks,
+        final_skf_glossary_content,
+        library_name_param,
+        gid_map,
+        definitions_file,
+        api_key,
+        model_name,
+        force_reprocess,
     )
 
     # Step 3: Generate Usage Patterns
@@ -781,7 +800,7 @@ async def compact_content_to_structured_text(
             # Only remove main intermediate files, keep fragments directory for potential retry
             for file in os.listdir(intermediate_dir):
                 file_path = os.path.join(intermediate_dir, file)
-                if os.path.isfile(file_path) and not file.startswith('fragment'):
+                if os.path.isfile(file_path) and not file.startswith("fragment"):
                     os.remove(file_path)
                     logger.debug(f"Removed intermediate file: {file}")
             logger.info("Cleaned up main intermediate files (kept fragments for potential retry)")
@@ -818,11 +837,11 @@ async def _generate_global_glossary_with_resume(
     force_reprocess: bool = False,
 ) -> tuple[str, dict[str, str]]:
     """Generate global glossary with resume capability."""
-    
+
     # Check for existing glossary file (unless force_reprocess is True)
     if not force_reprocess and glossary_file and os.path.exists(glossary_file):
         try:
-            with open(glossary_file, 'r', encoding='utf-8') as f:
+            with open(glossary_file, encoding="utf-8") as f:
                 existing_glossary = f.read().strip()
             if existing_glossary:
                 logger.info(f"Resuming from existing glossary file: {glossary_file}")
@@ -833,22 +852,22 @@ async def _generate_global_glossary_with_resume(
             logger.warning(f"Could not load existing glossary: {e}, starting fresh")
     elif force_reprocess and glossary_file and os.path.exists(glossary_file):
         logger.info("Force reprocessing enabled, ignoring existing glossary")
-    
+
     # Generate new glossary with fragment-aware consolidation
     logger.info("SKF Pipeline - Step 1: Generating Global Glossary...")
     final_skf_glossary_content, gid_map = await _generate_global_glossary_with_fragment_handling(
         document_chunks, glossary_file, api_key, model_name
     )
-    
+
     # Save intermediate result
     if glossary_file:
         try:
-            with open(glossary_file, 'w', encoding='utf-8') as f:
+            with open(glossary_file, "w", encoding="utf-8") as f:
                 f.write(final_skf_glossary_content)
             logger.info(f"Saved glossary to {glossary_file}")
         except Exception as e:
             logger.warning(f"Could not save glossary: {e}")
-    
+
     return final_skf_glossary_content, gid_map
 
 
@@ -860,54 +879,56 @@ async def _generate_global_glossary_with_fragment_handling(
 ) -> tuple[str, dict[str, str]]:
     """Generate global glossary with fragment handling for large datasets."""
     logger.info("SKF Pipeline - Step 1: Generating Global Glossary with fragment handling...")
-    
+
     # Step 1: Generate individual fragment glossaries
     partial_glossary_outputs: list[str] = []
     num_doc_chunks = len(document_chunks)
-    
+
     # Create fragment directory if we have a glossary file path
     fragment_dir = None
     if glossary_file:
         fragment_dir = os.path.join(os.path.dirname(glossary_file), "fragments")
         os.makedirs(fragment_dir, exist_ok=True)
-    
+
     for i, doc_chunk_text in enumerate(document_chunks):
         logger.debug(f"Step 1: Processing glossary for document chunk {i + 1}/{num_doc_chunks}")
-        
+
         # Check for existing fragment file
         fragment_file = None
         if fragment_dir:
-            fragment_file = os.path.join(fragment_dir, f"glossary_fragment_{i+1:03d}.txt")
+            fragment_file = os.path.join(fragment_dir, f"glossary_fragment_{i + 1:03d}.txt")
             if os.path.exists(fragment_file):
                 try:
-                    with open(fragment_file, 'r', encoding='utf-8') as f:
+                    with open(fragment_file, encoding="utf-8") as f:
                         existing_fragment = f.read().strip()
                     if existing_fragment:
-                        logger.info(f"Loading existing fragment {i+1}: {fragment_file}")
+                        logger.info(f"Loading existing fragment {i + 1}: {fragment_file}")
                         partial_glossary_outputs.append(existing_fragment)
                         continue
                 except Exception as e:
-                    logger.warning(f"Could not load fragment {i+1}: {e}, regenerating")
-        
+                    logger.warning(f"Could not load fragment {i + 1}: {e}, regenerating")
+
         # Generate new fragment
         prompt_c1 = SKF_PROMPT_CALL1_GLOSSARY_TEMPLATE.substitute(input_document_text=doc_chunk_text)
         glossary_chunk_output = await generate_text_response(prompt_c1, api_key=api_key, model_name=model_name)
-        
+
         # Handle error responses and None values safely
-        if (glossary_chunk_output 
-            and isinstance(glossary_chunk_output, str) 
+        if (
+            glossary_chunk_output
+            and isinstance(glossary_chunk_output, str)
             and not glossary_chunk_output.startswith("ERROR:")
-            and glossary_chunk_output.strip()):
+            and glossary_chunk_output.strip()
+        ):
             partial_glossary_outputs.append(glossary_chunk_output.strip())
-            
+
             # Save fragment for future runs
             if fragment_file:
                 try:
-                    with open(fragment_file, 'w', encoding='utf-8') as f:
+                    with open(fragment_file, "w", encoding="utf-8") as f:
                         f.write(glossary_chunk_output.strip())
-                    logger.debug(f"Saved fragment {i+1} to {fragment_file}")
+                    logger.debug(f"Saved fragment {i + 1} to {fragment_file}")
                 except Exception as e:
-                    logger.warning(f"Could not save fragment {i+1}: {e}")
+                    logger.warning(f"Could not save fragment {i + 1}: {e}")
         else:
             error_msg = glossary_chunk_output if glossary_chunk_output else "No response"
             logger.warning(f"Glossary generation failed for chunk {i + 1}: {error_msg}")
@@ -918,14 +939,14 @@ async def _generate_global_glossary_with_fragment_handling(
 
     # Step 2: Consolidate fragments with size awareness
     logger.info(f"Step 1.5: Consolidating {len(partial_glossary_outputs)} glossary fragment(s)...")
-    
+
     # Calculate total size of fragments to decide consolidation strategy
     total_fragment_size = sum(count_tokens(fragment) for fragment in partial_glossary_outputs)
     logger.info(f"Total fragment size: {total_fragment_size} tokens")
-    
+
     # If fragments are small enough, consolidate in one go
     MAX_CONSOLIDATION_TOKENS = 50000  # Conservative limit for consolidation input
-    
+
     if total_fragment_size <= MAX_CONSOLIDATION_TOKENS:
         # Single consolidation pass
         raw_consolidated_glossary = await _consolidate_fragments_single_pass(
@@ -937,7 +958,7 @@ async def _generate_global_glossary_with_fragment_handling(
         raw_consolidated_glossary = await _consolidate_fragments_multi_pass(
             partial_glossary_outputs, fragment_dir, api_key, model_name
         )
-    
+
     # Re-ID the final glossary
     final_skf_glossary_content, gid_map = re_id_glossary_items(raw_consolidated_glossary)
     if not final_skf_glossary_content.strip() and partial_glossary_outputs:
@@ -959,46 +980,45 @@ async def _consolidate_fragments_single_pass(
 ) -> str:
     """Consolidate fragments in a single pass with retry mechanism."""
     concatenated_fragments = "\n---\n".join(fragments)
-    
+
     # Calculate input size for logging
     input_size = count_tokens(concatenated_fragments)
     logger.debug(f"Attempting single-pass consolidation of {len(fragments)} fragments ({input_size} tokens)")
-    
+
     prompt_c1_5 = SKF_PROMPT_CALL1_5_MERGE_GLOSSARY_TEMPLATE.substitute(
         concatenated_glossary_fragments=concatenated_fragments
     )
-    
+
     # First attempt
     try:
         raw_consolidated_glossary = await generate_text_response(prompt_c1_5, api_key=api_key, model_name=model_name)
-        
+
         # Check for successful consolidation
-        if (raw_consolidated_glossary 
-            and isinstance(raw_consolidated_glossary, str) 
+        if (
+            raw_consolidated_glossary
+            and isinstance(raw_consolidated_glossary, str)
             and not raw_consolidated_glossary.startswith("ERROR:")
-            and raw_consolidated_glossary.strip()):
-            
+            and raw_consolidated_glossary.strip()
+        ):
             output_size = count_tokens(raw_consolidated_glossary)
             logger.debug(f"Consolidation successful: {input_size} -> {output_size} tokens")
             return raw_consolidated_glossary.strip()
-        
+
         # Check for MAX_TOKENS truncation specifically
         if raw_consolidated_glossary and "MAX_TOKENS" in str(raw_consolidated_glossary):
             logger.warning("Consolidation truncated due to MAX_TOKENS limit")
             raise ValueError("MAX_TOKENS_EXCEEDED")
-        
+
         error_msg = raw_consolidated_glossary if raw_consolidated_glossary else "No response"
         logger.warning(f"Consolidation attempt failed: {error_msg}")
-        
+
         if retry_on_failure and len(fragments) > 1:
             logger.info("Retrying consolidation with smaller batch size")
             # For large fragment sets, split more aggressively
             if len(fragments) > 4:
                 # Split into quarters for very large sets
                 quarter = len(fragments) // 4
-                chunks = [
-                    fragments[i:i+quarter] for i in range(0, len(fragments), quarter)
-                ]
+                chunks = [fragments[i : i + quarter] for i in range(0, len(fragments), quarter)]
                 # Consolidate each chunk separately
                 consolidated_chunks = []
                 for chunk in chunks:
@@ -1009,7 +1029,7 @@ async def _consolidate_fragments_single_pass(
                             chunk, api_key, model_name, retry_on_failure=False
                         )
                         consolidated_chunks.append(chunk_result)
-                
+
                 # Final consolidation of chunks
                 return await _consolidate_fragments_single_pass(
                     consolidated_chunks, api_key, model_name, retry_on_failure=False
@@ -1019,7 +1039,7 @@ async def _consolidate_fragments_single_pass(
                 mid_point = len(fragments) // 2
                 first_half = fragments[:mid_point]
                 second_half = fragments[mid_point:]
-            
+
                 # Consolidate each half separately, then combine
                 first_consolidated = await _consolidate_fragments_single_pass(
                     first_half, api_key, model_name, retry_on_failure=False
@@ -1027,17 +1047,17 @@ async def _consolidate_fragments_single_pass(
                 second_consolidated = await _consolidate_fragments_single_pass(
                     second_half, api_key, model_name, retry_on_failure=False
                 )
-                
+
                 # Final consolidation of the two halves
                 return await _consolidate_fragments_single_pass(
                     [first_consolidated, second_consolidated], api_key, model_name, retry_on_failure=False
                 )
-        
+
     except Exception as e:
         logger.error(f"Exception during consolidation: {e}")
         if "MAX_TOKENS" in str(e) or "MAX_OUTPUT_TOKEN" in str(e):
             logger.warning("Hit token limit during consolidation, will use fallback")
-        
+
     # Fallback: return raw fragments
     logger.warning("Consolidation failed, returning raw fragments")
     return concatenated_fragments
@@ -1051,28 +1071,27 @@ async def _consolidate_fragments_multi_pass(
 ) -> str:
     """Consolidate fragments in multiple passes for large datasets."""
     logger.info("Starting multi-pass fragment consolidation")
-    
+
     # Constants for multi-pass consolidation
     MAX_FRAGMENTS_PER_BATCH = 6  # Consolidate up to 6 fragments at once (increased for better context)
-    MAX_BATCH_TOKENS = 20000     # More generous token limit per batch (increased from 8000)
+    MAX_BATCH_TOKENS = 20000  # More generous token limit per batch (increased from 8000)
     PROMPT_OVERHEAD_TOKENS = 2000  # Account for prompt template overhead (reduced for efficiency)
-    
+
     current_fragments = fragments.copy()
     pass_number = 1
-    
+
     while len(current_fragments) > 1:
         logger.info(f"Consolidation pass {pass_number}: processing {len(current_fragments)} fragments")
-        
+
         next_fragments: list[str] = []
         batch_start = 0
-        
+
         while batch_start < len(current_fragments):
             # Determine batch size based on token count and max fragments
             batch_end = batch_start
             batch_tokens = 0
-            
-            while (batch_end < len(current_fragments) and 
-                   batch_end - batch_start < MAX_FRAGMENTS_PER_BATCH):
+
+            while batch_end < len(current_fragments) and batch_end - batch_start < MAX_FRAGMENTS_PER_BATCH:
                 fragment_tokens = count_tokens(current_fragments[batch_end])
                 # Account for prompt overhead and safety margin
                 effective_limit = MAX_BATCH_TOKENS - PROMPT_OVERHEAD_TOKENS
@@ -1080,27 +1099,31 @@ async def _consolidate_fragments_multi_pass(
                     break
                 batch_tokens += fragment_tokens
                 batch_end += 1
-            
+
             # Ensure we always include at least one fragment
             if batch_end == batch_start:
                 batch_end = batch_start + 1
-            
+
             batch_fragments = current_fragments[batch_start:batch_end]
             effective_tokens = batch_tokens + PROMPT_OVERHEAD_TOKENS
-            logger.info(f"Consolidating batch {batch_start//MAX_FRAGMENTS_PER_BATCH + 1}: "
-                       f"{len(batch_fragments)} fragments, {batch_tokens} content tokens, "
-                       f"{effective_tokens} total estimated tokens")
-            
+            logger.info(
+                f"Consolidating batch {batch_start // MAX_FRAGMENTS_PER_BATCH + 1}: "
+                f"{len(batch_fragments)} fragments, {batch_tokens} content tokens, "
+                f"{effective_tokens} total estimated tokens"
+            )
+
             # Save batch fragments for debugging/recovery
             if fragment_dir:
-                batch_file = os.path.join(fragment_dir, f"batch_pass{pass_number}_{batch_start:03d}_{batch_end:03d}.txt")
+                batch_file = os.path.join(
+                    fragment_dir, f"batch_pass{pass_number}_{batch_start:03d}_{batch_end:03d}.txt"
+                )
                 try:
-                    with open(batch_file, 'w', encoding='utf-8') as f:
+                    with open(batch_file, "w", encoding="utf-8") as f:
                         f.write("\n---\n".join(batch_fragments))
                     logger.debug(f"Saved batch to {batch_file}")
                 except Exception as e:
                     logger.warning(f"Could not save batch: {e}")
-            
+
             # Consolidate this batch
             if len(batch_fragments) == 1:
                 # Single fragment, no consolidation needed
@@ -1111,31 +1134,33 @@ async def _consolidate_fragments_multi_pass(
                     consolidated_batch = await _consolidate_fragments_single_pass(
                         batch_fragments, api_key, model_name, retry_on_failure=True
                     )
-                    
+
                     # Check if consolidation failed or was truncated
-                    if (not consolidated_batch or 
-                        consolidated_batch.startswith("ERROR:") or
-                        count_tokens(consolidated_batch) < count_tokens("\n---\n".join(batch_fragments)) * 0.5):
-                        logger.warning(f"Batch consolidation may have failed, using raw fragments")
+                    if (
+                        not consolidated_batch
+                        or consolidated_batch.startswith("ERROR:")
+                        or count_tokens(consolidated_batch) < count_tokens("\n---\n".join(batch_fragments)) * 0.5
+                    ):
+                        logger.warning("Batch consolidation may have failed, using raw fragments")
                         consolidated_batch = "\n---\n".join(batch_fragments)
-                        
+
                 except Exception as e:
                     logger.error(f"Error consolidating batch: {e}, using raw fragments")
                     consolidated_batch = "\n---\n".join(batch_fragments)
-            
+
             next_fragments.append(consolidated_batch)
             batch_start = batch_end
-        
+
         current_fragments = next_fragments
         pass_number += 1
-        
+
         # Safety check to prevent infinite loops
         if pass_number > 10:
             logger.warning("Maximum consolidation passes reached, stopping")
             break
-    
+
     final_result = current_fragments[0] if current_fragments else ""
-    logger.info(f"Multi-pass consolidation complete after {pass_number-1} passes")
+    logger.info(f"Multi-pass consolidation complete after {pass_number - 1} passes")
     return final_result
 
 
@@ -1150,11 +1175,11 @@ async def _generate_definitions_and_interactions_with_resume(
     force_reprocess: bool = False,
 ) -> str:
     """Generate definitions and interactions with resume capability."""
-    
+
     # Check for existing definitions file (unless force_reprocess is True)
     if not force_reprocess and definitions_file and os.path.exists(definitions_file):
         try:
-            with open(definitions_file, 'r', encoding='utf-8') as f:
+            with open(definitions_file, encoding="utf-8") as f:
                 existing_definitions = f.read().strip()
             if existing_definitions:
                 logger.info(f"Resuming from existing definitions file: {definitions_file}")
@@ -1164,20 +1189,20 @@ async def _generate_definitions_and_interactions_with_resume(
             logger.warning(f"Could not load existing definitions: {e}, starting fresh")
     elif force_reprocess and definitions_file and os.path.exists(definitions_file):
         logger.info("Force reprocessing enabled, ignoring existing definitions")
-    
+
     # Generate new definitions and interactions
     logger.info("SKF Pipeline - Step 2: Generating Definitions & Interactions...")
     final_skf_definitions_interactions_content = await _generate_definitions_and_interactions(
         document_chunks, final_skf_glossary_content, library_name_param, gid_map, api_key, model_name
     )
-    
+
     # Save intermediate result
     if definitions_file:
         try:
-            with open(definitions_file, 'w', encoding='utf-8') as f:
+            with open(definitions_file, "w", encoding="utf-8") as f:
                 f.write(final_skf_definitions_interactions_content)
             logger.info(f"Saved definitions to {definitions_file}")
         except Exception as e:
             logger.warning(f"Could not save definitions: {e}")
-    
+
     return final_skf_definitions_interactions_content
