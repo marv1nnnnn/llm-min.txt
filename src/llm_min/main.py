@@ -1,7 +1,6 @@
 import logging
 import os
 from pathlib import Path
-import argparse
 
 import typer  # Import typer
 from dotenv import load_dotenv  # Added dotenv import
@@ -87,7 +86,7 @@ def main(
         0,
         "--chunk-size",
         "-c",
-        help="Chunk size (in characters) for LLM compaction. Default: 600,000.",
+        help="Chunk size (in characters) for LLM compaction. Default: 0 (auto-calculate based on content size). Set explicitly to override.",
     ),
     gemini_api_key: str | None = typer.Option(
         lambda: os.environ.get("GEMINI_API_KEY"),
@@ -149,10 +148,7 @@ def main(
         "force_reprocess": force_reprocess,  # Pass force reprocess option
     }
 
-    # Determine the actual output directory name
-    final_output_dir = (
-        os.path.join(output_dir, output_folder_name_override) if output_folder_name_override else output_dir
-    )
+    # Note: output directory is handled by the generator
 
     # Initialize the generator with updated configuration
     generator = LLMMinGenerator(
@@ -198,13 +194,9 @@ def main(
             # Generate a meaningful source name from the input folder
             # Use the folder name or a default if it's just a path
             source_name = output_folder_name_override or input_folder.name or "local_docs"
-            
+
             logger.info(f"Starting processing with source name: '{source_name}'")
-            generator.generate_from_text(
-                input_content, 
-                source_name=source_name,
-                library_version=library_version
-            )
+            generator.generate_from_text(input_content, source_name=source_name, library_version=library_version)
             logger.info(f"Successfully generated documentation from input folder {input_folder}")
         except Exception as e:
             logger.error(f"Failed to generate documentation from input folder {input_folder}: {e}")

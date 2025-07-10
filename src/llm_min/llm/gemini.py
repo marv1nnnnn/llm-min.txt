@@ -17,7 +17,17 @@ def chunk_content(content: str, chunk_size: int) -> list[str]:
     Splits concatenated Markdown content into chunks of approximately chunk_size.
     Tries to respect paragraph and line breaks for more natural splitting.
     A small, fixed overlap is added between chunks.
+
+    Args:
+        content (str): The content to chunk
+        chunk_size (int): Size of each chunk in characters. Must be positive.
+
+    Raises:
+        ValueError: If chunk_size is not positive
     """
+    if chunk_size <= 0:
+        raise ValueError(f"chunk_size must be positive, got {chunk_size}")
+
     if not content.strip():
         return []
 
@@ -212,7 +222,9 @@ async def generate_text_response(
         # but response.text often works for simple text responses.
         # Check if content and parts exist before accessing text
         if candidate.content and candidate.content.parts:
-            text_parts = [part.text for part in candidate.content.parts if hasattr(part, "text") and part.text is not None]
+            text_parts = [
+                part.text for part in candidate.content.parts if hasattr(part, "text") and part.text is not None
+            ]
             response_text = "".join(text_parts) if text_parts else None
         else:
             # Fallback or if .text shortcut is preferred and reliable for your model/use case
@@ -236,5 +248,5 @@ async def generate_text_response(
     if response_text is None:
         logger.warning(f"Gemini response text was None despite finish_reason '{finish_reason}'. Returning error.")
         return "ERROR: Gemini response contained no valid text content."
-    
+
     return response_text.strip()
