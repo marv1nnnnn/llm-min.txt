@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/marv1nnnnn-llm-min-txt-badge.png)](https://mseep.ai/app/marv1nnnnn-llm-min-txt)
+
 # llm-min.txt: Min.js Style Compression of Tech Docs for LLM Context 🤖
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
